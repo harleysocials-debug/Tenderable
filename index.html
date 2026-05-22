@@ -6,11 +6,14 @@
     <title>Tenderable - Development Inquiry Platform</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
+        
         body { 
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', sans-serif;
             background: #f7f9fb;
             color: #0f172a;
+            letter-spacing: -0.3px;
         }
+        
         .login-container {
             min-height: 100vh;
             background: linear-gradient(135deg, #0a1118 0%, #0f172a 50%, #1a1f2e 100%);
@@ -18,28 +21,39 @@
             align-items: center;
             justify-content: center;
             padding: 2rem;
+            position: relative;
+            overflow: hidden;
         }
+        
         .login-box {
             width: 100%;
             max-width: 500px;
+            position: relative;
+            z-index: 10;
         }
+        
         .login-box h1 {
             font-size: 2.75rem;
             color: white;
             margin-bottom: 0.75rem;
             font-weight: 800;
         }
+        
         .login-box p {
             color: #a0aec0;
             font-size: 1rem;
             margin-bottom: 3.5rem;
+            font-weight: 400;
+            line-height: 1.6;
         }
+        
         .button-group {
             display: flex;
             flex-direction: column;
             gap: 1.2rem;
             margin-bottom: 3rem;
         }
+        
         button {
             padding: 1.1rem 1.5rem;
             border: none;
@@ -47,31 +61,49 @@
             font-size: 1rem;
             font-weight: 600;
             cursor: pointer;
-            transition: all 0.3s;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            letter-spacing: 0.5px;
         }
-        .btn-supplier {
-            background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);
-            color: white;
-        }
-        .btn-buyer {
-            background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%);
-            color: white;
-        }
+        
         button:hover { 
             transform: translateY(-2px);
         }
+        
+        .btn-supplier {
+            background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);
+            color: white;
+            box-shadow: 0 10px 30px rgba(6, 182, 212, 0.3);
+        }
+        
+        .btn-supplier:hover {
+            box-shadow: 0 15px 40px rgba(6, 182, 212, 0.4);
+        }
+        
+        .btn-buyer {
+            background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%);
+            color: white;
+            box-shadow: 0 10px 30px rgba(139, 92, 246, 0.3);
+        }
+        
+        .btn-buyer:hover {
+            box-shadow: 0 15px 40px rgba(139, 92, 246, 0.4);
+        }
+        
         .demo-box {
             background: rgba(255, 255, 255, 0.08);
             border: 1px solid rgba(255, 255, 255, 0.12);
+            backdrop-filter: blur(10px);
             padding: 1.5rem;
             border-radius: 12px;
             color: #cbd5e1;
             font-size: 0.875rem;
         }
+        
         .dashboard {
             min-height: 100vh;
             background: #f7f9fb;
         }
+        
         .header {
             background: white;
             border-bottom: 1px solid #e8ecf1;
@@ -82,7 +114,9 @@
             position: sticky;
             top: 0;
             z-index: 50;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
         }
+        
         .header h1 {
             font-size: 1.25rem;
             font-weight: 700;
@@ -90,18 +124,22 @@
             background: linear-gradient(135deg, #8b5cf6, #0891b2);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
+        
         .content {
             max-width: 1400px;
             margin: 0 auto;
             padding: 2.5rem 2rem;
         }
+        
         .tabs {
             margin-bottom: 2.5rem;
             border-bottom: 1px solid #e8ecf1;
             display: flex;
             gap: 2.5rem;
         }
+        
         .tab-btn {
             background: none;
             border: none;
@@ -112,30 +150,36 @@
             border-bottom: 3px solid transparent;
             transition: all 0.25s;
             font-size: 0.95rem;
+            letter-spacing: 0.3px;
         }
+        
         .tab-btn.active {
             color: #8b5cf6;
             border-bottom-color: #8b5cf6;
         }
+        
         .tender-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(480px, 1fr));
             gap: 1.5rem;
         }
+        
         .tender-card {
             background: white;
             border-radius: 12px;
             border: 1px solid #e8ecf1;
             padding: 1.75rem;
             cursor: pointer;
-            transition: all 0.35s;
+            transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.03);
         }
+        
         .tender-card:hover {
             border-color: #d1d5db;
             box-shadow: 0 16px 32px rgba(0, 0, 0, 0.1);
             transform: translateY(-6px);
         }
+        
         .form-container {
             background: white;
             border-radius: 12px;
@@ -143,22 +187,28 @@
             padding: 2.5rem;
             max-width: 900px;
             margin: 0 auto;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
         }
+        
         .form-row {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 1.75rem;
         }
+        
         .form-group {
             margin-bottom: 2rem;
         }
+        
         .form-group label {
             display: block;
             font-size: 0.875rem;
             font-weight: 700;
             color: #0f172a;
             margin-bottom: 0.75rem;
+            letter-spacing: 0.3px;
         }
+        
         input, select, textarea {
             width: 100%;
             padding: 0.9rem 1.1rem;
@@ -166,12 +216,17 @@
             border-radius: 10px;
             font-family: inherit;
             font-size: 0.95rem;
+            transition: all 0.25s;
+            background: white;
         }
+        
         input:focus, select:focus, textarea:focus {
             outline: none;
             border-color: #8b5cf6;
             box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.08);
+            background: white;
         }
+        
         .btn-primary {
             background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%);
             color: white;
@@ -181,7 +236,16 @@
             font-weight: 700;
             cursor: pointer;
             font-size: 0.95rem;
+            transition: all 0.3s;
+            box-shadow: 0 6px 18px rgba(139, 92, 246, 0.35);
+            letter-spacing: 0.4px;
         }
+        
+        .btn-primary:hover {
+            box-shadow: 0 10px 28px rgba(139, 92, 246, 0.45);
+            transform: translateY(-2px);
+        }
+        
         .back-btn {
             background: none;
             border: none;
@@ -189,7 +253,14 @@
             font-weight: 700;
             cursor: pointer;
             font-size: 0.95rem;
+            transition: all 0.25s;
+            letter-spacing: 0.3px;
         }
+        
+        .back-btn:hover {
+            color: #64748b;
+        }
+        
         .empty-state {
             text-align: center;
             padding: 4rem 2rem;
@@ -198,6 +269,80 @@
             border: 1px dashed #d1d5db;
             color: #64748b;
         }
+        
+        .upload-zone {
+            border: 2px dashed #cbd5e1;
+            border-radius: 12px;
+            padding: 3rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: #f8fafc;
+            margin-bottom: 1.75rem;
+        }
+        
+        .upload-zone:hover {
+            border-color: #8b5cf6;
+            background: #faf5ff;
+        }
+        
+        .upload-zone.dragover {
+            border-color: #8b5cf6;
+            background: #f3f0ff;
+            border-width: 3px;
+        }
+        
+        .upload-zone p {
+            color: #64748b;
+            margin: 0;
+            font-weight: 500;
+        }
+        
+        .upload-zone strong {
+            color: #8b5cf6;
+            font-weight: 700;
+        }
+        
+        .file-list {
+            margin-top: 1rem;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        
+        .file-item {
+            background: #ede9fe;
+            color: #5b21b6;
+            padding: 0.6rem 1rem;
+            border-radius: 8px;
+            font-size: 0.875rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-weight: 500;
+        }
+        
+        .file-item button {
+            background: none;
+            border: none;
+            color: #7c3aed;
+            cursor: pointer;
+            font-weight: 700;
+            padding: 0;
+            font-size: 1.2rem;
+            line-height: 1;
+            transition: all 0.2s;
+        }
+        
+        .file-item button:hover {
+            color: #c7121f;
+            transform: scale(1.1);
+        }
+        
+        #hidden-file-input {
+            display: none;
+        }
+        
         .hidden {
             display: none !important;
         }
@@ -267,6 +412,31 @@
     <div class="content">
         <h1 style="font-size: 2rem; margin-bottom: 2rem;">Create Development Tender</h1>
         <form class="form-container" onsubmit="submitTender(event)">
+            <!-- File Upload -->
+            <div style="margin-bottom: 2rem;">
+                <h3 style="margin: 0 0 1rem 0; font-size: 1.1rem;">📎 Files & Images</h3>
+                <div class="upload-zone" id="uploadZone" ondrop="handleDrop(event)" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" onclick="document.getElementById('hidden-file-input').click()">
+                    <p>📎 <strong>Drag and drop files here</strong> or click to browse</p>
+                    <p style="font-size: 0.875rem; margin-top: 0.5rem;">Images, PDFs, Design files</p>
+                </div>
+                <input type="file" id="hidden-file-input" style="display: none;" onchange="handleFiles(event)" multiple accept="image/*,.pdf,.psd,.ai,.eps">
+                <div class="file-list" id="fileList"></div>
+            </div>
+
+            <!-- Specs -->
+            <div style="margin-bottom: 2rem; background: #f9fafb; padding: 1.5rem; border-radius: 8px;">
+                <h3 style="margin: 0 0 1rem 0; font-size: 1.1rem;">📋 Specifications</h3>
+                <div id="specs-list" style="display: flex; flex-direction: column; gap: 0.75rem; margin-bottom: 1rem;"></div>
+                <button type="button" onclick="addSpecField()" style="background: #f0f4f8; color: #0f172a; border: 2px dashed #d1d5db; padding: 0.75rem 1.5rem; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 0.9rem;">+ Add Specification</button>
+            </div>
+
+            <!-- Labelling -->
+            <div style="margin-bottom: 2rem; background: #f9fafb; padding: 1.5rem; border-radius: 8px;">
+                <h3 style="margin: 0 0 1rem 0; font-size: 1.1rem;">📑 Labelling Requirements</h3>
+                <textarea id="labellingReqs" placeholder="e.g., Printed care label, hang tag..." style="width: 100%; padding: 1rem; border: 1px solid #d1d5db; border-radius: 6px; min-height: 100px;"></textarea>
+            </div>
+            
+            <!-- Form Fields -->
             <div class="form-row">
                 <div class="form-group">
                     <label>Brand</label>
@@ -305,7 +475,7 @@
             
             <div style="display: flex; gap: 1rem;">
                 <button type="submit" class="btn-primary" style="flex: 1;">Create Tender</button>
-                <button type="button" onclick="backToBuyerDashboard()" style="flex: 1; background: #e2e8f0; color: #0f172a;">Cancel</button>
+                <button type="button" onclick="backToBuyerDashboard()" style="flex: 1; background: #e2e8f0; color: #0f172a; border: none; padding: 0.75rem; border-radius: 6px; font-weight: 600; cursor: pointer;">Cancel</button>
             </div>
         </form>
     </div>
@@ -315,8 +485,136 @@
 const data = {
     currentUser: null,
     tenders: [],
-    bids: []
+    bids: [],
+    uploadedFiles: [],
+    suppliers: {
+        sup1: {
+            id: 'sup1',
+            name: 'Global Textiles Ltd',
+            categories: ['TOPS', 'BOTTOMS', 'OUTERWEAR']
+        }
+    }
 };
+
+function handleDragOver(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    document.getElementById('uploadZone').classList.add('dragover');
+}
+
+function handleDragLeave(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    document.getElementById('uploadZone').classList.remove('dragover');
+}
+
+function handleDrop(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    document.getElementById('uploadZone').classList.remove('dragover');
+    const files = e.dataTransfer.files;
+    handleFiles({ target: { files } });
+}
+
+function handleFiles(event) {
+    const files = event.target.files;
+    
+    for (let file of files) {
+        const fileSize = file.size > 1024 * 1024 ? (file.size / 1024 / 1024).toFixed(2) + ' MB' : (file.size / 1024).toFixed(1) + ' KB';
+        const isImage = file.type.startsWith('image/');
+        
+        if (isImage) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                data.uploadedFiles.push({
+                    name: file.name,
+                    size: fileSize,
+                    type: file.type,
+                    isImage: true,
+                    dataUrl: e.target.result
+                });
+                renderFileList();
+            };
+            reader.readAsDataURL(file);
+        } else {
+            data.uploadedFiles.push({
+                name: file.name,
+                size: fileSize,
+                type: file.type,
+                isImage: false
+            });
+            renderFileList();
+        }
+    }
+}
+
+function removeFile(index) {
+    data.uploadedFiles.splice(index, 1);
+    renderFileList();
+}
+
+function renderFileList() {
+    const fileList = document.getElementById('fileList');
+    fileList.innerHTML = data.uploadedFiles.map((file, idx) => {
+        if (file.isImage) {
+            return `
+                <div style="position: relative; display: inline-block;">
+                    <img src="${file.dataUrl}" style="max-width: 120px; max-height: 120px; border-radius: 6px; border: 1px solid #d1d5db; object-fit: cover;">
+                    <button type="button" onclick="removeFile(${idx})" style="position: absolute; top: -8px; right: -8px; background: #c7121f; color: white; border: none; width: 24px; height: 24px; border-radius: 50%; cursor: pointer; font-weight: bold; font-size: 14px;">✕</button>
+                    <div style="font-size: 0.75rem; color: #64748b; margin-top: 0.25rem; text-align: center;">${file.name.substring(0, 20)}</div>
+                </div>
+            `;
+        } else {
+            return `
+                <div class="file-item">
+                    📄 ${file.name} (${file.size})
+                    <button type="button" onclick="removeFile(${idx})">✕</button>
+                </div>
+            `;
+        }
+    }).join('');
+}
+
+function addSpecField() {
+    const specsList = document.getElementById('specs-list');
+    const specId = `spec-${Date.now()}-${Math.random()}`;
+    const specDiv = document.createElement('div');
+    specDiv.id = specId;
+    specDiv.style.cssText = 'display: flex; gap: 0.5rem; align-items: flex-end;';
+    specDiv.innerHTML = `
+        <input type="text" placeholder="e.g., Fabric weight" 
+               class="spec-input" style="flex: 1; padding: 0.75rem; border: 1px solid #d1d5db; border-radius: 6px; font-size: 0.95rem;">
+        <input type="text" placeholder="e.g., 280gsm" 
+               class="spec-value" style="flex: 1; padding: 0.75rem; border: 1px solid #d1d5db; border-radius: 6px; font-size: 0.95rem;">
+        <button type="button" onclick="removeSpec('${specId}')" style="background: #fee2e2; color: #991b1b; border: none; padding: 0.75rem 1rem; border-radius: 6px; cursor: pointer; font-weight: 600;">✕</button>
+    `;
+    specsList.appendChild(specDiv);
+}
+
+function removeSpec(specId) {
+    const element = document.getElementById(specId);
+    if (element) element.remove();
+}
+
+function getSpecsFromForm() {
+    const specs = [];
+    const specsList = document.getElementById('specs-list');
+    if (!specsList) return specs;
+    
+    const specInputs = specsList.querySelectorAll('.spec-input');
+    const specValues = specsList.querySelectorAll('.spec-value');
+    
+    specInputs.forEach((input, index) => {
+        if (input.value.trim()) {
+            specs.push({
+                label: input.value.trim(),
+                value: specValues[index]?.value.trim() || ''
+            });
+        }
+    });
+    
+    return specs;
+}
 
 function loginSupplier() {
     data.currentUser = { type: 'supplier', id: 'sup1', name: 'Global Textiles Ltd' };
@@ -370,21 +668,60 @@ function submitTender(e) {
         description,
         priceTarget: parseFloat(priceTarget),
         orderQty: parseInt(orderQty),
+        files: [...data.uploadedFiles],
+        specs: getSpecsFromForm(),
+        labellingReqs: document.getElementById('labellingReqs').value.trim(),
         createdAt: new Date()
     };
     
     data.tenders.push(tender);
+    
+    const form = document.querySelector('#create-tender-page form');
+    if (form) form.reset();
+    data.uploadedFiles = [];
+    document.getElementById('fileList').innerHTML = '';
+    document.getElementById('specs-list').innerHTML = '';
+    
     alert('✓ Tender created successfully!');
     backToBuyerDashboard();
 }
 
 function renderSupplierTenders() {
     const container = document.getElementById('supplier-tenders');
-    container.innerHTML = '<div class="empty-state"><p>No tenders available</p></div>';
+    const activeTab = document.querySelector('#supplier-page .tab-btn.active');
+    const tab = activeTab ? activeTab.textContent.split('(')[0].trim().toLowerCase() : 'available';
+    
+    const categoryTenders = data.tenders.filter(t => data.suppliers.sup1.categories.includes(t.category));
+    
+    let filteredTenders = [];
+    if (tab === 'available') {
+        filteredTenders = categoryTenders.slice(0, 5);
+    }
+    
+    document.getElementById('available-count').textContent = categoryTenders.length;
+    document.getElementById('active-count').textContent = '0';
+    document.getElementById('accepted-count').textContent = '0';
+    
+    if (filteredTenders.length === 0) {
+        container.innerHTML = '<div class="empty-state" style="grid-column: 1/-1;"><p>No tenders available</p></div>';
+        return;
+    }
+    
+    container.innerHTML = filteredTenders.map(tender => `
+        <div class="tender-card">
+            <h3>${tender.description}</h3>
+            <p>${tender.brand} • ${tender.category}</p>
+            <p><strong>Price:</strong> £${tender.priceTarget.toFixed(2)} • <strong>Qty:</strong> ${tender.orderQty.toLocaleString()}</p>
+            ${tender.files.length > 0 ? `<p style="font-size: 0.75rem; color: #64748b; margin-top: 0.5rem;">📎 ${tender.files.length} files</p>` : ''}
+        </div>
+    `).join('');
 }
 
 function renderBuyerDashboard() {
     const container = document.getElementById('buyer-tenders');
+    
+    document.getElementById('open-count').textContent = data.tenders.length;
+    document.getElementById('accepted-count').textContent = '0';
     
     if (data.tenders.length === 0) {
         container.innerHTML = '<div class="empty-state" style="grid-column: 1/-1;"><p>No tenders created yet</p></div>';
@@ -393,9 +730,20 @@ function renderBuyerDashboard() {
     
     container.innerHTML = data.tenders.map(tender => `
         <div class="tender-card">
-            <h3>${tender.description}</h3>
-            <p>${tender.brand} • ${tender.category}</p>
-            <p>Price: £${tender.priceTarget} • Qty: ${tender.orderQty}</p>
+            <div style="display: flex; gap: 1rem;">
+                ${tender.files.length > 0 && tender.files[0].isImage ? `
+                    <img src="${tender.files[0].dataUrl}" style="width: 120px; height: 120px; object-fit: cover; border-radius: 8px;">
+                ` : ''}
+                <div style="flex: 1;">
+                    <h3 style="margin: 0 0 0.35rem 0;">${tender.description}</h3>
+                    <p style="font-size: 0.8rem; color: #64748b; margin: 0;">${tender.brand} • ${tender.category}</p>
+                    <div style="margin-top: 0.75rem; padding-top: 0.75rem; border-top: 1px solid #e8ecf1;">
+                        <p style="margin: 0; font-weight: 700; color: #8b5cf6;">£${tender.priceTarget.toFixed(2)}</p>
+                        <p style="font-size: 0.75rem; color: #64748b;">Qty: ${tender.orderQty.toLocaleString()}</p>
+                    </div>
+                    ${tender.files.length > 0 ? `<p style="font-size: 0.75rem; color: #64748b; margin-top: 0.5rem;">📎 ${tender.files.length} files</p>` : ''}
+                </div>
+            </div>
         </div>
     `).join('');
 }
@@ -403,11 +751,13 @@ function renderBuyerDashboard() {
 function switchSupplierTab(tab) {
     document.querySelectorAll('#supplier-page .tab-btn').forEach(b => b.classList.remove('active'));
     event.target.classList.add('active');
+    renderSupplierTenders();
 }
 
 function switchBuyerTab(tab) {
     document.querySelectorAll('#buyer-page .tab-btn').forEach(b => b.classList.remove('active'));
     event.target.classList.add('active');
+    renderBuyerDashboard();
 }
 </script>
 
