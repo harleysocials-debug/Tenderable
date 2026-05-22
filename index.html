@@ -1118,13 +1118,14 @@ function addSpecField() {
                class="spec-input" style="flex: 1; padding: 0.75rem; border: 1px solid #d1d5db; border-radius: 6px; font-size: 0.95rem;">
         <input type="text" placeholder="e.g., 280gsm, Grade 5" 
                class="spec-value" style="flex: 1; padding: 0.75rem; border: 1px solid #d1d5db; border-radius: 6px; font-size: 0.95rem;">
-        <button type="button" onclick="removeSpec(this)" style="background: #fee2e2; color: #991b1b; border: none; padding: 0.75rem 1rem; border-radius: 6px; cursor: pointer; font-weight: 600;">✕</button>
+        <button type="button" onclick="removeSpec('${specId}')" style="background: #fee2e2; color: #991b1b; border: none; padding: 0.75rem 1rem; border-radius: 6px; cursor: pointer; font-weight: 600;">✕</button>
     `;
     specsList.appendChild(specDiv);
 }
 
-function removeSpec(button) {
-    button.parentElement.remove();
+function removeSpec(specId) {
+    const element = document.getElementById(specId);
+    if (element) element.remove();
 }
 
 function getSpecsFromForm() {
@@ -1635,6 +1636,22 @@ function filterBySeason(season) {
     renderBuyerDashboard();
 }
 
+function getBidActionsHTML(bid) {
+    if (bid.status === 'submitted' || bid.status === 'countered') {
+        return '<div style="display: flex; gap: 0.5rem; justify-content: flex-end;">' +
+            '<button class="btn-primary" style="padding: 0.5rem 1rem; font-size: 0.9rem;" onclick="acceptBid(\'' + bid.id + '\')">✓ Accept</button>' +
+            '<button style="background: #fef3c7; color: #92400e; border: 1px solid #f59e0b; padding: 0.5rem 1rem; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 0.9rem;" onclick="counterBid(\'' + bid.id + '\')">⟷ Counter</button>' +
+            '<button style="background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; padding: 0.5rem 1rem; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 0.9rem;" onclick="rejectBid(\'' + bid.id + '\')">✗ Reject</button>' +
+            '<button class="btn-primary" style="padding: 0.5rem 1rem; font-size: 0.9rem; background: #06b6d4;" onclick="openBidChat(\'' + bid.id + '\')">💬 Chat</button>' +
+            '</div>';
+    } else if (bid.status === 'accepted') {
+        return '<div style="display: flex; gap: 0.75rem; justify-content: flex-end;">' +
+            '<button class="btn-primary" style="padding: 0.4rem 0.9rem; font-size: 0.85rem;" onclick="openBidChat(\'' + bid.id + '\')">💬 Chat</button>' +
+            '</div>';
+    }
+    return '';
+}
+
 function viewBids(tenderId) {
     const tender = data.tenders.find(t => t.id === tenderId);
     const tenderBids = data.bids.filter(b => b.tenderId === tenderId);
@@ -1747,18 +1764,7 @@ function viewBids(tenderId) {
                         
                         ${trailHTML}
                         
-                        ${bid.status === 'submitted' || bid.status === 'countered' ? `
-                        <div style="display: flex; gap: 0.5rem; justify-content: flex-end;">
-                            <button class="btn-primary" style="padding: 0.5rem 1rem; font-size: 0.9rem;" onclick="acceptBid('${bid.id}')">✓ Accept</button>
-                            <button style="background: #fef3c7; color: #92400e; border: 1px solid #f59e0b; padding: 0.5rem 1rem; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 0.9rem;" onclick="counterBid('${bid.id}')">⟷ Counter</button>
-                            <button style="background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; padding: 0.5rem 1rem; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 0.9rem;" onclick="rejectBid('${bid.id}')">✗ Reject</button>
-                            <button class="btn-primary" style="padding: 0.5rem 1rem; font-size: 0.9rem; background: #06b6d4;" onclick="openBidChat('${bid.id}')">💬 Chat</button>
-                        </div>
-                        ` : bid.status === 'accepted' ? `
-                        <div style="display: flex; gap: 0.75rem; justify-content: flex-end;">
-                            <button class="btn-primary" style="padding: 0.4rem 0.9rem; font-size: 0.85rem;" onclick="openBidChat('${bid.id}')">💬 Chat</button>
-                        </div>
-                        ` : ''}`}
+                        ${getBidActionsHTML(bid)}
                     </div>
                 `}).join('')}
             </div>
