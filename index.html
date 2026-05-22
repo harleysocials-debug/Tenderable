@@ -1547,6 +1547,213 @@ function switchSupplierTab(tab) {
     renderSupplierTenders();
 }
 
+function viewSupplierTender(tenderId) {
+    var tender = data.tenders.find(function(t) { return t.id === tenderId; });
+    if (!tender) return;
+    var myBid = data.bids.find(function(b) { return b.tenderId === tenderId && b.supplierId === 'sup1'; });
+
+    showPage('supplier-bid-page');
+
+    // Store images globally for click handlers
+    window._supTenderImages = (tender.files || []).filter(function(f) { return f.isImage && f.dataUrl; }).map(function(f) { return f.dataUrl; });
+
+    var html = '';
+
+    // Header
+    html += '<div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:2rem;flex-wrap:wrap;gap:1rem;">';
+    html += '<div>';
+    html += '<p style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#94a3b8;margin:0 0 0.35rem 0;">' + (tender.brand||'') + ' &middot; ' + (tender.category||'') + ' &middot; ' + (tender.seasonCode||'') + '</p>';
+    html += '<h1 style="font-size:1.75rem;font-weight:800;color:#0f172a;margin:0;letter-spacing:-0.5px;">' + tender.description + '</h1>';
+    html += '</div>';
+    html += '<button class="back-btn" onclick="backToSupplierDashboard()" style="background:#f1f5f9;padding:0.6rem 1.2rem;border-radius:8px;font-size:0.875rem;">&larr; Back</button>';
+    html += '</div>';
+
+    // Stats bar
+    html += '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:#e8ecf1;border-radius:12px;overflow:hidden;margin-bottom:2rem;">';
+    html += '<div style="background:white;padding:1.25rem 1.5rem;"><p style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#94a3b8;margin:0 0 0.35rem 0;">Price Target</p><p style="font-size:1.5rem;font-weight:800;color:#8b5cf6;margin:0;">&pound;' + tender.priceTarget + '</p></div>';
+    html += '<div style="background:white;padding:1.25rem 1.5rem;"><p style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#94a3b8;margin:0 0 0.35rem 0;">Total Units</p><p style="font-size:1.5rem;font-weight:800;color:#06b6d4;margin:0;">' + (tender.orderQty ? tender.orderQty.toLocaleString() : '&mdash;') + '</p></div>';
+    html += '<div style="background:white;padding:1.25rem 1.5rem;"><p style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#94a3b8;margin:0 0 0.35rem 0;">Fabric</p><p style="font-size:1.5rem;font-weight:800;color:#0f172a;margin:0;font-size:1.1rem;">' + (tender.fabric || '&mdash;') + '</p></div>';
+    html += '<div style="background:white;padding:1.25rem 1.5rem;"><p style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#94a3b8;margin:0 0 0.35rem 0;">Lead Time</p><p style="font-size:1.5rem;font-weight:800;color:#0f172a;margin:0;">' + (tender.leadTimeTarget * 7) + ' days</p></div>';
+    html += '</div>';
+
+    // Two col layout
+    html += '<div style="display:grid;grid-template-columns:1fr 1.4fr;gap:2rem;align-items:start;">';
+
+    // LEFT — tender detail
+    html += '<div style="background:white;border:1px solid #e8ecf1;border-radius:14px;padding:1.5rem;">';
+
+    // Products
+    if (tender.products && tender.products.length > 0) {
+        var colours = ['#8b5cf6','#06b6d4','#f59e0b','#10b981','#ef4444','#6366f1'];
+        html += '<p style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#94a3b8;margin:0 0 0.75rem 0;">Products</p>';
+        html += '<div style="display:flex;flex-wrap:wrap;gap:0.6rem;margin-bottom:1.5rem;">';
+        for (var pi = 0; pi < tender.products.length; pi++) {
+            var p = tender.products[pi];
+            var pc = colours[pi % colours.length];
+            html += '<div style="background:#f8fafc;border:1px solid #e8ecf1;border-left:3px solid ' + pc + ';padding:0.5rem 0.9rem;border-radius:8px;font-size:0.85rem;">';
+            html += '<span style="font-weight:700;color:#0f172a;">' + p.description + '</span>';
+            if (p.colour) html += ' <span style="color:#94a3b8;">&middot;</span> <span style="color:#64748b;">' + p.colour + '</span>';
+            if (p.qty) html += ' <span style="color:#94a3b8;">&middot;</span> <span style="font-weight:600;color:' + pc + ';">' + p.qty.toLocaleString() + ' units</span>';
+            html += '</div>';
+        }
+        html += '</div>';
+    }
+
+    // Images
+    if (window._supTenderImages.length > 0) {
+        html += '<p style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#94a3b8;margin:0 0 0.75rem 0;">Reference Images</p>';
+        html += '<div style="display:flex;gap:0.75rem;flex-wrap:wrap;margin-bottom:1.5rem;">';
+        for (var ii = 0; ii < window._supTenderImages.length; ii++) {
+            html += '<img src="' + window._supTenderImages[ii] + '" data-supimgidx="' + ii + '" class="sup-ref-img" style="width:90px;height:90px;object-fit:cover;border-radius:10px;cursor:pointer;border:1px solid #e8ecf1;">';
+        }
+        html += '</div>';
+    }
+
+    // Notes
+    if (tender.labellingReqs && tender.labellingReqs.trim()) {
+        html += '<p style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#94a3b8;margin:0 0 0.5rem 0;">Notes &amp; Requirements</p>';
+        html += '<p style="font-size:0.9rem;color:#475569;line-height:1.6;white-space:pre-wrap;margin:0 0 1.25rem 0;">' + tender.labellingReqs + '</p>';
+    }
+
+    html += '</div>'; // end left col
+
+    // RIGHT — bid status + chat
+    html += '<div>';
+
+    if (!myBid) {
+        // No bid yet — show bid button
+        html += '<div style="background:white;border:1px solid #e8ecf1;border-radius:14px;padding:1.5rem;text-align:center;">';
+        html += '<p style="color:#64748b;margin:0 0 1rem 0;">You have not placed a bid yet.</p>';
+        html += '<button class="btn-primary" onclick="submitBid(\'' + tenderId + '\')" style="padding:0.75rem 2rem;">Place Bid</button>';
+        html += '</div>';
+    } else {
+        // Show bid status card
+        var displayPrice = (myBid.counterPrice !== null && myBid.counterPrice !== undefined) ? myBid.counterPrice : myBid.price;
+        var isNeg = (myBid.counterPrice !== null && myBid.counterPrice !== undefined);
+        var sLabel = myBid.status === 'accepted' ? 'Accepted' : myBid.status === 'rejected' ? 'Rejected' : isNeg ? 'Negotiating' : 'Bid Submitted';
+        var sBg = myBid.status === 'accepted' ? '#f0fdf4' : myBid.status === 'rejected' ? '#fef2f2' : isNeg ? '#fffbeb' : '#f0f4ff';
+        var sBorder = myBid.status === 'accepted' ? '#86efac' : myBid.status === 'rejected' ? '#fca5a5' : isNeg ? '#fcd34d' : '#c7d2fe';
+        var sPill = myBid.status === 'accepted' ? '#16a34a' : myBid.status === 'rejected' ? '#dc2626' : isNeg ? '#b45309' : '#4f46e5';
+        var sPillBg = myBid.status === 'accepted' ? '#dcfce7' : myBid.status === 'rejected' ? '#fee2e2' : isNeg ? '#fef3c7' : '#e0e7ff';
+
+        html += '<p style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#94a3b8;margin:0 0 1rem 0;">Your Bid</p>';
+        html += '<div style="background:' + sBg + ';border:1.5px solid ' + sBorder + ';border-radius:14px;padding:1.5rem;">';
+        html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;">';
+        html += '<span style="font-size:2rem;font-weight:800;color:#0f172a;letter-spacing:-1px;">&pound;' + displayPrice.toFixed(2) + '</span>';
+        html += '<span style="background:' + sPillBg + ';color:' + sPill + ';padding:0.35rem 0.85rem;border-radius:20px;font-size:0.75rem;font-weight:700;">' + sLabel + '</span>';
+        html += '</div>';
+        html += '<p style="font-size:0.85rem;color:#64748b;margin:0 0 1rem 0;">' + myBid.leadTime + ' day lead time</p>';
+
+        // Negotiation trail
+        var trail = [{from:'supplier', price:myBid.price}];
+        if (myBid.negotiationHistory && myBid.negotiationHistory.length > 0) {
+            for (var ti = 0; ti < myBid.negotiationHistory.length; ti++) trail.push(myBid.negotiationHistory[ti]);
+        }
+        if (trail.length > 1) {
+            html += '<div style="padding-top:1rem;border-top:1px solid rgba(0,0,0,0.06);margin-bottom:1rem;">';
+            html += '<p style="font-size:0.7rem;font-weight:700;text-transform:uppercase;color:#94a3b8;margin:0 0 0.6rem 0;">Negotiation</p>';
+            html += '<div style="display:flex;align-items:center;gap:0.4rem;flex-wrap:wrap;">';
+            for (var ti2 = 0; ti2 < trail.length; ti2++) {
+                var isLast = ti2 === trail.length - 1;
+                html += '<span style="background:' + (isLast ? '#0f172a' : '#f1f5f9') + ';color:' + (isLast ? 'white' : '#64748b') + ';padding:0.3rem 0.7rem;border-radius:20px;font-size:0.8rem;font-weight:600;">';
+                html += (trail[ti2].from === 'buyer' ? '&#x1F464;' : '&#x1F3ED;') + ' &pound;' + trail[ti2].price.toFixed(2);
+                html += '</span>';
+                if (!isLast) html += '<span style="color:#cbd5e1;">&rarr;</span>';
+            }
+            html += '</div></div>';
+        }
+
+        // Actions
+        if (isNeg) {
+            html += '<div style="display:flex;gap:0.5rem;margin-bottom:1rem;">';
+            html += '<button class="btn-primary" style="flex:1;padding:0.6rem;" onclick="acceptCounterFromBuyer(\'' + myBid.id + '\')">&checkmark; Accept Counter</button>';
+            html += '<button style="flex:1;background:#fef3c7;color:#92400e;border:1px solid #f59e0b;padding:0.6rem;border-radius:8px;cursor:pointer;font-weight:600;" onclick="counterFromSupplier(\'' + myBid.id + '\')">&#x27F7; Counter Again</button>';
+            html += '</div>';
+        }
+
+        html += '</div>'; // end bid card
+
+        // Chat section — always visible once bid exists
+        html += '<div style="margin-top:1.5rem;background:white;border:1px solid #e8ecf1;border-radius:14px;padding:1.5rem;">';
+        html += '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;">';
+        html += '<p style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#94a3b8;margin:0;">Messages</p>';
+        var unread = getUnreadCount(myBid.id);
+        if (unread > 0) html += '<span style="background:#ef4444;color:white;padding:0.2rem 0.6rem;border-radius:20px;font-size:0.75rem;font-weight:700;">' + unread + ' new</span>';
+        html += '</div>';
+
+        // Render messages inline
+        var msgs = data.messages.filter(function(m) { return m.bidId === myBid.id; });
+        markAsRead(myBid.id);
+
+        if (msgs.length === 0) {
+            html += '<p style="color:#94a3b8;font-size:0.9rem;text-align:center;padding:1rem 0;">No messages yet.</p>';
+        } else {
+            html += '<div style="max-height:250px;overflow-y:auto;margin-bottom:1rem;" id="sup-msg-list">';
+            for (var mi = 0; mi < msgs.length; mi++) {
+                var m = msgs[mi];
+                var isMe = m.sender === 'sup1';
+                html += '<div style="display:flex;' + (isMe ? 'justify-content:flex-end;' : '') + 'margin-bottom:0.75rem;">';
+                html += '<div style="max-width:75%;background:' + (isMe ? '#8b5cf6' : '#f1f5f9') + ';color:' + (isMe ? 'white' : '#0f172a') + ';padding:0.75rem 1rem;border-radius:12px;">';
+                html += '<p style="font-size:0.75rem;font-weight:600;opacity:0.8;margin:0 0 0.25rem 0;">' + m.senderName + '</p>';
+                html += '<p style="margin:0;">' + m.message + '</p>';
+                html += '<p style="font-size:0.7rem;opacity:0.6;margin:0.25rem 0 0 0;">' + new Date(m.timestamp).toLocaleTimeString() + '</p>';
+                html += '</div></div>';
+            }
+            html += '</div>';
+        }
+
+        // Message input
+        html += '<div style="display:flex;gap:0.75rem;border-top:1px solid #e8ecf1;padding-top:1rem;">';
+        html += '<input type="text" id="sup-msg-input" placeholder="Type your message..." style="flex:1;padding:0.75rem;border:1px solid #d1d5db;border-radius:8px;font-size:0.9rem;">';
+        html += '<button class="btn-primary" style="padding:0.75rem 1.25rem;" onclick="sendSupplierMessage(\'' + myBid.id + '\')" >Send</button>';
+        html += '</div>';
+        html += '</div>'; // end chat section
+    }
+
+    html += '</div>'; // end right col
+    html += '</div>'; // end two col
+
+    var container = document.getElementById('tender-detail');
+    container.innerHTML = html;
+
+    // Attach image click handlers
+    container.querySelectorAll('.sup-ref-img').forEach(function(img) {
+        img.addEventListener('click', function() {
+            openImageModal(window._supTenderImages[parseInt(this.dataset.supimgidx)]);
+        });
+    });
+
+    // Enter key for message input
+    var msgInput = document.getElementById('sup-msg-input');
+    if (msgInput) {
+        msgInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') sendSupplierMessage(myBid ? myBid.id : null);
+        });
+    }
+}
+
+function sendSupplierMessage(bidId) {
+    if (!bidId) return;
+    var input = document.getElementById('sup-msg-input');
+    if (!input) return;
+    var msg = input.value.trim();
+    if (!msg) return;
+    data.messages.push({
+        id: 'msg-' + Date.now(),
+        bidId: bidId,
+        sender: data.currentUser.id,
+        senderName: data.currentUser.name,
+        senderType: 'supplier',
+        message: msg,
+        timestamp: new Date(),
+        readBy: [data.currentUser.id]
+    });
+    input.value = '';
+    // Re-render the page to show the new message
+    var bid = data.bids.find(function(b) { return b.id === bidId; });
+    if (bid) viewSupplierTender(bid.tenderId);
+}
+
 function renderSupplierTenders() {
     const container = document.getElementById('supplier-tenders');
     const activeTab = document.querySelector('#supplier-page .tab-btn.active');
@@ -1671,15 +1878,18 @@ function renderSupplierTenders() {
         
         if (tab === 'available' && !isExpired) {
             cardHTML += `
+                                <button style="background:#f1f5f9;color:#0f172a;border:1px solid #d1d5db;padding:0.5rem 1rem;border-radius:8px;cursor:pointer;font-weight:600;font-size:0.9rem;" onclick="viewSupplierTender('${tender.id}')">View</button>
                                 <button class="btn-primary" style="padding: 0.5rem 1rem; font-size: 0.9rem;" onclick="submitBid('${tender.id}')">Bid</button>
                                 <button style="background: #f1f5f9; color: #0f172a; border: 1px solid #d1d5db; padding: 0.5rem 0.75rem; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 1.1rem;" onclick="dismissTender('${tender.id}')" title="Dismiss">✕</button>
                             `;
         } else if (tab === 'active' && myBid) {
             const displayPrice = myBid.counterPrice !== null ? myBid.counterPrice : myBid.price;
             const hasCounter = myBid.counterPrice !== null;
+            const unreadOnBid = getUnreadCount(myBid.id);
             cardHTML += `
-                                ${hasCounter ? `
-                                    <div style="display: flex; flex-direction: column; gap: 0.5rem; width: 100%;">
+                                <div style="display:flex;flex-direction:column;gap:0.5rem;width:100%;">
+                                    ${unreadOnBid > 0 ? `<div style="background:#ef4444;color:white;padding:0.4rem 0.75rem;border-radius:6px;font-size:0.8rem;font-weight:700;text-align:center;cursor:pointer;" onclick="viewSupplierTender('${tender.id}')">📩 ${unreadOnBid} new message${unreadOnBid > 1 ? 's' : ''} from buyer — tap to read</div>` : ''}
+                                    ${hasCounter ? `
                                         <div style="background: #fef3c7; color: #92400e; padding: 0.5rem 0.75rem; border-radius: 6px; font-weight: 600; font-size: 0.85rem; text-align: center;">
                                             ⟷ Buyer counter: £${displayPrice.toFixed(2)}
                                             <br><span style="font-size: 0.75rem; font-weight: normal;">Original: £${myBid.price.toFixed(2)}</span>
@@ -1687,15 +1897,21 @@ function renderSupplierTenders() {
                                         <div style="display: flex; gap: 0.5rem;">
                                             <button class="btn-primary" style="flex: 1; padding: 0.4rem 0.75rem; font-size: 0.85rem;" onclick="acceptCounterFromBuyer('${myBid.id}')">✓ Accept</button>
                                             <button style="flex: 1; background: #fef3c7; color: #92400e; border: 1px solid #f59e0b; padding: 0.4rem 0.75rem; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 0.85rem;" onclick="counterFromSupplier('${myBid.id}')">⟷ Counter</button>
+                                            <button style="background:#f1f5f9;color:#0f172a;border:1px solid #d1d5db;padding:0.4rem 0.75rem;border-radius:8px;cursor:pointer;font-weight:600;font-size:0.85rem;" onclick="viewSupplierTender('${tender.id}')">View</button>
                                         </div>
-                                    </div>
-                                ` : `
-                                    <div style="background: #dcfce7; color: #166534; padding: 0.4rem 0.8rem; border-radius: 6px; font-weight: 600; font-size: 0.85rem;">✓ £${myBid.price}</div>
-                                `}
+                                    ` : `
+                                        <div style="display:flex;gap:0.5rem;">
+                                            <div style="background: #dcfce7; color: #166534; padding: 0.4rem 0.8rem; border-radius: 6px; font-weight: 600; font-size: 0.85rem;">✓ £${myBid.price}</div>
+                                            <button style="background:#f1f5f9;color:#0f172a;border:1px solid #d1d5db;padding:0.4rem 0.75rem;border-radius:8px;cursor:pointer;font-weight:600;font-size:0.85rem;" onclick="viewSupplierTender('${tender.id}')">View</button>
+                                        </div>
+                                    `}
+                                </div>
                             `;
         } else if (tab === 'accepted' && myBid) {
+            const unreadAccepted = getUnreadCount(myBid.id);
             cardHTML += `
                                 <button class="btn-primary" style="padding: 0.5rem 1rem; font-size: 0.9rem;" onclick="openBidChat('${myBid.id}')">💬 Chat${chatBadge(myBid.id)}</button>
+                                <button style="background:#f1f5f9;color:#0f172a;border:1px solid #d1d5db;padding:0.5rem 1rem;border-radius:8px;cursor:pointer;font-weight:600;font-size:0.9rem;" onclick="viewSupplierTender('${tender.id}')">View</button>
                                 <div style="background: #dcfce7; color: #166534; padding: 0.4rem 0.8rem; border-radius: 6px; font-weight: 600; font-size: 0.85rem;">✓ Order</div>
                             `;
         } else if (tab === 'dismissed') {
