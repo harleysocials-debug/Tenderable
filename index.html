@@ -25,6 +25,18 @@
             overflow: hidden;
         }
         
+        .login-container::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle, rgba(139, 92, 246, 0.15) 0%, transparent 70%);
+            border-radius: 50%;
+            pointer-events: none;
+        }
+        
         .login-box {
             width: 100%;
             max-width: 500px;
@@ -37,6 +49,7 @@
             color: white;
             margin-bottom: 0.75rem;
             font-weight: 800;
+            letter-spacing: -1px;
         }
         
         .login-box p {
@@ -127,6 +140,12 @@
             background-clip: text;
         }
         
+        .header p {
+            font-size: 0.875rem;
+            color: #64748b;
+            margin: 0.25rem 0 0 0;
+        }
+        
         .content {
             max-width: 1400px;
             margin: 0 auto;
@@ -158,6 +177,10 @@
             border-bottom-color: #8b5cf6;
         }
         
+        .tab-btn:hover {
+            color: #1a202c;
+        }
+        
         .tender-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(480px, 1fr));
@@ -178,6 +201,32 @@
             border-color: #d1d5db;
             box-shadow: 0 16px 32px rgba(0, 0, 0, 0.1);
             transform: translateY(-6px);
+        }
+        
+        .tender-card h3 {
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin: 0 0 0.75rem 0;
+            color: #0f172a;
+        }
+        
+        .tender-card p {
+            font-size: 0.875rem;
+            color: #64748b;
+            margin: 0;
+            line-height: 1.5;
+        }
+        
+        .badge {
+            display: inline-block;
+            padding: 0.4rem 0.85rem;
+            border-radius: 8px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            margin-left: 1rem;
+            background: linear-gradient(135deg, #f0f4f8, #e8ecf1);
+            color: #475569;
+            letter-spacing: 0.5px;
         }
         
         .form-container {
@@ -227,6 +276,11 @@
             background: white;
         }
         
+        textarea {
+            resize: vertical;
+            min-height: 110px;
+        }
+        
         .btn-primary {
             background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%);
             color: white;
@@ -244,6 +298,41 @@
         .btn-primary:hover {
             box-shadow: 0 10px 28px rgba(139, 92, 246, 0.45);
             transform: translateY(-2px);
+        }
+        
+        .btn-secondary {
+            background: #f1f5f9;
+            color: #0f172a;
+            border: 1px solid #d1d5db;
+            padding: 0.85rem 1.75rem;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 700;
+            transition: all 0.25s;
+            letter-spacing: 0.4px;
+        }
+        
+        .btn-secondary:hover {
+            background: #e2e8f0;
+            border-color: #cbd5e1;
+        }
+        
+        .btn-success {
+            background: #06b6d4;
+            color: white;
+            padding: 0.6rem 1.2rem;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 700;
+            font-size: 0.875rem;
+            transition: all 0.25s;
+            letter-spacing: 0.3px;
+        }
+        
+        .btn-success:hover {
+            background: #0891b2;
+            transform: translateY(-1px);
         }
         
         .back-btn {
@@ -268,6 +357,43 @@
             border-radius: 12px;
             border: 1px dashed #d1d5db;
             color: #64748b;
+        }
+        
+        .bid-list {
+            background: white;
+            border-radius: 12px;
+            border: 1px solid #e8ecf1;
+            overflow: hidden;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.03);
+        }
+        
+        .bid-item {
+            padding: 1.75rem;
+            border-bottom: 1px solid #e8ecf1;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.2s;
+        }
+        
+        .bid-item:hover {
+            background: #fafbfc;
+        }
+        
+        .bid-item:last-child {
+            border-bottom: none;
+        }
+        
+        .bid-info strong {
+            display: block;
+            font-weight: 700;
+            color: #0f172a;
+        }
+        
+        .bid-info span {
+            font-size: 0.875rem;
+            color: #64748b;
+            margin-top: 0.35rem;
         }
         
         .upload-zone {
@@ -346,6 +472,16 @@
         .hidden {
             display: none !important;
         }
+        
+        .alert {
+            padding: 1rem 1.25rem;
+            border-radius: 10px;
+            margin-bottom: 1.5rem;
+            background: #dcfce7;
+            border: 1px solid #86efac;
+            color: #166534;
+            font-weight: 500;
+        }
     </style>
 </head>
 <body>
@@ -379,8 +515,20 @@
             <button class="tab-btn active" onclick="switchSupplierTab('available')">Available (<span id="available-count">0</span>)</button>
             <button class="tab-btn" onclick="switchSupplierTab('active')">Active (<span id="active-count">0</span>)</button>
             <button class="tab-btn" onclick="switchSupplierTab('accepted')">Accepted (<span id="accepted-count">0</span>)</button>
+            <button class="tab-btn" onclick="switchSupplierTab('dismissed')">Dismissed (<span id="dismissed-count">0</span>)</button>
+            <button class="tab-btn" onclick="switchSupplierTab('expired')">Expired (<span id="expired-count">0</span>)</button>
         </div>
         <div id="supplier-tenders" class="tender-grid"></div>
+    </div>
+</div>
+
+<div id="supplier-bid-page" class="dashboard hidden">
+    <div class="header">
+        <button class="back-btn" onclick="backToSupplierDashboard()">← Back</button>
+        <button class="back-btn" onclick="logout()">Logout</button>
+    </div>
+    <div class="content">
+        <div id="tender-detail" style="max-width: 900px; margin: 0 auto;"></div>
     </div>
 </div>
 
@@ -399,6 +547,17 @@
         <div class="tabs">
             <button class="tab-btn active" onclick="switchBuyerTab('open')">Open Tenders (<span id="open-count">0</span>)</button>
             <button class="tab-btn" onclick="switchBuyerTab('accepted')">Accepted (<span id="accepted-count">0</span>)</button>
+            <button class="tab-btn" onclick="switchBuyerTab('expired')">Expired (<span id="expired-count">0</span>)</button>
+        </div>
+        <div style="margin-bottom: 2rem; display: flex; gap: 1rem; align-items: center;">
+            <label style="font-weight: 600; color: #0f172a;">Filter by Season:</label>
+            <select id="season-filter" onchange="filterBySeason(this.value)" style="padding: 0.5rem; border: 1px solid #d1d5db; border-radius: 6px;">
+                <option value="">All Seasons</option>
+                <option value="SS27">SS27</option>
+                <option value="AW26">AW26</option>
+                <option value="SS26">SS26</option>
+                <option value="AW25">AW25</option>
+            </select>
         </div>
         <div id="buyer-tenders" class="tender-grid"></div>
     </div>
@@ -412,31 +571,38 @@
     <div class="content">
         <h1 style="font-size: 2rem; margin-bottom: 2rem;">Create Development Tender</h1>
         <form class="form-container" onsubmit="submitTender(event)">
-            <!-- File Upload -->
-            <div style="margin-bottom: 2rem;">
-                <h3 style="margin: 0 0 1rem 0; font-size: 1.1rem;">📎 Files & Images</h3>
+            <!-- Tabs -->
+            <div class="tabs" style="margin-bottom: 1.5rem;">
+                <button type="button" class="tab-btn active" onclick="switchTenderTab('files')" style="border: none; background: none; padding: 0.75rem 1.5rem; font-weight: 600; cursor: pointer; border-bottom: 3px solid #8b5cf6;">📎 Files & Images</button>
+                <button type="button" class="tab-btn" onclick="switchTenderTab('specs')" style="border: none; background: none; padding: 0.75rem 1.5rem; font-weight: 600; cursor: pointer; border-bottom: 3px solid transparent;">📋 Specs & Requirements</button>
+            </div>
+            
+            <!-- Files Tab -->
+            <div id="files-tab" class="tender-tab">
                 <div class="upload-zone" id="uploadZone" ondrop="handleDrop(event)" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" onclick="document.getElementById('hidden-file-input').click()">
                     <p>📎 <strong>Drag and drop files here</strong> or click to browse</p>
-                    <p style="font-size: 0.875rem; margin-top: 0.5rem;">Images, PDFs, Design files</p>
+                    <p style="font-size: 0.875rem; margin-top: 0.5rem;">Images, PDFs, Design files (Photoshop, Illustrator, etc.)</p>
                 </div>
-                <input type="file" id="hidden-file-input" style="display: none;" onchange="handleFiles(event)" multiple accept="image/*,.pdf,.psd,.ai,.eps">
+                <input type="file" id="hidden-file-input" style="display: none;" onchange="handleFiles(event)" multiple accept="image/*,.pdf,.psd,.ai,.eps,.sketch,.figma">
                 <div class="file-list" id="fileList"></div>
             </div>
-
-            <!-- Specs -->
-            <div style="margin-bottom: 2rem; background: #f9fafb; padding: 1.5rem; border-radius: 8px;">
-                <h3 style="margin: 0 0 1rem 0; font-size: 1.1rem;">📋 Specifications</h3>
-                <div id="specs-list" style="display: flex; flex-direction: column; gap: 0.75rem; margin-bottom: 1rem;"></div>
-                <button type="button" onclick="addSpecField()" style="background: #f0f4f8; color: #0f172a; border: 2px dashed #d1d5db; padding: 0.75rem 1.5rem; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 0.9rem;">+ Add Specification</button>
-            </div>
-
-            <!-- Labelling -->
-            <div style="margin-bottom: 2rem; background: #f9fafb; padding: 1.5rem; border-radius: 8px;">
-                <h3 style="margin: 0 0 1rem 0; font-size: 1.1rem;">📑 Labelling Requirements</h3>
-                <textarea id="labellingReqs" placeholder="e.g., Printed care label, hang tag..." style="width: 100%; padding: 1rem; border: 1px solid #d1d5db; border-radius: 6px; min-height: 100px;"></textarea>
+            
+            <!-- Specs Tab -->
+            <div id="specs-tab" class="tender-tab hidden" style="display: none;">
+                <div style="background: #f9fafb; padding: 1.5rem; border-radius: 8px;">
+                    <h3 style="margin: 0 0 1rem 0; font-size: 1.1rem;">Specifications</h3>
+                    <div id="specs-list" style="display: flex; flex-direction: column; gap: 0.75rem; margin-bottom: 1rem;"></div>
+                    <button type="button" onclick="addSpecField()" style="background: #f0f4f8; color: #0f172a; border: 2px dashed #d1d5db; padding: 0.75rem 1.5rem; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 0.9rem;">+ Add Specification</button>
+                </div>
+                
+                <div style="background: #f9fafb; padding: 1.5rem; border-radius: 8px; margin-top: 1.5rem;">
+                    <h3 style="margin: 0 0 1rem 0; font-size: 1.1rem;">Labelling Requirements</h3>
+                    <textarea id="labellingReqs" placeholder="e.g., Printed care label, hang tag, barcode placement..." style="width: 100%; padding: 1rem; border: 1px solid #d1d5db; border-radius: 6px; font-size: 0.95rem; font-family: inherit; resize: vertical; min-height: 100px;"></textarea>
+                </div>
             </div>
             
             <!-- Form Fields -->
+            <div style="margin-top: 2rem;">
             <div class="form-row">
                 <div class="form-group">
                     <label>Brand</label>
@@ -464,6 +630,24 @@
             
             <div class="form-row">
                 <div class="form-group">
+                    <label>Season Code</label>
+                    <select id="seasonCode">
+                        <option value="">Select Season</option>
+                        <option value="SS27">SS27</option>
+                        <option value="AW26">AW26</option>
+                        <option value="SS26">SS26</option>
+                        <option value="AW25">AW25</option>
+                        <option value="SS25">SS25</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Fabric</label>
+                    <input type="text" id="fabric" placeholder="e.g., 280gsm Fleece">
+                </div>
+            </div>
+            
+            <div class="form-row">
+                <div class="form-group">
                     <label>Price Target £</label>
                     <input type="number" id="priceTarget" placeholder="e.g., 22.50" step="0.01" min="0">
                 </div>
@@ -473,12 +657,52 @@
                 </div>
             </div>
             
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Lead Time From Order (weeks)</label>
+                    <input type="number" id="leadTimeTarget" placeholder="e.g., 8">
+                </div>
+                <div class="form-group">
+                    <label>Bid Deadline (days)</label>
+                    <input type="number" id="deadline" placeholder="e.g., 7">
+                </div>
+            </div>
+            
             <div style="display: flex; gap: 1rem;">
                 <button type="submit" class="btn-primary" style="flex: 1;">Create Tender</button>
+                <button type="button" onclick="backToBuyerDashboard()" style="flex: 1; background: #e2e8f0; color: #0f172a;">Cancel</button>
+            </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div id="edit-tender-page" class="dashboard hidden">
+    <div class="header">
+        <button class="back-btn" onclick="backToBuyerDashboard()">← Back</button>
+        <button class="back-btn" onclick="logout()">Logout</button>
+    </div>
+    <div class="content">
+        <h1 style="font-size: 2rem; margin-bottom: 2rem;">Edit Tender</h1>
+        <form class="form-container" onsubmit="updateTender(event)">
+            <div id="edit-tender-content"></div>
+            <div style="display: flex; gap: 1rem; margin-top: 2rem;">
+                <button type="submit" class="btn-primary" style="flex: 1;">Save Changes</button>
                 <button type="button" onclick="backToBuyerDashboard()" style="flex: 1; background: #e2e8f0; color: #0f172a; border: none; padding: 0.75rem; border-radius: 6px; font-weight: 600; cursor: pointer;">Cancel</button>
             </div>
         </form>
     </div>
+</div>
+
+<div id="bid-chat-page" class="dashboard hidden">
+    <div class="header">
+        <div>
+            <h1>Bid Discussion</h1>
+            <p>Message with buyer/supplier about this bid</p>
+        </div>
+        <button class="back-btn" onclick="backToBuyerDashboard()">← Back</button>
+    </div>
+    <div class="content"></div>
 </div>
 
 <script>
@@ -486,7 +710,11 @@ const data = {
     currentUser: null,
     tenders: [],
     bids: [],
+    messages: [],
     uploadedFiles: [],
+    dismissedTenders: [],
+    selectedSeason: '',
+    editingTenderId: null,
     suppliers: {
         sup1: {
             id: 'sup1',
@@ -495,6 +723,143 @@ const data = {
         }
     }
 };
+
+const countdownIntervals = {};
+
+function startCountdown(tenderId) {
+    if (countdownIntervals[tenderId]) return;
+    
+    const updateTimer = () => {
+        const element = document.getElementById(`countdown-${tenderId}`);
+        if (!element) {
+            clearInterval(countdownIntervals[tenderId]);
+            delete countdownIntervals[tenderId];
+            return;
+        }
+        
+        const tender = data.tenders.find(t => t.id === tenderId);
+        if (!tender) return;
+        
+        const now = new Date();
+        const diff = tender.deadlineDate - now;
+        
+        if (diff <= 0) {
+            element.textContent = 'Expired';
+            element.style.color = '#dc2626';
+            clearInterval(countdownIntervals[tenderId]);
+            delete countdownIntervals[tenderId];
+            return;
+        }
+        
+        const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+        
+        let text = '';
+        if (days > 0) text = `${days}d ${hours}h`;
+        else if (hours > 0) text = `${hours}h ${minutes}m`;
+        else text = `${minutes}m`;
+        
+        element.textContent = text;
+        
+        if (diff < 24 * 60 * 60 * 1000) element.style.color = '#dc2626';
+        else if (diff < 3 * 24 * 60 * 60 * 1000) element.style.color = '#ea580c';
+        else element.style.color = '#06b6d4';
+    };
+    
+    updateTimer();
+    countdownIntervals[tenderId] = setInterval(updateTimer, 1000);
+}
+
+function openBidChat(bidId) {
+    const bid = data.bids.find(b => b.id === bidId);
+    if (!bid) return;
+    
+    showPage('bid-chat-page');
+    renderBidChat(bidId);
+}
+
+function sendMessage(bidId) {
+    const input = document.getElementById('chat-input');
+    const message = input.value.trim();
+    
+    if (!message) return;
+    
+    const bid = data.bids.find(b => b.id === bidId);
+    if (!bid) return;
+    
+    const chatMessage = {
+        id: `msg-${Date.now()}`,
+        bidId: bidId,
+        sender: data.currentUser.id,
+        senderName: data.currentUser.name,
+        senderType: data.currentUser.type,
+        message: message,
+        timestamp: new Date()
+    };
+    
+    data.messages.push(chatMessage);
+    input.value = '';
+    
+    renderBidChat(bidId);
+}
+
+function renderBidChat(bidId) {
+    const bid = data.bids.find(b => b.id === bidId);
+    const tender = data.tenders.find(t => t.id === bid.tenderId);
+    if (!bid || !tender) return;
+    
+    const bidMessages = data.messages.filter(m => m.bidId === bidId);
+    
+    const messagesHTML = bidMessages.map(msg => {
+        const isCurrentUser = msg.sender === data.currentUser.id;
+        return `
+            <div style="margin-bottom: 1rem; display: flex; ${isCurrentUser ? 'justify-content: flex-end;' : 'justify-content: flex-start;'}">
+                <div style="max-width: 70%; background: ${isCurrentUser ? '#8b5cf6' : '#f1f5f9'}; color: ${isCurrentUser ? 'white' : '#0f172a'}; padding: 1rem; border-radius: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+                    <p style="margin: 0 0 0.5rem 0; font-size: 0.8rem; font-weight: 600; opacity: 0.8;">${msg.senderName}</p>
+                    <p style="margin: 0; word-wrap: break-word;">${msg.message}</p>
+                    <p style="margin: 0.5rem 0 0 0; font-size: 0.75rem; opacity: 0.7;">${new Date(msg.timestamp).toLocaleTimeString()}</p>
+                </div>
+            </div>
+        `;
+    }).join('');
+    
+    const html = `
+        <button class="back-btn" style="margin-bottom: 1.5rem;" onclick="backToBuyerDashboard()">← Back</button>
+        
+        <div style="background: white; border-radius: 12px; border: 1px solid #e8ecf1; padding: 1.75rem; margin-bottom: 1.5rem;">
+            <h2 style="margin: 0 0 0.75rem 0; font-size: 1.3rem;">${tender.description}</h2>
+            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1.5rem;">
+                <div>
+                    <p style="font-size: 0.75rem; color: #94a3b8; margin: 0; font-weight: 600; text-transform: uppercase;">Price</p>
+                    <p style="font-size: 1.25rem; font-weight: 700; color: #8b5cf6; margin: 0.35rem 0 0 0;">£${bid.price.toFixed(2)}</p>
+                </div>
+                <div>
+                    <p style="font-size: 0.75rem; color: #94a3b8; margin: 0; font-weight: 600; text-transform: uppercase;">Lead Time</p>
+                    <p style="font-size: 1.25rem; font-weight: 700; color: #0f172a; margin: 0.35rem 0 0 0;">${bid.leadTime} days</p>
+                </div>
+                <div>
+                    <p style="font-size: 0.75rem; color: #94a3b8; margin: 0; font-weight: 600; text-transform: uppercase;">Status</p>
+                    <p style="font-size: 1.25rem; font-weight: 700; color: #06b6d4; margin: 0.35rem 0 0 0;">✓ Accepted</p>
+                </div>
+            </div>
+        </div>
+        
+        <div style="background: white; border-radius: 12px; border: 1px solid #e8ecf1; padding: 1.75rem; display: flex; flex-direction: column; height: 500px;">
+            <h3 style="margin: 0 0 1.5rem 0;">Messages</h3>
+            <div style="flex: 1; overflow-y: auto; margin-bottom: 1.5rem; padding-right: 0.5rem;" id="messages-container">
+                ${messagesHTML || '<p style="text-align: center; color: #94a3b8; padding: 2rem;">No messages yet. Start the conversation!</p>'}
+            </div>
+            
+            <div style="display: flex; gap: 0.75rem; border-top: 1px solid #e8ecf1; padding-top: 1rem;">
+                <input type="text" id="chat-input" placeholder="Type your message..." style="flex: 1; padding: 0.85rem 1.1rem; border: 1px solid #d1d5db; border-radius: 8px; font-size: 0.95rem;" onkeypress="if(event.key==='Enter') sendMessage('${bidId}')">
+                <button class="btn-primary" style="padding: 0.85rem 1.5rem;" onclick="sendMessage('${bidId}')">Send</button>
+            </div>
+        </div>
+    `;
+    
+    document.querySelector('#bid-chat-page .content').innerHTML = html;
+}
 
 function handleDragOver(e) {
     e.preventDefault();
@@ -518,6 +883,9 @@ function handleDrop(e) {
 
 function handleFiles(event) {
     const files = event.target.files;
+    let filesToProcess = files.length;
+    
+    if (filesToProcess === 0) return;
     
     for (let file of files) {
         const fileSize = file.size > 1024 * 1024 ? (file.size / 1024 / 1024).toFixed(2) + ' MB' : (file.size / 1024).toFixed(1) + ' KB';
@@ -534,6 +902,10 @@ function handleFiles(event) {
                     dataUrl: e.target.result
                 });
                 renderFileList();
+            };
+            reader.onerror = function() {
+                console.error('Error reading file:', file.name);
+                alert('Error reading file: ' + file.name);
             };
             reader.readAsDataURL(file);
         } else {
@@ -561,7 +933,7 @@ function renderFileList() {
                 <div style="position: relative; display: inline-block;">
                     <img src="${file.dataUrl}" style="max-width: 120px; max-height: 120px; border-radius: 6px; border: 1px solid #d1d5db; object-fit: cover;">
                     <button type="button" onclick="removeFile(${idx})" style="position: absolute; top: -8px; right: -8px; background: #c7121f; color: white; border: none; width: 24px; height: 24px; border-radius: 50%; cursor: pointer; font-weight: bold; font-size: 14px;">✕</button>
-                    <div style="font-size: 0.75rem; color: #64748b; margin-top: 0.25rem; text-align: center;">${file.name.substring(0, 20)}</div>
+                    <div style="font-size: 0.75rem; color: #64748b; margin-top: 0.25rem; text-align: center; word-break: break-word;">${file.name.substring(0, 20)}${file.name.length > 20 ? '...' : ''}</div>
                 </div>
             `;
         } else {
@@ -573,47 +945,6 @@ function renderFileList() {
             `;
         }
     }).join('');
-}
-
-function addSpecField() {
-    const specsList = document.getElementById('specs-list');
-    const specId = `spec-${Date.now()}-${Math.random()}`;
-    const specDiv = document.createElement('div');
-    specDiv.id = specId;
-    specDiv.style.cssText = 'display: flex; gap: 0.5rem; align-items: flex-end;';
-    specDiv.innerHTML = `
-        <input type="text" placeholder="e.g., Fabric weight" 
-               class="spec-input" style="flex: 1; padding: 0.75rem; border: 1px solid #d1d5db; border-radius: 6px; font-size: 0.95rem;">
-        <input type="text" placeholder="e.g., 280gsm" 
-               class="spec-value" style="flex: 1; padding: 0.75rem; border: 1px solid #d1d5db; border-radius: 6px; font-size: 0.95rem;">
-        <button type="button" onclick="removeSpec('${specId}')" style="background: #fee2e2; color: #991b1b; border: none; padding: 0.75rem 1rem; border-radius: 6px; cursor: pointer; font-weight: 600;">✕</button>
-    `;
-    specsList.appendChild(specDiv);
-}
-
-function removeSpec(specId) {
-    const element = document.getElementById(specId);
-    if (element) element.remove();
-}
-
-function getSpecsFromForm() {
-    const specs = [];
-    const specsList = document.getElementById('specs-list');
-    if (!specsList) return specs;
-    
-    const specInputs = specsList.querySelectorAll('.spec-input');
-    const specValues = specsList.querySelectorAll('.spec-value');
-    
-    specInputs.forEach((input, index) => {
-        if (input.value.trim()) {
-            specs.push({
-                label: input.value.trim(),
-                value: specValues[index]?.value.trim() || ''
-            });
-        }
-    });
-    
-    return specs;
 }
 
 function loginSupplier() {
@@ -647,43 +978,353 @@ function backToBuyerDashboard() {
     renderBuyerDashboard();
 }
 
+function backToSupplierDashboard() {
+    showPage('supplier-page');
+    renderSupplierTenders();
+}
+
+function openImageModal(dataUrl) {
+    const modal = document.createElement('div');
+    modal.style.cssText = `
+        position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8);
+        display: flex; align-items: center; justify-content: center; z-index: 1000;
+    `;
+    modal.innerHTML = `
+        <div style="position: relative; max-width: 90vw; max-height: 90vh;">
+            <img src="${dataUrl}" style="max-width: 90vw; max-height: 90vh; border-radius: 8px;">
+            <button onclick="this.parentElement.parentElement.remove()" style="position: absolute; top: 1rem; right: 1rem; background: white; color: #0f172a; border: none; width: 40px; height: 40px; border-radius: 50%; cursor: pointer; font-size: 1.5rem; font-weight: bold;">✕</button>
+        </div>
+    `;
+    document.body.appendChild(modal);
+    modal.onclick = function(e) {
+        if (e.target === modal) modal.remove();
+    };
+}
+
 function submitTender(e) {
     e.preventDefault();
     
-    const brand = document.getElementById('brand').value.trim();
-    const category = document.getElementById('category').value.trim();
-    const description = document.getElementById('description').value.trim();
-    const priceTarget = document.getElementById('priceTarget').value.trim();
-    const orderQty = document.getElementById('orderQty').value.trim();
+    try {
+        const brand = document.getElementById('brand').value.trim();
+        const category = document.getElementById('category').value.trim();
+        const description = document.getElementById('description').value.trim();
+        const seasonCode = document.getElementById('seasonCode').value.trim();
+        const fabric = document.getElementById('fabric').value.trim();
+        const priceTarget = document.getElementById('priceTarget').value.trim();
+        const orderQty = document.getElementById('orderQty').value.trim();
+        const leadTimeTarget = document.getElementById('leadTimeTarget').value.trim();
+        const deadline = document.getElementById('deadline').value.trim();
+        
+        if (!brand || brand === 'Select Brand') {
+            alert('Please select a brand');
+            return;
+        }
+        if (!category || category === 'Select Category') {
+            alert('Please select a category');
+            return;
+        }
+        if (!description) {
+            alert('Please enter a description');
+            return;
+        }
+        if (!seasonCode || seasonCode === 'Select Season') {
+            alert('Please select a season code');
+            return;
+        }
+        if (!fabric) {
+            alert('Please enter fabric details');
+            return;
+        }
+        if (!priceTarget || isNaN(parseFloat(priceTarget))) {
+            alert('Please enter a valid price target');
+            return;
+        }
+        if (!orderQty || isNaN(parseInt(orderQty)) || parseInt(orderQty) <= 0) {
+            alert('Please enter a valid order quantity');
+            return;
+        }
+        if (!leadTimeTarget || isNaN(parseInt(leadTimeTarget))) {
+            alert('Please enter a valid lead time');
+            return;
+        }
+        if (!deadline || isNaN(parseInt(deadline)) || parseInt(deadline) <= 0) {
+            alert('Please enter a valid bid deadline (days)');
+            return;
+        }
+        
+        const tender = {
+            id: `tender-${Date.now()}`,
+            brand,
+            category,
+            description,
+            seasonCode,
+            fabric,
+            priceTarget: parseFloat(priceTarget),
+            orderQty: parseInt(orderQty),
+            leadTimeTarget: parseInt(leadTimeTarget),
+            deadline: parseInt(deadline),
+            deadlineDate: new Date(Date.now() + parseInt(deadline) * 24 * 60 * 60 * 1000),
+            files: [...data.uploadedFiles],
+            specs: getSpecsFromForm(),
+            labellingReqs: document.getElementById('labellingReqs') ? document.getElementById('labellingReqs').value.trim() : '',
+            createdAt: new Date()
+        };
+        
+        data.tenders.push(tender);
+        
+        const form = document.querySelector('#create-tender-page form');
+        if (form) form.reset();
+        
+        const fileInput = document.getElementById('hidden-file-input');
+        if (fileInput) fileInput.value = '';
+        
+        data.uploadedFiles = [];
+        const fileList = document.getElementById('fileList');
+        if (fileList) fileList.innerHTML = '';
+        
+        const seasonFilter = document.getElementById('season-filter');
+        if (seasonFilter) seasonFilter.value = '';
+        data.selectedSeason = '';
+        
+        alert('✓ Tender created successfully!');
+        backToBuyerDashboard();
+    } catch (error) {
+        console.error('Error creating tender:', error);
+        alert('Error creating tender: ' + error.message);
+    }
+}
+
+function switchTenderTab(tab) {
+    const buttons = document.querySelectorAll('#create-tender-page .tab-btn');
+    buttons.forEach(btn => {
+        btn.style.borderBottom = '3px solid transparent';
+        btn.style.color = '#64748b';
+    });
+    event.target.style.borderBottom = '3px solid #8b5cf6';
+    event.target.style.color = '#8b5cf6';
     
-    if (!brand || !category || !description || !priceTarget || !orderQty) {
-        alert('Please fill all fields');
+    document.getElementById('files-tab').style.display = tab === 'files' ? 'block' : 'none';
+    document.getElementById('specs-tab').style.display = tab === 'specs' ? 'block' : 'none';
+}
+
+function addSpecField() {
+    const specsList = document.getElementById('specs-list');
+    const specId = `spec-${Date.now()}-${Math.random()}`;
+    const specDiv = document.createElement('div');
+    specDiv.id = specId;
+    specDiv.style.cssText = 'display: flex; gap: 0.5rem; align-items: flex-end;';
+    specDiv.innerHTML = `
+        <input type="text" placeholder="e.g., Fabric weight, Color fastness" 
+               class="spec-input" style="flex: 1; padding: 0.75rem; border: 1px solid #d1d5db; border-radius: 6px; font-size: 0.95rem;">
+        <input type="text" placeholder="e.g., 280gsm, Grade 5" 
+               class="spec-value" style="flex: 1; padding: 0.75rem; border: 1px solid #d1d5db; border-radius: 6px; font-size: 0.95rem;">
+        <button type="button" onclick="removeSpec('${specId}')" style="background: #fee2e2; color: #991b1b; border: none; padding: 0.75rem 1rem; border-radius: 6px; cursor: pointer; font-weight: 600;">✕</button>
+    `;
+    specsList.appendChild(specDiv);
+}
+
+function removeSpec(specId) {
+    const element = document.getElementById(specId);
+    if (element) element.remove();
+}
+
+function getSpecsFromForm() {
+    const specs = [];
+    const specsList = document.getElementById('specs-list');
+    if (!specsList) return specs;
+    
+    const specInputs = specsList.querySelectorAll('.spec-input');
+    const specValues = specsList.querySelectorAll('.spec-value');
+    
+    specInputs.forEach((input, index) => {
+        if (input.value.trim()) {
+            specs.push({
+                label: input.value.trim(),
+                value: specValues[index]?.value.trim() || ''
+            });
+        }
+    });
+    
+    return specs;
+}
+
+function submitBid(tenderId) {
+    const price = parseFloat(prompt('Enter your price (FOB) - e.g., 22.50:'));
+    if (isNaN(price) || price <= 0) {
+        alert('Please enter a valid price');
         return;
     }
     
-    const tender = {
-        id: `tender-${Date.now()}`,
-        brand,
-        category,
-        description,
-        priceTarget: parseFloat(priceTarget),
-        orderQty: parseInt(orderQty),
-        files: [...data.uploadedFiles],
-        specs: getSpecsFromForm(),
-        labellingReqs: document.getElementById('labellingReqs').value.trim(),
-        createdAt: new Date()
+    const leadTime = parseInt(prompt('Enter lead time (days):'));
+    if (isNaN(leadTime) || leadTime <= 0) {
+        alert('Please enter a valid lead time');
+        return;
+    }
+    
+    const sampleTime = parseInt(prompt('Enter sample time (days):'));
+    if (isNaN(sampleTime) || sampleTime <= 0) {
+        alert('Please enter a valid sample time');
+        return;
+    }
+    
+    const bid = {
+        id: `bid-${Date.now()}`,
+        tenderId,
+        supplierId: data.currentUser.id,
+        supplierName: data.currentUser.name,
+        price,
+        counterPrice: null,
+        leadTime,
+        sampleTime,
+        status: 'submitted',
+        lastCounterFrom: null,
+        negotiationHistory: []
     };
+    data.bids.push(bid);
+    alert('✓ Bid submitted! Price: £' + price.toFixed(2));
+    renderSupplierTenders();
+}
+
+function acceptBid(bidId) {
+    const bid = data.bids.find(b => b.id === bidId);
+    if (bid) {
+        bid.status = 'accepted';
+        alert('✓ Bid accepted! Opening conversation...');
+        openBidChat(bidId);
+    }
+}
+
+function counterBid(bidId) {
+    const bid = data.bids.find(b => b.id === bidId);
+    if (!bid) return;
     
-    data.tenders.push(tender);
+    const counterPrice = parseFloat(prompt(`Current bid: £${bid.price.toFixed(2)}\n\nEnter your counter price (FOB) - e.g., 18.50:`));
+    if (isNaN(counterPrice) || counterPrice <= 0) {
+        alert('Please enter a valid price');
+        return;
+    }
     
-    const form = document.querySelector('#create-tender-page form');
-    if (form) form.reset();
-    data.uploadedFiles = [];
-    document.getElementById('fileList').innerHTML = '';
-    document.getElementById('specs-list').innerHTML = '';
+    bid.counterPrice = counterPrice;
+    bid.status = 'countered';
+    bid.lastCounterFrom = 'buyer';
+    bid.negotiationHistory.push({
+        from: 'buyer',
+        price: counterPrice,
+        timestamp: new Date()
+    });
     
-    alert('✓ Tender created successfully!');
-    backToBuyerDashboard();
+    alert(`✓ Counter offer sent: £${counterPrice.toFixed(2)}\nWaiting for supplier response...`);
+    viewBids(bid.tenderId);
+}
+
+function rejectBid(bidId) {
+    const bid = data.bids.find(b => b.id === bidId);
+    if (!bid) return;
+    
+    if (confirm('Are you sure you want to reject this bid?')) {
+        bid.status = 'rejected';
+        alert('✗ Bid rejected');
+        const tender = data.tenders.find(t => t.id === bid.tenderId);
+        if (tender) viewBids(tender.id);
+    }
+}
+
+function acceptHighestBid(tenderId) {
+    const tender = data.tenders.find(t => t.id === tenderId);
+    const tenderBids = data.bids.filter(b => b.tenderId === tenderId && b.status !== 'rejected');
+    
+    if (tenderBids.length === 0) {
+        alert('No active bids to accept');
+        return;
+    }
+    
+    const highestBid = tenderBids.reduce((best, current) => {
+        const currentPrice = current.counterPrice !== null ? current.counterPrice : current.price;
+        const bestPrice = best.counterPrice !== null ? best.counterPrice : best.price;
+        return currentPrice < bestPrice ? current : best;
+    });
+    
+    highestBid.status = 'accepted';
+    alert(`✓ Highest bid accepted from ${highestBid.supplierName} at £${(highestBid.counterPrice !== null ? highestBid.counterPrice : highestBid.price).toFixed(2)}\nOpening conversation...`);
+    openBidChat(highestBid.id);
+}
+
+function relistTender(tenderId) {
+    const tender = data.tenders.find(t => t.id === tenderId);
+    if (!tender) return;
+    
+    tender.deadlineDate = new Date(Date.now() + 7*24*60*60*1000);
+    
+    const previousBids = data.bids.filter(b => b.tenderId === tenderId);
+    previousBids.forEach(b => {
+        if (b.status !== 'accepted' && b.status !== 'rejected') {
+            b.status = 'archived';
+        }
+    });
+    
+    alert('✓ Tender re-listed! New deadline: ' + tender.deadlineDate.toLocaleDateString());
+    renderBuyerDashboard();
+}
+
+function deleteTender(tenderId) {
+    if (confirm('Are you sure you want to delete this tender? This cannot be undone.')) {
+        data.tenders = data.tenders.filter(t => t.id !== tenderId);
+        data.bids = data.bids.filter(b => b.tenderId !== tenderId);
+        alert('✗ Tender deleted');
+        renderBuyerDashboard();
+    }
+}
+
+function acceptCounterFromBuyer(bidId) {
+    const bid = data.bids.find(b => b.id === bidId);
+    if (!bid || bid.counterPrice === null) return;
+    
+    bid.status = 'accepted';
+    bid.price = bid.counterPrice;
+    alert(`✓ Counter accepted at £${bid.counterPrice.toFixed(2)}!\nOpening conversation...`);
+    openBidChat(bidId);
+}
+
+function counterFromSupplier(bidId) {
+    const bid = data.bids.find(b => b.id === bidId);
+    if (!bid) return;
+    
+    const counterPrice = parseFloat(prompt(`Buyer offered: £${bid.counterPrice.toFixed(2)}\nYour original: £${bid.price.toFixed(2)}\n\nEnter your counter price (FOB):`));
+    if (isNaN(counterPrice) || counterPrice <= 0) {
+        alert('Please enter a valid price');
+        return;
+    }
+    
+    bid.price = counterPrice;
+    bid.counterPrice = null;
+    bid.status = 'countered';
+    bid.lastCounterFrom = 'supplier';
+    bid.negotiationHistory.push({
+        from: 'supplier',
+        price: counterPrice,
+        timestamp: new Date()
+    });
+    
+    alert(`✓ Counter offer sent: £${counterPrice.toFixed(2)}\nWaiting for buyer response...`);
+    renderSupplierTenders();
+}
+
+function dismissTender(tenderId) {
+    if (!data.dismissedTenders.includes(tenderId)) {
+        data.dismissedTenders.push(tenderId);
+    }
+    renderSupplierTenders();
+}
+
+function undismissTender(tenderId) {
+    data.dismissedTenders = data.dismissedTenders.filter(id => id !== tenderId);
+    renderSupplierTenders();
+}
+
+function switchSupplierTab(tab) {
+    document.querySelectorAll('#supplier-page .tab-btn').forEach(b => b.classList.remove('active'));
+    event.target.classList.add('active');
+    renderSupplierTenders();
 }
 
 function renderSupplierTenders() {
@@ -694,70 +1335,544 @@ function renderSupplierTenders() {
     const categoryTenders = data.tenders.filter(t => data.suppliers.sup1.categories.includes(t.category));
     
     let filteredTenders = [];
+    
     if (tab === 'available') {
-        filteredTenders = categoryTenders.slice(0, 5);
+        filteredTenders = categoryTenders.filter(t => {
+            const isDismissed = data.dismissedTenders.includes(t.id);
+            const hasBid = data.bids.some(b => b.tenderId === t.id && b.supplierId === 'sup1');
+            const isExpired = new Date(t.deadlineDate) < new Date();
+            return !isDismissed && !hasBid && !isExpired;
+        });
+    } else if (tab === 'active') {
+        filteredTenders = categoryTenders.filter(t => {
+            const myBid = data.bids.find(b => b.tenderId === t.id && b.supplierId === 'sup1');
+            const isExpired = new Date(t.deadlineDate) < new Date();
+            return myBid && myBid.status !== 'accepted' && !isExpired;
+        });
+    } else if (tab === 'accepted') {
+        filteredTenders = categoryTenders.filter(t => {
+            const myBid = data.bids.find(b => b.tenderId === t.id && b.supplierId === 'sup1');
+            return myBid && myBid.status === 'accepted';
+        });
+    } else if (tab === 'dismissed') {
+        filteredTenders = categoryTenders.filter(t => data.dismissedTenders.includes(t.id));
+    } else if (tab === 'expired') {
+        filteredTenders = categoryTenders.filter(t => {
+            const isExpired = new Date(t.deadlineDate) < new Date();
+            const hasBid = data.bids.some(b => b.tenderId === t.id && b.supplierId === 'sup1');
+            return isExpired && !hasBid;
+        });
     }
     
-    document.getElementById('available-count').textContent = categoryTenders.length;
-    document.getElementById('active-count').textContent = '0';
-    document.getElementById('accepted-count').textContent = '0';
+    const availableCount = categoryTenders.filter(t => {
+        const isDismissed = data.dismissedTenders.includes(t.id);
+        const hasBid = data.bids.some(b => b.tenderId === t.id && b.supplierId === 'sup1');
+        const isExpired = new Date(t.deadlineDate) < new Date();
+        return !isDismissed && !hasBid && !isExpired;
+    }).length;
+    
+    const activeCount = categoryTenders.filter(t => {
+        const myBid = data.bids.find(b => b.tenderId === t.id && b.supplierId === 'sup1');
+        const isExpired = new Date(t.deadlineDate) < new Date();
+        return myBid && myBid.status !== 'accepted' && !isExpired;
+    }).length;
+    
+    const acceptedCount = categoryTenders.filter(t => {
+        const myBid = data.bids.find(b => b.tenderId === t.id && b.supplierId === 'sup1');
+        return myBid && myBid.status === 'accepted';
+    }).length;
+    
+    const dismissedCount = categoryTenders.filter(t => data.dismissedTenders.includes(t.id)).length;
+    
+    const expiredCount = categoryTenders.filter(t => {
+        const isExpired = new Date(t.deadlineDate) < new Date();
+        const hasBid = data.bids.some(b => b.tenderId === t.id && b.supplierId === 'sup1');
+        return isExpired && !hasBid;
+    }).length;
+    
+    document.getElementById('available-count').textContent = availableCount;
+    document.getElementById('active-count').textContent = activeCount;
+    document.getElementById('accepted-count').textContent = acceptedCount;
+    document.getElementById('dismissed-count').textContent = dismissedCount;
+    document.getElementById('expired-count').textContent = expiredCount;
+    
+    container.innerHTML = filteredTenders.map(tender => {
+        const tenderBids = data.bids.filter(b => b.tenderId === tender.id);
+        const myBid = tenderBids.find(b => b.supplierId === 'sup1');
+        const timeLeft = getTimeRemaining(tender.deadlineDate);
+        const isExpired = new Date(tender.deadlineDate) < new Date();
+        const isDismissed = data.dismissedTenders.includes(tender.id);
+        
+        const imageFile = tender.files && tender.files.length > 0 ? tender.files.find(f => f.isImage) : null;
+        
+        let cardHTML = `
+            <div class="tender-card" style="${myBid ? 'background: #f0fdf4; border: 2px solid #6ee7b7;' : ''}">
+                <div style="display: flex; gap: 1.25rem;">
+                    <!-- Image Thumbnail -->
+                    <div style="flex-shrink: 0;">
+                        ${imageFile ? `
+                            <img src="${imageFile.dataUrl}" style="width: 140px; height: 140px; object-fit: cover; border-radius: 8px; cursor: pointer; border: 1px solid #e8ecf1;" onclick="openImageModal('${imageFile.dataUrl.replace(/'/g, "\\'")}')" title="Click to view full size">
+                        ` : `
+                            <div style="width: 140px; height: 140px; background: linear-gradient(135deg, #f1f5f9, #e8ecf1); border-radius: 8px; display: flex; align-items: center; justify-content: center; border: 1px solid #e8ecf1; color: #cbd5e1; font-size: 2.5rem;">📎</div>
+                        `}
+                    </div>
+                    
+                    <!-- Content -->
+                    <div style="flex: 1; display: flex; flex-direction: column;">
+                        <div style="margin-bottom: 0.75rem; display: flex; justify-content: space-between; align-items: start;">
+                            <div>
+                                <h3 style="margin: 0 0 0.35rem 0; font-size: 1.05rem;">${tender.description}</h3>
+                                <p style="font-size: 0.8rem; color: #64748b; margin: 0;">${tender.brand} • ${tender.category} • <strong>${tender.seasonCode}</strong></p>
+                            </div>
+                            <span style="background: #f0f4f8; color: #475569; padding: 0.35rem 0.75rem; border-radius: 6px; font-size: 0.7rem; font-weight: 600; white-space: nowrap;" id="countdown-${tender.id}"></span>
+                        </div>
+                        
+                        <!-- Metrics Row -->
+                        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.75rem; margin: 0.75rem 0; padding: 0.75rem 0; border-top: 1px solid #e8ecf1; border-bottom: 1px solid #e8ecf1;">
+                            <div>
+                                <p style="font-size: 0.65rem; color: #94a3b8; margin: 0; font-weight: 600; text-transform: uppercase;">Price</p>
+                                <p style="font-size: 1.1rem; font-weight: 700; color: #8b5cf6; margin: 0.2rem 0 0 0;">£${tender.priceTarget.toFixed(2)}</p>
+                            </div>
+                            <div>
+                                <p style="font-size: 0.65rem; color: #94a3b8; margin: 0; font-weight: 600; text-transform: uppercase;">Qty</p>
+                                <p style="font-size: 1.1rem; font-weight: 700; color: #06b6d4; margin: 0.2rem 0 0 0;">${tender.orderQty.toLocaleString()}</p>
+                            </div>
+                            <div>
+                                <p style="font-size: 0.65rem; color: #94a3b8; margin: 0; font-weight: 600; text-transform: uppercase;">Expected Order To Handover</p>
+                                <p style="font-size: 1.1rem; font-weight: 700; color: #0f172a; margin: 0.2rem 0 0 0;">${tender.leadTimeTarget * 7} days</p>
+                            </div>
+                        </div>
+                        
+                        <!-- Footer -->
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: auto;">
+                            ${tender.files && tender.files.length > 0 ? `<span style="font-size: 0.75rem; color: #64748b;">📎 ${tender.files.length} file${tender.files.length > 1 ? 's' : ''}</span>` : '<span></span>'}
+                            <div style="display: flex; gap: 0.5rem;">
+        `;
+        
+        if (tab === 'available' && !isExpired) {
+            cardHTML += `
+                                <button class="btn-primary" style="padding: 0.5rem 1rem; font-size: 0.9rem;" onclick="submitBid('${tender.id}')">Bid</button>
+                                <button style="background: #f1f5f9; color: #0f172a; border: 1px solid #d1d5db; padding: 0.5rem 0.75rem; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 1.1rem;" onclick="dismissTender('${tender.id}')" title="Dismiss">✕</button>
+                            `;
+        } else if (tab === 'active' && myBid) {
+            const displayPrice = myBid.counterPrice !== null ? myBid.counterPrice : myBid.price;
+            const hasCounter = myBid.counterPrice !== null;
+            cardHTML += `
+                                ${hasCounter ? `
+                                    <div style="display: flex; flex-direction: column; gap: 0.5rem; width: 100%;">
+                                        <div style="background: #fef3c7; color: #92400e; padding: 0.5rem 0.75rem; border-radius: 6px; font-weight: 600; font-size: 0.85rem; text-align: center;">
+                                            ⟷ Buyer counter: £${displayPrice.toFixed(2)}
+                                            <br><span style="font-size: 0.75rem; font-weight: normal;">Original: £${myBid.price.toFixed(2)}</span>
+                                        </div>
+                                        <div style="display: flex; gap: 0.5rem;">
+                                            <button class="btn-primary" style="flex: 1; padding: 0.4rem 0.75rem; font-size: 0.85rem;" onclick="acceptCounterFromBuyer('${myBid.id}')">✓ Accept</button>
+                                            <button style="flex: 1; background: #fef3c7; color: #92400e; border: 1px solid #f59e0b; padding: 0.4rem 0.75rem; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 0.85rem;" onclick="counterFromSupplier('${myBid.id}')">⟷ Counter</button>
+                                        </div>
+                                    </div>
+                                ` : `
+                                    <div style="background: #dcfce7; color: #166534; padding: 0.4rem 0.8rem; border-radius: 6px; font-weight: 600; font-size: 0.85rem;">✓ £${myBid.price}</div>
+                                `}
+                            `;
+        } else if (tab === 'accepted' && myBid) {
+            cardHTML += `
+                                <button class="btn-primary" style="padding: 0.5rem 1rem; font-size: 0.9rem;" onclick="openBidChat('${myBid.id}')">💬 Chat</button>
+                                <div style="background: #dcfce7; color: #166534; padding: 0.4rem 0.8rem; border-radius: 6px; font-weight: 600; font-size: 0.85rem;">✓ Order</div>
+                            `;
+        } else if (tab === 'dismissed') {
+            cardHTML += `
+                                <button class="btn-primary" style="padding: 0.5rem 1rem; font-size: 0.9rem;" onclick="undismissTender('${tender.id}')">Undo</button>
+                            `;
+        } else if (tab === 'expired') {
+            cardHTML += `
+                                <div style="background: #fee2e2; color: #991b1b; padding: 0.4rem 0.8rem; border-radius: 6px; font-weight: 600; font-size: 0.85rem;">Expired</div>
+                            `;
+        }
+        
+        cardHTML += `
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        return cardHTML;
+    }).join('');
+    
+    setTimeout(() => {
+        filteredTenders.forEach(t => startCountdown(t.id));
+    }, 0);
     
     if (filteredTenders.length === 0) {
-        container.innerHTML = '<div class="empty-state" style="grid-column: 1/-1;"><p>No tenders available</p></div>';
-        return;
+        let emptyMessage = 'No available tenders';
+        if (tab === 'active') emptyMessage = 'You haven\'t bid on any active tenders';
+        if (tab === 'accepted') emptyMessage = 'You don\'t have any accepted orders yet';
+        if (tab === 'dismissed') emptyMessage = 'You haven\'t dismissed any tenders';
+        if (tab === 'expired') emptyMessage = 'No expired tenders';
+        
+        container.innerHTML = `<div class="empty-state" style="grid-column: 1/-1;"><p style="color: #64748b;">${emptyMessage}</p></div>`;
     }
-    
-    container.innerHTML = filteredTenders.map(tender => `
-        <div class="tender-card">
-            <h3>${tender.description}</h3>
-            <p>${tender.brand} • ${tender.category}</p>
-            <p><strong>Price:</strong> £${tender.priceTarget.toFixed(2)} • <strong>Qty:</strong> ${tender.orderQty.toLocaleString()}</p>
-            ${tender.files.length > 0 ? `<p style="font-size: 0.75rem; color: #64748b; margin-top: 0.5rem;">📎 ${tender.files.length} files</p>` : ''}
-        </div>
-    `).join('');
 }
 
 function renderBuyerDashboard() {
-    const container = document.getElementById('buyer-tenders');
-    
-    document.getElementById('open-count').textContent = data.tenders.length;
-    document.getElementById('accepted-count').textContent = '0';
-    
-    if (data.tenders.length === 0) {
-        container.innerHTML = '<div class="empty-state" style="grid-column: 1/-1;"><p>No tenders created yet</p></div>';
-        return;
+    const activeTab = document.querySelector('#buyer-page .tab-btn.active');
+    let tab = 'open';
+    if (activeTab.textContent.includes('Accepted')) {
+        tab = 'accepted';
+    } else if (activeTab.textContent.includes('Expired')) {
+        tab = 'expired';
     }
     
-    container.innerHTML = data.tenders.map(tender => `
-        <div class="tender-card">
-            <div style="display: flex; gap: 1rem;">
-                ${tender.files.length > 0 && tender.files[0].isImage ? `
-                    <img src="${tender.files[0].dataUrl}" style="width: 120px; height: 120px; object-fit: cover; border-radius: 8px;">
-                ` : ''}
-                <div style="flex: 1;">
-                    <h3 style="margin: 0 0 0.35rem 0;">${tender.description}</h3>
-                    <p style="font-size: 0.8rem; color: #64748b; margin: 0;">${tender.brand} • ${tender.category}</p>
-                    <div style="margin-top: 0.75rem; padding-top: 0.75rem; border-top: 1px solid #e8ecf1;">
-                        <p style="margin: 0; font-weight: 700; color: #8b5cf6;">£${tender.priceTarget.toFixed(2)}</p>
-                        <p style="font-size: 0.75rem; color: #64748b;">Qty: ${tender.orderQty.toLocaleString()}</p>
+    const container = document.getElementById('buyer-tenders');
+    const seasonFilter = data.selectedSeason;
+    
+    let tenders = [];
+    if (tab === 'open') {
+        tenders = data.tenders.filter(t => {
+            const tenderBids = data.bids.filter(b => b.tenderId === t.id);
+            const matchesSeason = !seasonFilter || t.seasonCode === seasonFilter;
+            return !isExpired(t.deadlineDate) && !tenderBids.some(b => b.status === 'accepted') && matchesSeason;
+        });
+    } else if (tab === 'accepted') {
+        tenders = data.tenders.filter(t => {
+            const tenderBids = data.bids.filter(b => b.tenderId === t.id);
+            const matchesSeason = !seasonFilter || t.seasonCode === seasonFilter;
+            return tenderBids.some(b => b.status === 'accepted') && matchesSeason;
+        });
+    } else if (tab === 'expired') {
+        tenders = data.tenders.filter(t => {
+            const tenderBids = data.bids.filter(b => b.tenderId === t.id);
+            const matchesSeason = !seasonFilter || t.seasonCode === seasonFilter;
+            return isExpired(t.deadlineDate) && !tenderBids.some(b => b.status === 'accepted') && matchesSeason;
+        });
+    }
+    
+    const openCount = data.tenders.filter(t => !isExpired(t.deadlineDate) && !data.bids.some(b => b.tenderId === t.id && b.status === 'accepted')).length;
+    const acceptedCount = data.tenders.filter(t => data.bids.some(b => b.tenderId === t.id && b.status === 'accepted')).length;
+    const expiredCount = data.tenders.filter(t => isExpired(t.deadlineDate) && !data.bids.some(b => b.tenderId === t.id && b.status === 'accepted')).length;
+    
+    document.getElementById('open-count').textContent = openCount;
+    document.getElementById('accepted-count').textContent = acceptedCount;
+    document.getElementById('expired-count').textContent = expiredCount;
+    
+    container.innerHTML = tenders.map(tender => {
+        const tenderBids = data.bids.filter(b => b.tenderId === tender.id);
+        const acceptedBid = tenderBids.find(b => b.status === 'accepted');
+        const daysLeft = Math.ceil((tender.deadlineDate - Date.now()) / (1000*60*60*24));
+        
+        const imageFile = tender.files && tender.files.length > 0 ? tender.files.find(f => f.isImage) : null;
+        
+        return `
+            <div class="tender-card" style="${acceptedBid ? 'background: #f0fdf4; border: 2px solid #6ee7b7;' : ''}${tab === 'expired' ? 'background: #fef2f2; border: 2px solid #fecaca;' : ''}">
+                <div style="display: flex; gap: 1.25rem;">
+                    <!-- Image Thumbnail -->
+                    <div style="flex-shrink: 0;">
+                        ${imageFile ? `
+                            <img src="${imageFile.dataUrl}" style="width: 140px; height: 140px; object-fit: cover; border-radius: 8px; cursor: pointer; border: 1px solid #e8ecf1;" onclick="openImageModal('${imageFile.dataUrl.replace(/'/g, "\\'")}')" title="Click to view full size">
+                        ` : `
+                            <div style="width: 140px; height: 140px; background: linear-gradient(135deg, #f1f5f9, #e8ecf1); border-radius: 8px; display: flex; align-items: center; justify-content: center; border: 1px solid #e8ecf1; color: #cbd5e1; font-size: 2.5rem;">📎</div>
+                        `}
                     </div>
-                    ${tender.files.length > 0 ? `<p style="font-size: 0.75rem; color: #64748b; margin-top: 0.5rem;">📎 ${tender.files.length} files</p>` : ''}
+                    
+                    <!-- Content -->
+                    <div style="flex: 1; display: flex; flex-direction: column;">
+                        <div style="margin-bottom: 0.75rem; display: flex; justify-content: space-between; align-items: flex-start;">
+                            <div>
+                                <h3 style="margin: 0 0 0.35rem 0; font-size: 1.05rem;">${tender.description}</h3>
+                                <p style="font-size: 0.8rem; color: #64748b; margin: 0;">${tender.brand} • ${tender.category} • <strong>${tender.seasonCode}</strong></p>
+                                ${tab === 'expired' ? `<p style="color: #dc2626; font-weight: 600; margin-top: 0.35rem; font-size: 0.8rem;">⚠️ Expired ${Math.abs(daysLeft)}d ago</p>` : ''}
+                            </div>
+                            ${tenderBids.length > 0 ? `
+                                <span style="background: #dbeafe; color: #1e40af; padding: 0.4rem 0.75rem; border-radius: 6px; font-size: 0.75rem; font-weight: 700; white-space: nowrap;">🔔 ${tenderBids.length} Bid${tenderBids.length > 1 ? 's' : ''}</span>
+                            ` : ''}
+                        </div>
+                        
+                        <!-- Metrics Row -->
+                        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.75rem; margin: 0.75rem 0; padding: 0.75rem 0; border-top: 1px solid #e8ecf1; border-bottom: 1px solid #e8ecf1;">
+                            <div>
+                                <p style="font-size: 0.65rem; color: #94a3b8; margin: 0; font-weight: 600; text-transform: uppercase;">Price</p>
+                                <p style="font-size: 1.1rem; font-weight: 700; color: #8b5cf6; margin: 0.2rem 0 0 0;">£${tender.priceTarget.toFixed(2)}</p>
+                            </div>
+                            <div>
+                                <p style="font-size: 0.65rem; color: #94a3b8; margin: 0; font-weight: 600; text-transform: uppercase;">Qty</p>
+                                <p style="font-size: 1.1rem; font-weight: 700; color: #06b6d4; margin: 0.2rem 0 0 0;">${tender.orderQty.toLocaleString()}</p>
+                            </div>
+                            <div>
+                                <p style="font-size: 0.65rem; color: #94a3b8; margin: 0; font-weight: 600; text-transform: uppercase;">Time Left</p>
+                                <p style="font-size: 1.1rem; font-weight: 700; color: #0f172a; margin: 0.2rem 0 0 0;" id="countdown-${tender.id}"></p>
+                            </div>
+                        </div>
+                        
+                        <!-- Footer -->
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: auto;">
+                            ${tender.files && tender.files.length > 0 ? `<span style="font-size: 0.75rem; color: #64748b;">📎 ${tender.files.length} file${tender.files.length > 1 ? 's' : ''}</span>` : '<span></span>'}
+                            <div style="display: flex; gap: 0.5rem;">
+                                ${acceptedBid ? `<button class="btn-primary" style="padding: 0.5rem 1rem; font-size: 0.9rem;" onclick="openBidChat('${acceptedBid.id}')">💬 Chat</button>` : ''}
+                                ${tab === 'expired' ? `
+                                    <button style="background: #06b6d4; color: white; border: none; padding: 0.5rem 1rem; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 0.9rem;" onclick="acceptHighestBid('${tender.id}')">✓ Accept Highest</button>
+                                    <button style="background: #fbbf24; color: #0f172a; border: none; padding: 0.5rem 1rem; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 0.9rem;" onclick="relistTender('${tender.id}')">↻ Re-list</button>
+                                    <button style="background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; padding: 0.5rem 1rem; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 0.9rem;" onclick="deleteTender('${tender.id}')">🗑 Delete</button>
+                                ` : `<button class="btn-primary" style="padding: 0.5rem 1rem; font-size: 0.9rem;" onclick="viewBids('${tender.id}')">View</button>`}
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
-        </div>
-    `).join('');
+        `;
+    }).join('');
+    
+    setTimeout(() => {
+        tenders.forEach(t => startCountdown(t.id));
+    }, 0);
+    
+    if (tenders.length === 0) {
+        const emptyMessage = tab === 'open' ? 'No matching open tenders' : tab === 'accepted' ? 'No matching accepted bids' : 'No expired tenders';
+        container.innerHTML = '<div class="empty-state" style="grid-column: 1/-1;"><p style="color: #64748b;">' + emptyMessage + '</p></div>';
+    }
 }
 
-function switchSupplierTab(tab) {
-    document.querySelectorAll('#supplier-page .tab-btn').forEach(b => b.classList.remove('active'));
-    event.target.classList.add('active');
-    renderSupplierTenders();
+function filterBySeason(season) {
+    data.selectedSeason = season;
+    renderBuyerDashboard();
+}
+
+function viewBids(tenderId) {
+    const tender = data.tenders.find(t => t.id === tenderId);
+    const tenderBids = data.bids.filter(b => b.tenderId === tenderId);
+    
+    showPage('supplier-bid-page');
+    
+    let filesHTML = '';
+    if (tender.files && tender.files.length > 0) {
+        filesHTML = `
+            <div style="background: white; padding: 1.5rem; border-radius: 0.75rem; border: 1px solid #e2e8f0; margin-bottom: 2rem;">
+                <h3 style="margin: 0 0 1rem 0;">📎 Attached Files (${tender.files.length})</h3>
+                <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 1rem;">
+                    ${tender.files.map(file => {
+                        if (file.isImage && file.dataUrl) {
+                            const escapedUrl = file.dataUrl.replace(/'/g, "\\'");
+                            return `
+                                <div style="text-align: center;">
+                                    <img src="${file.dataUrl}" style="max-width: 100%; height: 150px; border-radius: 6px; border: 1px solid #d1d5db; object-fit: cover; cursor: pointer;" onclick="openImageModal('${escapedUrl}')">
+                                    <div style="font-size: 0.75rem; color: #64748b; margin-top: 0.5rem; word-break: break-word;">${file.name}</div>
+                                    <div style="font-size: 0.7rem; color: #94a3b8;">${file.size}</div>
+                                </div>
+                            `;
+                        } else {
+                            return `
+                                <div style="background: #f1f5f9; padding: 1rem; border-radius: 6px; border: 1px solid #d1d5db; display: flex; align-items: center; justify-content: center; text-align: center; height: 150px;">
+                                    <div>
+                                        <div style="font-size: 2rem; margin-bottom: 0.5rem;">📄</div>
+                                        <div style="font-size: 0.75rem; color: #64748b; word-break: break-word;">${file.name}</div>
+                                        <div style="font-size: 0.7rem; color: #94a3b8;">${file.size}</div>
+                                    </div>
+                                </div>
+                            `;
+                        }
+                    }).join('')}
+                </div>
+            </div>
+        `;
+    }
+    
+    let specsHTML = '';
+    if (tender.specs && tender.specs.length > 0) {
+        specsHTML = `
+            <div style="background: white; padding: 1.5rem; border-radius: 0.75rem; border: 1px solid #e2e8f0; margin-bottom: 2rem;">
+                <h3 style="margin: 0 0 1rem 0;">📋 Specifications</h3>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem;">
+                    ${tender.specs.map(spec => `
+                        <div style="background: #f9fafb; padding: 1rem; border-radius: 6px; border-left: 3px solid #8b5cf6;">
+                            <p style="margin: 0; color: #64748b; font-size: 0.8rem; font-weight: 600; text-transform: uppercase;">${spec.label}</p>
+                            <p style="margin: 0.5rem 0 0 0; font-size: 1rem; font-weight: 700; color: #0f172a;">${spec.value}</p>
+                        </div>
+                    `).join('')}
+                </div>
+            </div>
+        `;
+    }
+    
+    let labellingHTML = '';
+    if (tender.labellingReqs && tender.labellingReqs.trim()) {
+        labellingHTML = `
+            <div style="background: white; padding: 1.5rem; border-radius: 0.75rem; border: 1px solid #e2e8f0; margin-bottom: 2rem;">
+                <h3 style="margin: 0 0 1rem 0;">📑 Labelling Requirements</h3>
+                <p style="margin: 0; color: #0f172a; line-height: 1.6; white-space: pre-wrap;">${tender.labellingReqs}</p>
+            </div>
+        `;
+    }
+    
+    let bidsHTML = '';
+    if (tenderBids.length === 0) {
+        bidsHTML = '<div class="empty-state"><p>No bids yet</p></div>';
+    } else {
+        bidsHTML = `
+            <div class="bid-list">
+                ${tenderBids.map(bid => {
+                    const displayPrice = bid.counterPrice !== null ? bid.counterPrice : bid.price;
+                    const priceLabel = bid.counterPrice !== null ? 'Counter: £' : '£';
+                    const statusBadge = bid.status === 'accepted' ? '✓ Accepted' : 
+                                       bid.status === 'rejected' ? '✗ Rejected' : 
+                                       bid.counterPrice !== null ? '⟷ Negotiating' : 'Pending';
+                    const statusColor = bid.status === 'accepted' ? '#dcfce7' : 
+                                       bid.status === 'rejected' ? '#fee2e2' : 
+                                       bid.counterPrice !== null ? '#fef3c7' : '#e0e7ff';
+                    const statusTextColor = bid.status === 'accepted' ? '#166534' : 
+                                           bid.status === 'rejected' ? '#991b1b' : 
+                                           bid.counterPrice !== null ? '#92400e' : '#3730a3';
+                    
+                    const trail = [];
+                    trail.push({ from: 'supplier', price: bid.price, timestamp: new Date() });
+                    if (bid.negotiationHistory && bid.negotiationHistory.length > 0) {
+                        trail.push(...bid.negotiationHistory);
+                    }
+                    const trailHTML = trail.length > 0 ? `
+                        <div style="background: #f9fafb; padding: 0.75rem; border-radius: 6px; border-left: 3px solid #8b5cf6; font-size: 0.8rem; max-height: 120px; overflow-y: auto;">
+                            <p style="margin: 0 0 0.5rem 0; color: #64748b; font-weight: 600;">Negotiation Trail:</p>
+                            ${trail.map((item, idx) => {
+                                const actor = item.from === 'supplier' ? '🏭 Supplier' : '👤 You';
+                                return `<div style="margin: 0.4rem 0; color: #475569;"><span style="font-weight: 600;">${actor}:</span> £${item.price.toFixed(2)}</div>`;
+                            }).join('')}
+                        </div>
+                    ` : '';
+                    
+                    return `
+                    <div class="bid-item" style="flex-direction: column; align-items: stretch; gap: 1rem;">
+                        <div style="display: flex; justify-content: space-between; align-items: start;">
+                            <div class="bid-info" style="flex: 1;">
+                                <strong>${bid.supplierName}</strong>
+                                <span>${priceLabel}${displayPrice.toFixed(2)} FOB • ${bid.leadTime} days</span>
+                            </div>
+                            <span style="background: ${statusColor}; color: ${statusTextColor}; padding: 0.4rem 0.8rem; border-radius: 6px; font-size: 0.85rem; font-weight: 600; white-space: nowrap;">${statusBadge}</span>
+                        </div>
+                        
+                        ${trailHTML}
+                        
+                        ${bid.status === 'submitted' || bid.status === 'countered' ? `
+                        <div style="display: flex; gap: 0.5rem; justify-content: flex-end;">
+                            <button class="btn-primary" style="padding: 0.5rem 1rem; font-size: 0.9rem;" onclick="acceptBid('${bid.id}')">✓ Accept</button>
+                            <button style="background: #fef3c7; color: #92400e; border: 1px solid #f59e0b; padding: 0.5rem 1rem; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 0.9rem;" onclick="counterBid('${bid.id}')">⟷ Counter</button>
+                            <button style="background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; padding: 0.5rem 1rem; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 0.9rem;" onclick="rejectBid('${bid.id}')">✗ Reject</button>
+                            <button class="btn-primary" style="padding: 0.5rem 1rem; font-size: 0.9rem; background: #06b6d4;" onclick="openBidChat('${bid.id}')">💬 Chat</button>
+                        </div>
+                        ` : bid.status === 'accepted' ? `
+                        <div style="display: flex; gap: 0.75rem; justify-content: flex-end;">
+                            <button class="btn-primary" style="padding: 0.4rem 0.9rem; font-size: 0.85rem;" onclick="openBidChat('${bid.id}')">💬 Chat</button>
+                        </div>
+                        ` : ''}`}
+                    </div>
+                `}).join('')}
+            </div>
+        `;
+    }
+    
+    const html = `
+        <button class="back-btn" style="margin-bottom: 1rem;" onclick="backToBuyerDashboard()">← Back</button>
+        <h1 style="font-size: 2rem; margin-bottom: 2rem;">${tender.description}</h1>
+        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-bottom: 2rem;">
+            <div style="background: white; padding: 1rem; border-radius: 0.5rem; border: 1px solid #e2e8f0;">
+                <p style="color: #64748b; font-size: 0.75rem; text-transform: uppercase; margin: 0;">Price Target</p>
+                <p style="font-weight: 700; font-size: 1.25rem; margin: 0.5rem 0 0 0;">£${tender.priceTarget}</p>
+            </div>
+            <div style="background: white; padding: 1rem; border-radius: 0.5rem; border: 1px solid #e2e8f0;">
+                <p style="color: #64748b; font-size: 0.75rem; text-transform: uppercase; margin: 0;">Qty</p>
+                <p style="font-weight: 700; font-size: 1.25rem; margin: 0.5rem 0 0 0;">${tender.orderQty}</p>
+            </div>
+            <div style="background: white; padding: 1rem; border-radius: 0.5rem; border: 1px solid #e2e8f0;">
+                <p style="color: #64748b; font-size: 0.75rem; text-transform: uppercase; margin: 0;">Lead Time From Order</p>
+                <p style="font-weight: 700; font-size: 1.25rem; margin: 0.5rem 0 0 0;">${tender.leadTimeTarget} wks</p>
+            </div>
+            <div style="background: white; padding: 1rem; border-radius: 0.5rem; border: 1px solid #e2e8f0;">
+                <p style="color: #64748b; font-size: 0.75rem; text-transform: uppercase; margin: 0;">Bids</p>
+                <p style="font-weight: 700; font-size: 1.25rem; margin: 0.5rem 0 0 0;">${tenderBids.length}</p>
+            </div>
+        </div>
+        
+        ${filesHTML}
+        ${specsHTML}
+        ${labellingHTML}
+        ${bidsHTML}
+    `;
+    
+    document.getElementById('tender-detail').innerHTML = html;
 }
 
 function switchBuyerTab(tab) {
-    document.querySelectorAll('#buyer-page .tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
     event.target.classList.add('active');
     renderBuyerDashboard();
+}
+
+function getTimeRemaining(deadlineDate) {
+    const now = new Date();
+    const diff = new Date(deadlineDate) - now;
+    
+    if (diff < 0) return 'Expired';
+    
+    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+    const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    
+    if (days > 0) return `${days}d ${hours}h left`;
+    return `${hours}h left`;
+}
+
+function isExpired(deadlineDate) {
+    return new Date(deadlineDate) < new Date();
+}
+
+function showEditTender(tenderId) {
+    const tender = data.tenders.find(t => t.id === tenderId);
+    if (!tender) return;
+    
+    data.editingTenderId = tenderId;
+    
+    const daysLeft = Math.ceil((tender.deadlineDate - Date.now()) / (1000*60*60*24));
+    
+    const contentHTML = `
+        <div class="form-group">
+            <label style="font-weight: 600; margin-bottom: 0;">Tender Details</label>
+            <p style="margin: 0.5rem 0 0 0; color: #64748b; font-size: 0.875rem;">
+                <strong>${tender.description}</strong> • ${tender.brand} • ${tender.seasonCode}
+            </p>
+        </div>
+        
+        <div class="form-group">
+            <label>Current Deadline</label>
+            <p style="padding: 0.75rem; background: #f1f5f9; border: 1px solid #d1d5db; border-radius: 6px; margin: 0.5rem 0 0 0;">
+                ${tender.deadlineDate.toLocaleDateString()} @ ${tender.deadlineDate.toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'})}
+                <br><span style="color: #64748b; font-size: 0.875rem;">${daysLeft} days remaining</span>
+            </p>
+        </div>
+        
+        <div class="form-group">
+            <label>Extend Deadline (days)</label>
+            <input type="number" id="extend-days" placeholder="e.g., 7" min="1" max="30" value="7" required style="width: 100%;">
+            <p style="margin: 0.5rem 0 0 0; color: #64748b; font-size: 0.875rem;">Add days to the current deadline</p>
+        </div>
+    `;
+    
+    document.getElementById('edit-tender-content').innerHTML = contentHTML;
+    showPage('edit-tender-page');
+}
+
+function updateTender(e) {
+    e.preventDefault();
+    
+    const extendDays = parseInt(document.getElementById('extend-days').value);
+    if (!extendDays || extendDays < 1) {
+        alert('Please enter a valid number of days');
+        return;
+    }
+    
+    const tender = data.tenders.find(t => t.id === data.editingTenderId);
+    if (!tender) return;
+    
+    const newDeadline = new Date(tender.deadlineDate.getTime() + (extendDays * 24 * 60 * 60 * 1000));
+    tender.deadlineDate = newDeadline;
+    
+    alert(`✓ Deadline extended by ${extendDays} days`);
+    data.editingTenderId = null;
+    backToBuyerDashboard();
 }
 </script>
 
