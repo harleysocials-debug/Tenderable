@@ -581,7 +581,7 @@
             <div id="files-tab" class="tender-tab">
                 <div class="upload-zone" id="uploadZone" ondrop="handleDrop(event)" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" onclick="document.getElementById('hidden-file-input').click()">
                     <p>📎 <strong>Drag and drop files here</strong> or click to browse</p>
-                    <p style="font-size: 0.875rem; margin-top: 0.5rem;">Images, PDFs, Design files (Photoshop, Illustrator, etc.)</p>
+                    <p style="font-size: 0.875rem; margin-top: 0.5rem;">Images, PDFs, Design files — or <strong style="color:#8b5cf6;">Ctrl+V</strong> to paste from clipboard / PowerPoint</p>
                 </div>
                 <input type="file" id="hidden-file-input" style="display: none;" onchange="handleFiles(event)" multiple accept="image/*,.pdf,.psd,.ai,.eps,.sketch,.figma">
                 <div class="file-list" id="fileList"></div>
@@ -589,15 +589,21 @@
             
             <!-- Specs Tab -->
             <div id="specs-tab" class="tender-tab hidden" style="display: none;">
-                <div style="background: #f9fafb; padding: 1.5rem; border-radius: 8px;">
-                    <h3 style="margin: 0 0 1rem 0; font-size: 1.1rem;">Specifications</h3>
-                    <div id="specs-list" style="display: flex; flex-direction: column; gap: 0.75rem; margin-bottom: 1rem;"></div>
-                    <button type="button" onclick="addSpecField()" style="background: #f0f4f8; color: #0f172a; border: 2px dashed #d1d5db; padding: 0.75rem 1.5rem; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 0.9rem;">+ Add Specification</button>
+                <!-- Specs & Labelling Drop Zone -->
+                <div style="background: #f9fafb; padding: 1.5rem; border-radius: 8px; margin-bottom: 1.5rem;">
+                    <h3 style="margin: 0 0 1rem 0; font-size: 1.1rem;">📎 Specs &amp; Labelling Documents</h3>
+                    <div class="upload-zone" id="specsUploadZone" ondrop="handleSpecsDrop(event)" ondragover="handleSpecsDragOver(event)" ondragleave="handleSpecsDragLeave(event)" onclick="document.getElementById('specs-file-input').click()" style="padding: 2rem;">
+                        <p>📄 <strong style="color:#8b5cf6;">Drop spec sheets &amp; labelling docs here</strong> or click to browse</p>
+                        <p style="font-size: 0.875rem; margin-top: 0.5rem; color:#94a3b8;">PDFs, Word docs, images — or <strong style="color:#8b5cf6;">Ctrl+V</strong> to paste</p>
+                    </div>
+                    <input type="file" id="specs-file-input" style="display: none;" onchange="handleSpecsFiles(this.files)" multiple>
+                    <div class="file-list" id="specsFileList"></div>
                 </div>
-                
-                <div style="background: #f9fafb; padding: 1.5rem; border-radius: 8px; margin-top: 1.5rem;">
-                    <h3 style="margin: 0 0 1rem 0; font-size: 1.1rem;">Labelling Requirements</h3>
-                    <textarea id="labellingReqs" placeholder="e.g., Printed care label, hang tag, barcode placement..." style="width: 100%; padding: 1rem; border: 1px solid #d1d5db; border-radius: 6px; font-size: 0.95rem; font-family: inherit; resize: vertical; min-height: 100px;"></textarea>
+
+                <!-- Comments box -->
+                <div style="background: #f9fafb; padding: 1.5rem; border-radius: 8px;">
+                    <h3 style="margin: 0 0 1rem 0; font-size: 1.1rem;">💬 Additional Notes &amp; Requirements</h3>
+                    <textarea id="labellingReqs" placeholder="e.g., Printed care label required, hang tag with barcode, specific placement instructions, wash care symbols..." style="width: 100%; padding: 1rem; border: 1px solid #d1d5db; border-radius: 6px; font-size: 0.95rem; font-family: inherit; resize: vertical; min-height: 140px;"></textarea>
                 </div>
             </div>
             
@@ -659,7 +665,7 @@
             
             <div class="form-row">
                 <div class="form-group">
-                    <label>Lead Time From Order (weeks)</label>
+                    <label>Expected Time To Complete Order (weeks)</label>
                     <input type="number" id="leadTimeTarget" placeholder="e.g., 8">
                 </div>
                 <div class="form-group">
@@ -712,6 +718,7 @@ const data = {
     bids: [],
     messages: [],
     uploadedFiles: [],
+    specsFiles: [],
     dismissedTenders: [],
     selectedSeason: '',
     editingTenderId: null,
@@ -771,10 +778,29 @@ function startCountdown(tenderId) {
     countdownIntervals[tenderId] = setInterval(updateTimer, 1000);
 }
 
+function getUnreadCount(bidId) {
+    if (!data.currentUser) return 0;
+    return data.messages.filter(m => m.bidId === bidId && !m.readBy.includes(data.currentUser.id)).length;
+}
+
+function chatBadge(bidId) {
+    const count = getUnreadCount(bidId);
+    if (count === 0) return '';
+    return ` <span style="background:#ef4444;color:white;border-radius:50%;padding:0.15rem 0.45rem;font-size:0.7rem;font-weight:700;margin-left:0.25rem;">${count}</span>`;
+}
+
+function markAsRead(bidId) {
+    data.messages.forEach(m => {
+        if (m.bidId === bidId && !m.readBy.includes(data.currentUser.id)) {
+            m.readBy.push(data.currentUser.id);
+        }
+    });
+}
+
 function openBidChat(bidId) {
     const bid = data.bids.find(b => b.id === bidId);
     if (!bid) return;
-    
+    markAsRead(bidId);
     showPage('bid-chat-page');
     renderBidChat(bidId);
 }
@@ -795,7 +821,8 @@ function sendMessage(bidId) {
         senderName: data.currentUser.name,
         senderType: data.currentUser.type,
         message: message,
-        timestamp: new Date()
+        timestamp: new Date(),
+        readBy: [data.currentUser.id]
     };
     
     data.messages.push(chatMessage);
@@ -879,6 +906,143 @@ function handleDrop(e) {
     document.getElementById('uploadZone').classList.remove('dragover');
     const files = e.dataTransfer.files;
     handleFiles({ target: { files } });
+}
+
+function handlePasteImage(items) {
+    for (let item of items) {
+        if (item.type.startsWith('image/')) {
+            const file = item.getAsFile();
+            if (!file) continue;
+            const fileSize = file.size > 1024 * 1024
+                ? (file.size / 1024 / 1024).toFixed(2) + ' MB'
+                : (file.size / 1024).toFixed(1) + ' KB';
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                data.uploadedFiles.push({
+                    name: 'pasted-image-' + Date.now() + '.png',
+                    size: fileSize,
+                    type: file.type,
+                    isImage: true,
+                    dataUrl: e.target.result
+                });
+                renderFileList();
+                // Flash the upload zone green briefly to confirm
+                const zone = document.getElementById('uploadZone');
+                if (zone) {
+                    zone.style.borderColor = '#22c55e';
+                    zone.style.background = '#f0fdf4';
+                    setTimeout(() => {
+                        zone.style.borderColor = '';
+                        zone.style.background = '';
+                    }, 800);
+                }
+            };
+            reader.readAsDataURL(file);
+        }
+    }
+}
+
+// Global paste listener - works anywhere on page when on create tender
+document.addEventListener('paste', function(e) {
+    const createPage = document.getElementById('create-tender-page');
+    if (!createPage || createPage.classList.contains('hidden')) return;
+    const items = e.clipboardData && e.clipboardData.items;
+    if (!items) return;
+    const hasImage = Array.from(items).some(i => i.type.startsWith('image/'));
+    if (hasImage) {
+        e.preventDefault();
+        // Paste into whichever tab is active
+        const specsTab = document.getElementById('specs-tab');
+        if (specsTab && specsTab.style.display !== 'none') {
+            handlePasteSpecsImage(items);
+        } else {
+            handlePasteImage(items);
+        }
+    }
+});
+
+// ---- SPECS FILE HANDLERS ----
+function handleSpecsDragOver(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    document.getElementById('specsUploadZone').classList.add('dragover');
+}
+
+function handleSpecsDragLeave(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    document.getElementById('specsUploadZone').classList.remove('dragover');
+}
+
+function handleSpecsDrop(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    document.getElementById('specsUploadZone').classList.remove('dragover');
+    handleSpecsFiles(e.dataTransfer.files);
+}
+
+function handleSpecsFiles(files) {
+    for (let file of files) {
+        const fileSize = file.size > 1024 * 1024 ? (file.size / 1024 / 1024).toFixed(2) + ' MB' : (file.size / 1024).toFixed(1) + ' KB';
+        const isImage = file.type.startsWith('image/');
+        if (isImage) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                data.specsFiles.push({ name: file.name, size: fileSize, isImage: true, dataUrl: e.target.result });
+                renderSpecsFileList();
+            };
+            reader.readAsDataURL(file);
+        } else {
+            data.specsFiles.push({ name: file.name, size: fileSize, isImage: false });
+            renderSpecsFileList();
+        }
+    }
+}
+
+function handlePasteSpecsImage(items) {
+    for (let item of items) {
+        if (item.type.startsWith('image/')) {
+            const file = item.getAsFile();
+            if (!file) continue;
+            const fileSize = file.size > 1024 * 1024 ? (file.size / 1024 / 1024).toFixed(2) + ' MB' : (file.size / 1024).toFixed(1) + ' KB';
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                data.specsFiles.push({ name: 'pasted-spec-' + Date.now() + '.png', size: fileSize, isImage: true, dataUrl: e.target.result });
+                renderSpecsFileList();
+                const zone = document.getElementById('specsUploadZone');
+                if (zone) {
+                    zone.style.borderColor = '#22c55e';
+                    zone.style.background = '#f0fdf4';
+                    setTimeout(() => { zone.style.borderColor = ''; zone.style.background = ''; }, 800);
+                }
+            };
+            reader.readAsDataURL(file);
+        }
+    }
+}
+
+function removeSpecsFile(idx) {
+    data.specsFiles.splice(idx, 1);
+    renderSpecsFileList();
+}
+
+function renderSpecsFileList() {
+    const fl = document.getElementById('specsFileList');
+    if (!fl) return;
+    fl.innerHTML = data.specsFiles.map((file, idx) => {
+        if (file.isImage) {
+            return `<div style="position:relative;display:inline-block;">
+                <img src="${file.dataUrl}" style="width:100px;height:100px;object-fit:cover;border-radius:8px;border:1px solid #e8ecf1;">
+                <button type="button" onclick="removeSpecsFile(${idx})" style="position:absolute;top:-8px;right:-8px;background:#dc2626;color:white;border:none;width:22px;height:22px;border-radius:50%;cursor:pointer;font-weight:bold;padding:0;font-size:0.8rem;">✕</button>
+                <p style="font-size:0.7rem;color:#64748b;text-align:center;margin-top:0.2rem;">${file.name.substring(0,18)}</p>
+            </div>`;
+        } else {
+            return `<div style="background:#ede9fe;color:#5b21b6;padding:0.6rem 1rem;border-radius:8px;font-size:0.875rem;display:flex;align-items:center;gap:0.5rem;">
+                📄 ${file.name}
+                <button onclick="removeSpecsFile(${idx})" style="background:none;border:none;color:#7c3aed;cursor:pointer;font-size:1.1rem;padding:0;">✕</button>
+            </div>`;
+        }
+    }).join('');
 }
 
 function handleFiles(event) {
@@ -1067,6 +1231,7 @@ function submitTender(e) {
             files: [...data.uploadedFiles],
             specs: getSpecsFromForm(),
             labellingReqs: document.getElementById('labellingReqs') ? document.getElementById('labellingReqs').value.trim() : '',
+            specsFiles: [...data.specsFiles],
             createdAt: new Date()
         };
         
@@ -1079,8 +1244,11 @@ function submitTender(e) {
         if (fileInput) fileInput.value = '';
         
         data.uploadedFiles = [];
+        data.specsFiles = [];
         const fileList = document.getElementById('fileList');
         if (fileList) fileList.innerHTML = '';
+        const specsFileList = document.getElementById('specsFileList');
+        if (specsFileList) specsFileList.innerHTML = '';
         
         const seasonFilter = document.getElementById('season-filter');
         if (seasonFilter) seasonFilter.value = '';
@@ -1445,7 +1613,7 @@ function renderSupplierTenders() {
                         
                         <!-- Footer -->
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-top: auto;">
-                            ${tender.files && tender.files.length > 0 ? `<span style="font-size: 0.75rem; color: #64748b;">📎 ${tender.files.length} file${tender.files.length > 1 ? 's' : ''}</span>` : '<span></span>'}
+                            <span></span>
                             <div style="display: flex; gap: 0.5rem;">
         `;
         
@@ -1475,7 +1643,7 @@ function renderSupplierTenders() {
                             `;
         } else if (tab === 'accepted' && myBid) {
             cardHTML += `
-                                <button class="btn-primary" style="padding: 0.5rem 1rem; font-size: 0.9rem;" onclick="openBidChat('${myBid.id}')">💬 Chat</button>
+                                <button class="btn-primary" style="padding: 0.5rem 1rem; font-size: 0.9rem;" onclick="openBidChat('${myBid.id}')">💬 Chat${chatBadge(myBid.id)}</button>
                                 <div style="background: #dcfce7; color: #166534; padding: 0.4rem 0.8rem; border-radius: 6px; font-weight: 600; font-size: 0.85rem;">✓ Order</div>
                             `;
         } else if (tab === 'dismissed') {
@@ -1598,16 +1766,16 @@ function renderBuyerDashboard() {
                                 <p style="font-size: 1.1rem; font-weight: 700; color: #06b6d4; margin: 0.2rem 0 0 0;">${tender.orderQty.toLocaleString()}</p>
                             </div>
                             <div>
-                                <p style="font-size: 0.65rem; color: #94a3b8; margin: 0; font-weight: 600; text-transform: uppercase;">Time Left</p>
-                                <p style="font-size: 1.1rem; font-weight: 700; color: #0f172a; margin: 0.2rem 0 0 0;" id="countdown-${tender.id}"></p>
+                                <p style="font-size: 0.65rem; color: #94a3b8; margin: 0; font-weight: 600; text-transform: uppercase;">Expected Time To Complete</p>
+                                <p style="font-size: 1.1rem; font-weight: 700; color: #0f172a; margin: 0.2rem 0 0 0;">${tender.leadTimeTarget * 7} days</p>
                             </div>
                         </div>
                         
                         <!-- Footer -->
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-top: auto;">
-                            ${tender.files && tender.files.length > 0 ? `<span style="font-size: 0.75rem; color: #64748b;">📎 ${tender.files.length} file${tender.files.length > 1 ? 's' : ''}</span>` : '<span></span>'}
+                            <span></span>
                             <div style="display: flex; gap: 0.5rem;">
-                                ${acceptedBid ? `<button class="btn-primary" style="padding: 0.5rem 1rem; font-size: 0.9rem;" onclick="openBidChat('${acceptedBid.id}')">💬 Chat</button>` : ''}
+                                ${acceptedBid ? `<button class="btn-primary" style="padding: 0.5rem 1rem; font-size: 0.9rem;" onclick="openBidChat('${acceptedBid.id}')">💬 Chat${chatBadge(acceptedBid.id)}</button>` : ''}
                                 ${tab === 'expired' ? `
                                     <button style="background: #06b6d4; color: white; border: none; padding: 0.5rem 1rem; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 0.9rem;" onclick="acceptHighestBid('${tender.id}')">✓ Accept Highest</button>
                                     <button style="background: #fbbf24; color: #0f172a; border: none; padding: 0.5rem 1rem; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 0.9rem;" onclick="relistTender('${tender.id}')">↻ Re-list</button>
@@ -1642,11 +1810,11 @@ function getBidActionsHTML(bid) {
             '<button class="btn-primary" style="padding: 0.5rem 1rem; font-size: 0.9rem;" onclick="acceptBid(\'' + bid.id + '\')">✓ Accept</button>' +
             '<button style="background: #fef3c7; color: #92400e; border: 1px solid #f59e0b; padding: 0.5rem 1rem; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 0.9rem;" onclick="counterBid(\'' + bid.id + '\')">⟷ Counter</button>' +
             '<button style="background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; padding: 0.5rem 1rem; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 0.9rem;" onclick="rejectBid(\'' + bid.id + '\')">✗ Reject</button>' +
-            '<button class="btn-primary" style="padding: 0.5rem 1rem; font-size: 0.9rem; background: #06b6d4;" onclick="openBidChat(\'' + bid.id + '\')">💬 Chat</button>' +
+            '<button class="btn-primary" style="padding: 0.5rem 1rem; font-size: 0.9rem; background: #06b6d4;" onclick="openBidChat(\'' + bid.id + '\')">💬 Chat' + chatBadge(bid.id) + '</button>' +
             '</div>';
     } else if (bid.status === 'accepted') {
         return '<div style="display: flex; gap: 0.75rem; justify-content: flex-end;">' +
-            '<button class="btn-primary" style="padding: 0.4rem 0.9rem; font-size: 0.85rem;" onclick="openBidChat(\'' + bid.id + '\')">💬 Chat</button>' +
+            '<button class="btn-primary" style="padding: 0.4rem 0.9rem; font-size: 0.85rem;" onclick="openBidChat(\'' + bid.id + '\')">💬 Chat' + chatBadge(bid.id) + '</button>' +
             '</div>';
     }
     return '';
@@ -1784,7 +1952,7 @@ function viewBids(tenderId) {
                 <p style="font-weight: 700; font-size: 1.25rem; margin: 0.5rem 0 0 0;">${tender.orderQty}</p>
             </div>
             <div style="background: white; padding: 1rem; border-radius: 0.5rem; border: 1px solid #e2e8f0;">
-                <p style="color: #64748b; font-size: 0.75rem; text-transform: uppercase; margin: 0;">Lead Time From Order</p>
+                <p style="color: #64748b; font-size: 0.75rem; text-transform: uppercase; margin: 0;">Expected Time To Complete Order</p>
                 <p style="font-weight: 700; font-size: 1.25rem; margin: 0.5rem 0 0 0;">${tender.leadTimeTarget} wks</p>
             </div>
             <div style="background: white; padding: 1rem; border-radius: 0.5rem; border: 1px solid #e2e8f0;">
@@ -1794,6 +1962,7 @@ function viewBids(tenderId) {
         </div>
         
         ${filesHTML}
+        ${specsFilesHTML}
         ${specsHTML}
         ${labellingHTML}
         ${bidsHTML}
