@@ -2045,13 +2045,16 @@ function renderBuyerDashboard() {
                         
                         <!-- Footer -->
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-top: auto;">
-                            <span></span>
+                            ${tab !== 'accepted' && tab !== 'expired' ? `<span id="countdown-${tender.id}" style="font-size:0.8rem;font-weight:700;color:#06b6d4;"></span>` : '<span></span>'}
                             <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
                                 ${acceptedBid ? `<button class="btn-primary" style="padding: 0.5rem 1rem; font-size: 0.9rem;" onclick="openBidChat('${acceptedBid.id}')">💬 Chat${chatBadge(acceptedBid.id)}</button>` : ''}
                                 ${tab === 'expired' ? `
                                     <button style="background: #06b6d4; color: white; border: none; padding: 0.5rem 1rem; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 0.9rem;" onclick="acceptHighestBid('${tender.id}')">✓ Accept Highest</button>
                                     <button style="background: #fbbf24; color: #0f172a; border: none; padding: 0.5rem 1rem; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 0.9rem;" onclick="relistTender('${tender.id}')">↻ Re-list</button>
-                                ` : `<button class="btn-primary" style="padding: 0.5rem 1rem; font-size: 0.9rem;" onclick="viewBids('${tender.id}')">View</button>`}
+                                ` : `
+                                    <button style="background:#f1f5f9;color:#0f172a;border:1px solid #d1d5db;padding:0.5rem 1rem;border-radius:8px;cursor:pointer;font-weight:600;font-size:0.9rem;" onclick="showEditTender('${tender.id}')">✏️ Edit</button>
+                                    <button class="btn-primary" style="padding: 0.5rem 1rem; font-size: 0.9rem;" onclick="viewBids('${tender.id}')">View</button>
+                                `}
                                 <button style="background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; padding: 0.5rem 1rem; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 0.9rem;" onclick="deleteTender('${tender.id}')">🗑</button>
                             </div>
                         </div>
@@ -2297,57 +2300,85 @@ function isExpired(deadlineDate) {
 }
 
 function showEditTender(tenderId) {
-    const tender = data.tenders.find(t => t.id === tenderId);
+    var tender = data.tenders.find(function(t) { return t.id === tenderId; });
     if (!tender) return;
-    
     data.editingTenderId = tenderId;
-    
-    const daysLeft = Math.ceil((tender.deadlineDate - Date.now()) / (1000*60*60*24));
-    
-    const contentHTML = `
-        <div class="form-group">
-            <label style="font-weight: 600; margin-bottom: 0;">Tender Details</label>
-            <p style="margin: 0.5rem 0 0 0; color: #64748b; font-size: 0.875rem;">
-                <strong>${tender.description}</strong> • ${tender.brand} • ${tender.seasonCode}
-            </p>
-        </div>
-        
-        <div class="form-group">
-            <label>Current Deadline</label>
-            <p style="padding: 0.75rem; background: #f1f5f9; border: 1px solid #d1d5db; border-radius: 6px; margin: 0.5rem 0 0 0;">
-                ${tender.deadlineDate.toLocaleDateString()} @ ${tender.deadlineDate.toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'})}
-                <br><span style="color: #64748b; font-size: 0.875rem;">${daysLeft} days remaining</span>
-            </p>
-        </div>
-        
-        <div class="form-group">
-            <label>Extend Deadline (days)</label>
-            <input type="number" id="extend-days" placeholder="e.g., 7" min="1" max="30" value="7" required style="width: 100%;">
-            <p style="margin: 0.5rem 0 0 0; color: #64748b; font-size: 0.875rem;">Add days to the current deadline</p>
-        </div>
-    `;
-    
-    document.getElementById('edit-tender-content').innerHTML = contentHTML;
+
+    var daysLeft = Math.ceil((new Date(tender.deadlineDate) - Date.now()) / (1000*60*60*24));
+    var deadlineStr = new Date(tender.deadlineDate).toLocaleDateString() + ' @ ' + new Date(tender.deadlineDate).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+
+    var html = '';
+    html += '<div style="background:#fef3c7;border:1px solid #fcd34d;border-radius:10px;padding:1rem 1.25rem;margin-bottom:1.5rem;">';
+    html += '<p style="font-weight:700;color:#92400e;margin:0 0 0.25rem 0;">⚠️ Editing will reset all bids</p>';
+    html += '<p style="font-size:0.875rem;color:#92400e;margin:0;">Any existing bids will be archived and suppliers will need to re-bid. The deadline stays the same (' + deadlineStr + ' — ' + (daysLeft > 0 ? daysLeft + 'd remaining' : 'expired') + ').</p>';
+    html += '</div>';
+
+    html += '<div class="form-row"><div class="form-group"><label>Brand</label><select id="edit-brand"><option>Yours Clothing</option><option>BadRhino</option></select></div>';
+    html += '<div class="form-group"><label>Category</label><select id="edit-category"><option>TOPS</option><option>BOTTOMS</option><option>OUTERWEAR</option></select></div></div>';
+
+    html += '<div class="form-group"><label>Tender Name</label><input type="text" id="edit-description" value="' + (tender.description||'').replace(/"/g,'&quot;') + '"></div>';
+
+    html += '<div class="form-row"><div class="form-group"><label>Season Code</label><select id="edit-season"><option>SS27</option><option>AW26</option><option>SS26</option><option>AW25</option><option>SS25</option></select></div>';
+    html += '<div class="form-group"><label>Fabric</label><input type="text" id="edit-fabric" value="' + (tender.fabric||'').replace(/"/g,'&quot;') + '"></div></div>';
+
+    html += '<div class="form-row"><div class="form-group"><label>Price Target £</label><input type="number" id="edit-price" step="0.01" min="0" value="' + (tender.priceTarget||'') + '"></div>';
+    html += '<div class="form-group"><label>Order Qty</label><input type="number" id="edit-qty" min="1" value="' + (tender.orderQty||'') + '"></div></div>';
+
+    html += '<div class="form-group"><label>Expected Time To Complete Order (weeks)</label><input type="number" id="edit-lead" min="1" value="' + (tender.leadTimeTarget||'') + '"></div>';
+
+    document.getElementById('edit-tender-content').innerHTML = html;
+
+    // Set dropdowns to current values
+    var brandSel = document.getElementById('edit-brand');
+    for (var i = 0; i < brandSel.options.length; i++) { if (brandSel.options[i].value === tender.brand) brandSel.selectedIndex = i; }
+    var catSel = document.getElementById('edit-category');
+    for (var i = 0; i < catSel.options.length; i++) { if (catSel.options[i].value === tender.category) catSel.selectedIndex = i; }
+    var seasonSel = document.getElementById('edit-season');
+    for (var i = 0; i < seasonSel.options.length; i++) { if (seasonSel.options[i].value === tender.seasonCode) seasonSel.selectedIndex = i; }
+
     showPage('edit-tender-page');
 }
 
 function updateTender(e) {
     e.preventDefault();
-    
-    const extendDays = parseInt(document.getElementById('extend-days').value);
-    if (!extendDays || extendDays < 1) {
-        alert('Please enter a valid number of days');
+
+    var tender = data.tenders.find(function(t) { return t.id === data.editingTenderId; });
+    if (!tender) return;
+
+    var newDesc = document.getElementById('edit-description').value.trim();
+    var newBrand = document.getElementById('edit-brand').value;
+    var newCat = document.getElementById('edit-category').value;
+    var newSeason = document.getElementById('edit-season').value;
+    var newFabric = document.getElementById('edit-fabric').value.trim();
+    var newPrice = parseFloat(document.getElementById('edit-price').value);
+    var newQty = parseInt(document.getElementById('edit-qty').value);
+    var newLead = parseInt(document.getElementById('edit-lead').value);
+
+    if (!newDesc || isNaN(newPrice) || isNaN(newQty) || isNaN(newLead)) {
+        alert('Please fill in all fields');
         return;
     }
-    
-    const tender = data.tenders.find(t => t.id === data.editingTenderId);
-    if (!tender) return;
-    
-    const newDeadline = new Date(tender.deadlineDate.getTime() + (extendDays * 24 * 60 * 60 * 1000));
-    tender.deadlineDate = newDeadline;
-    
-    alert(`✓ Deadline extended by ${extendDays} days`);
+
+    // Update tender fields — deadline stays unchanged
+    tender.description = newDesc;
+    tender.brand = newBrand;
+    tender.category = newCat;
+    tender.seasonCode = newSeason;
+    tender.fabric = newFabric;
+    tender.priceTarget = newPrice;
+    tender.orderQty = newQty;
+    tender.leadTimeTarget = newLead;
+    tender.editedAt = new Date();
+
+    // Archive all existing bids so suppliers must re-bid
+    data.bids.forEach(function(bid) {
+        if (bid.tenderId === tender.id && bid.status !== 'accepted') {
+            bid.status = 'archived';
+        }
+    });
+
     data.editingTenderId = null;
+    alert('✓ Tender updated. Existing bids have been reset — suppliers will need to re-bid.');
     backToBuyerDashboard();
 }
 </script>
