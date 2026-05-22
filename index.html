@@ -1858,118 +1858,176 @@ function viewBids(tenderId) {
 }
 
 function renderViewBids(tender, tenderBids) {
-    const imageFiles = (tender.files || []).filter(f => f.isImage && f.dataUrl);
-    const docFiles = (tender.files || []).filter(f => !f.isImage);
-    const allSpecsFiles = (tender.specsFiles || []);
+    // Store image data globally so onclick can safely access them
+    window._tenderImages = (tender.files || []).filter(f => f.isImage && f.dataUrl).map(f => f.dataUrl);
+    window._specsImages = (tender.specsFiles || []).filter(f => f.isImage && f.dataUrl).map(f => f.dataUrl);
 
-    const productsHTML = (tender.products && tender.products.length > 0) ? (() => {
-        const colours = ['#8b5cf6','#06b6d4','#f59e0b','#10b981','#ef4444','#6366f1'];
-        return '<div style="margin-bottom:1.5rem;"><p style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#94a3b8;margin:0 0 0.75rem 0;">Products in this Tender</p><div style="display:flex;flex-wrap:wrap;gap:0.6rem;">'
-            + tender.products.map((p,i) => {
-                const c = colours[i % colours.length];
-                return '<div style="display:flex;align-items:center;gap:0.5rem;background:#f8fafc;border:1px solid #e8ecf1;border-left:3px solid '+c+';padding:0.5rem 0.9rem;border-radius:8px;font-size:0.85rem;">'
-                    + '<span style="font-weight:700;color:#0f172a;">'+p.description+'</span>'
-                    + (p.colour ? '<span style="color:#94a3b8;">&#183;</span><span style="color:#64748b;">'+p.colour+'</span>' : '')
-                    + (p.qty ? '<span style="color:#94a3b8;">&#183;</span><span style="font-weight:600;color:'+c+';">'+p.qty.toLocaleString()+' units</span>' : '')
-                    + '</div>';
-            }).join('') + '</div></div>';
-    })() : '';
+    var html = '';
 
-    const imagesHTML = (imageFiles.length > 0 || docFiles.length > 0) ? ('<div style="margin-bottom:1.5rem;"><p style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#94a3b8;margin:0 0 0.75rem 0;">Reference Images</p><div style="display:flex;gap:0.75rem;flex-wrap:wrap;">'
-        + imageFiles.map((f,fi) => { window['_img_'+fi] = f.dataUrl; return '<img src="'+f.dataUrl+'" onclick="openImageModal(window[\"_img_'+fi+'\"])" style="width:90px;height:90px;object-fit:cover;border-radius:10px;cursor:pointer;border:1px solid #e8ecf1;">'; }).join('')
-        + docFiles.map(f => '<div style="width:90px;height:90px;background:#f1f5f9;border-radius:10px;display:flex;flex-direction:column;align-items:center;justify-content:center;border:1px solid #e8ecf1;"><span style="font-size:1.5rem;">&#x1F4C4;</span><span style="font-size:0.65rem;color:#64748b;margin-top:0.3rem;text-align:center;padding:0 4px;">'+f.name.substring(0,14)+'</span></div>').join('')
-        + '</div></div>') : '';
+    // ── HEADER ──────────────────────────────────────────
+    html += '<div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:2rem;flex-wrap:wrap;gap:1rem;">';
+    html += '<div>';
+    html += '<p style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#94a3b8;margin:0 0 0.35rem 0;">' + (tender.brand||'') + ' &middot; ' + (tender.category||'') + ' &middot; ' + (tender.seasonCode||'') + '</p>';
+    html += '<h1 style="font-size:1.75rem;font-weight:800;color:#0f172a;margin:0;letter-spacing:-0.5px;">' + tender.description + '</h1>';
+    html += '</div>';
+    html += '<button class="back-btn" onclick="backToBuyerDashboard()" style="background:#f1f5f9;padding:0.6rem 1.2rem;border-radius:8px;font-size:0.875rem;white-space:nowrap;">&larr; Back</button>';
+    html += '</div>';
 
-    const notesHTML = (tender.labellingReqs && tender.labellingReqs.trim()) ? '<div style="margin-bottom:1.5rem;"><p style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#94a3b8;margin:0 0 0.5rem 0;">Notes &amp; Requirements</p><p style="font-size:0.9rem;color:#475569;line-height:1.6;white-space:pre-wrap;margin:0;">'+tender.labellingReqs.replace(/</g,'&lt;').replace(/>/g,'&gt;')+'</p></div>' : '';
+    // ── STATS BAR ────────────────────────────────────────
+    html += '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:#e8ecf1;border-radius:12px;overflow:hidden;margin-bottom:2rem;">';
+    html += '<div style="background:white;padding:1.25rem 1.5rem;"><p style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#94a3b8;margin:0 0 0.35rem 0;">Price Target</p><p style="font-size:1.5rem;font-weight:800;color:#8b5cf6;margin:0;">&pound;' + tender.priceTarget + '</p></div>';
+    html += '<div style="background:white;padding:1.25rem 1.5rem;"><p style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#94a3b8;margin:0 0 0.35rem 0;">Total Units</p><p style="font-size:1.5rem;font-weight:800;color:#06b6d4;margin:0;">' + (tender.orderQty ? tender.orderQty.toLocaleString() : '&mdash;') + '</p></div>';
+    html += '<div style="background:white;padding:1.25rem 1.5rem;"><p style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#94a3b8;margin:0 0 0.35rem 0;">Time To Complete</p><p style="font-size:1.5rem;font-weight:800;color:#0f172a;margin:0;">' + (tender.leadTimeTarget * 7) + ' days</p></div>';
+    html += '<div style="background:white;padding:1.25rem 1.5rem;"><p style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#94a3b8;margin:0 0 0.35rem 0;">Bids Received</p><p style="font-size:1.5rem;font-weight:800;color:#0f172a;margin:0;">' + tenderBids.length + '</p></div>';
+    html += '</div>';
 
-    const fabricHTML = tender.fabric ? '<div style="margin-bottom:1rem;"><p style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#94a3b8;margin:0 0 0.3rem 0;">Fabric</p><p style="font-size:0.9rem;color:#0f172a;font-weight:600;margin:0;">'+tender.fabric+'</p></div>' : '';
+    // ── TWO COLUMN LAYOUT ────────────────────────────────
+    html += '<div style="display:grid;grid-template-columns:1fr 1.6fr;gap:2rem;align-items:start;">';
 
-    const specsDocsHTML = allSpecsFiles.length > 0 ? ('<div style="padding-top:1rem;border-top:1px solid #f1f5f9;"><p style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#94a3b8;margin:0 0 0.5rem 0;">Spec Documents</p><div style="display:flex;flex-wrap:wrap;gap:0.5rem;">'
-        + allSpecsFiles.map(f => f.isImage && f.dataUrl ? '<img src="'+f.dataUrl+'" style="width:60px;height:60px;object-fit:cover;border-radius:6px;border:1px solid #e8ecf1;">' : '<div style="background:#f1f5f9;padding:0.4rem 0.75rem;border-radius:6px;font-size:0.75rem;color:#64748b;">&#x1F4C4; '+f.name+'</div>').join('')
-        + '</div></div>') : '';
+    // LEFT COLUMN — tender detail
+    html += '<div style="background:white;border:1px solid #e8ecf1;border-radius:14px;padding:1.5rem;">';
 
-    function bidCard(bid) {
-        const displayPrice = (bid.counterPrice !== null && bid.counterPrice !== undefined) ? bid.counterPrice : bid.price;
-        const isAccepted = bid.status === 'accepted';
-        const isRejected = bid.status === 'rejected';
-        const isNegotiating = (bid.counterPrice !== null && bid.counterPrice !== undefined);
-        const s = isAccepted ? {label:'Accepted',bg:'#f0fdf4',border:'#86efac',pill:'#16a34a',pillBg:'#dcfce7'}
-            : isRejected ? {label:'Rejected',bg:'#fef2f2',border:'#fca5a5',pill:'#dc2626',pillBg:'#fee2e2'}
-            : isNegotiating ? {label:'Negotiating',bg:'#fffbeb',border:'#fcd34d',pill:'#b45309',pillBg:'#fef3c7'}
-            : {label:'Pending',bg:'white',border:'#e8ecf1',pill:'#4f46e5',pillBg:'#e0e7ff'};
-        const initials = bid.supplierName.split(' ').map(w=>w[0]).join('').substring(0,2).toUpperCase();
-        const trail = [{from:'supplier',price:bid.price}];
-        if (bid.negotiationHistory && bid.negotiationHistory.length > 0) trail.push(...bid.negotiationHistory);
-        const trailHTML = trail.length > 1 ? ('<div style="margin-top:1rem;padding-top:1rem;border-top:1px solid #f1f5f9;"><p style="font-size:0.7rem;font-weight:700;text-transform:uppercase;color:#94a3b8;margin:0 0 0.6rem 0;">Negotiation</p><div style="display:flex;align-items:center;gap:0.4rem;flex-wrap:wrap;">'
-            + trail.map((item,idx) => '<span style="background:'+(idx===trail.length-1?'#0f172a':'#f1f5f9')+';color:'+(idx===trail.length-1?'white':'#64748b')+';padding:0.3rem 0.7rem;border-radius:20px;font-size:0.8rem;font-weight:600;">'+(item.from==='buyer'?'&#x1F464;':'&#x1F3ED;')+' &#163;'+item.price.toFixed(2)+'</span>'+(idx<trail.length-1?'<span style="color:#cbd5e1;">&#8594;</span>':'')).join('')
-            + '</div></div>') : '';
-        const actions = getBidActionsHTML(bid);
-        return '<div style="background:'+s.bg+';border:1.5px solid '+s.border+';border-radius:14px;padding:1.5rem;margin-bottom:1rem;">'
-            + '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:1rem;">'
-            + '<div style="display:flex;align-items:center;gap:0.9rem;">'
-            + '<div style="width:42px;height:42px;background:linear-gradient(135deg,#8b5cf6,#06b6d4);border-radius:50%;display:flex;align-items:center;justify-content:center;color:white;font-weight:700;font-size:0.9rem;flex-shrink:0;">'+initials+'</div>'
-            + '<div><p style="font-weight:700;font-size:1rem;color:#0f172a;margin:0;">'+bid.supplierName+'</p><p style="font-size:0.8rem;color:#64748b;margin:0.15rem 0 0 0;">'+bid.leadTime+' day lead time</p></div>'
-            + '</div>'
-            + '<span style="background:'+s.pillBg+';color:'+s.pill+';padding:0.35rem 0.85rem;border-radius:20px;font-size:0.75rem;font-weight:700;">'+s.label+'</span>'
-            + '</div>'
-            + '<div style="display:flex;align-items:baseline;gap:0.4rem;margin-bottom:0.5rem;">'
-            + '<span style="font-size:2rem;font-weight:800;color:#0f172a;letter-spacing:-1px;">&#163;'+displayPrice.toFixed(2)+'</span>'
-            + '<span style="font-size:0.85rem;color:#94a3b8;">FOB per unit</span>'
-            + (isNegotiating ? '<span style="font-size:0.8rem;color:#94a3b8;text-decoration:line-through;margin-left:0.5rem;">was &#163;'+bid.price.toFixed(2)+'</span>' : '')
-            + '</div>'
-            + trailHTML
-            + (actions ? '<div style="margin-top:1.25rem;padding-top:1.25rem;border-top:1px solid #f1f5f9;">'+actions+'</div>' : '')
-            + '</div>';
+    // Products
+    if (tender.products && tender.products.length > 0) {
+        var colours = ['#8b5cf6','#06b6d4','#f59e0b','#10b981','#ef4444','#6366f1'];
+        html += '<p style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#94a3b8;margin:0 0 0.75rem 0;">Products</p>';
+        html += '<div style="display:flex;flex-wrap:wrap;gap:0.6rem;margin-bottom:1.5rem;">';
+        for (var pi = 0; pi < tender.products.length; pi++) {
+            var p = tender.products[pi];
+            var pc = colours[pi % colours.length];
+            html += '<div style="background:#f8fafc;border:1px solid #e8ecf1;border-left:3px solid ' + pc + ';padding:0.5rem 0.9rem;border-radius:8px;font-size:0.85rem;">';
+            html += '<span style="font-weight:700;color:#0f172a;">' + p.description + '</span>';
+            if (p.colour) html += ' <span style="color:#94a3b8;">&middot;</span> <span style="color:#64748b;">' + p.colour + '</span>';
+            if (p.qty) html += ' <span style="color:#94a3b8;">&middot;</span> <span style="font-weight:600;color:' + pc + ';">' + p.qty.toLocaleString() + ' units</span>';
+            html += '</div>';
+        }
+        html += '</div>';
     }
 
-    const bidsSection = tenderBids.length === 0
-        ? '<div style="text-align:center;padding:3rem 2rem;background:white;border-radius:14px;border:1.5px dashed #e8ecf1;"><p style="color:#94a3b8;font-size:1rem;margin:0;">No bids received yet</p></div>'
-        : '<div>' + tenderBids.map(bidCard).join('') + '</div>';
+    // Reference images — use data-imgindex to avoid escaping issues
+    if (window._tenderImages.length > 0) {
+        html += '<p style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#94a3b8;margin:0 0 0.75rem 0;">Reference Images</p>';
+        html += '<div style="display:flex;gap:0.75rem;flex-wrap:wrap;margin-bottom:1.5rem;">';
+        for (var ii = 0; ii < window._tenderImages.length; ii++) {
+            html += '<img src="' + window._tenderImages[ii] + '" data-imgindex="' + ii + '" class="tender-ref-img" style="width:90px;height:90px;object-fit:cover;border-radius:10px;cursor:pointer;border:1px solid #e8ecf1;">';
+        }
+        var docFiles = (tender.files || []).filter(function(f){ return !f.isImage; });
+        for (var di = 0; di < docFiles.length; di++) {
+            html += '<div style="width:90px;height:90px;background:#f1f5f9;border-radius:10px;display:flex;flex-direction:column;align-items:center;justify-content:center;border:1px solid #e8ecf1;font-size:1.5rem;">&#x1F4C4;<p style="font-size:0.65rem;color:#64748b;margin:0.25rem 0 0;text-align:center;padding:0 4px;">' + docFiles[di].name.substring(0,14) + '</p></div>';
+        }
+        html += '</div>';
+    }
 
-    const html = `
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:2rem;flex-wrap:wrap;gap:1rem;">
-            <div>
-                <p style="font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#94a3b8;margin:0 0 0.35rem 0;">${tender.brand} &middot; ${tender.category} &middot; ${tender.seasonCode}</p>
-                <h1 style="font-size:1.75rem;font-weight:800;color:#0f172a;margin:0;letter-spacing:-0.5px;">${tender.description}</h1>
-            </div>
-            <button class="back-btn" onclick="backToBuyerDashboard()" style="background:#f1f5f9;padding:0.6rem 1.2rem;border-radius:8px;font-size:0.875rem;">&#8592; Back</button>
-        </div>
+    // Notes
+    if (tender.labellingReqs && tender.labellingReqs.trim()) {
+        html += '<p style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#94a3b8;margin:0 0 0.5rem 0;">Notes &amp; Requirements</p>';
+        html += '<p style="font-size:0.9rem;color:#475569;line-height:1.6;white-space:pre-wrap;margin:0 0 1.25rem 0;">' + tender.labellingReqs + '</p>';
+    }
 
-        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:#e8ecf1;border-radius:12px;overflow:hidden;margin-bottom:2rem;">
-            <div style="background:white;padding:1.25rem 1.5rem;">
-                <p style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#94a3b8;margin:0 0 0.35rem 0;">Price Target</p>
-                <p style="font-size:1.5rem;font-weight:800;color:#8b5cf6;margin:0;letter-spacing:-0.5px;">&#163;${tender.priceTarget}</p>
-            </div>
-            <div style="background:white;padding:1.25rem 1.5rem;">
-                <p style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#94a3b8;margin:0 0 0.35rem 0;">Total Units</p>
-                <p style="font-size:1.5rem;font-weight:800;color:#06b6d4;margin:0;letter-spacing:-0.5px;">${tender.orderQty ? tender.orderQty.toLocaleString() : '&mdash;'}</p>
-            </div>
-            <div style="background:white;padding:1.25rem 1.5rem;">
-                <p style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#94a3b8;margin:0 0 0.35rem 0;">Time To Complete</p>
-                <p style="font-size:1.5rem;font-weight:800;color:#0f172a;margin:0;letter-spacing:-0.5px;">${tender.leadTimeTarget * 7} days</p>
-            </div>
-            <div style="background:white;padding:1.25rem 1.5rem;">
-                <p style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#94a3b8;margin:0 0 0.35rem 0;">Bids Received</p>
-                <p style="font-size:1.5rem;font-weight:800;color:#0f172a;margin:0;letter-spacing:-0.5px;">${tenderBids.length}</p>
-            </div>
-        </div>
+    // Fabric
+    if (tender.fabric) {
+        html += '<p style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#94a3b8;margin:0 0 0.3rem 0;">Fabric</p>';
+        html += '<p style="font-size:0.9rem;color:#0f172a;font-weight:600;margin:0 0 1.25rem 0;">' + tender.fabric + '</p>';
+    }
 
-        <div style="display:grid;grid-template-columns:1fr 1.6fr;gap:2rem;align-items:start;">
-            <div style="background:white;border:1px solid #e8ecf1;border-radius:14px;padding:1.5rem;">
-                ${productsHTML}
-                ${imagesHTML}
-                ${notesHTML}
-                ${fabricHTML}
-                ${specsDocsHTML}
-            </div>
-            <div>
-                <p style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#94a3b8;margin:0 0 1rem 0;">Supplier Bids</p>
-                ${bidsSection}
-            </div>
-        </div>
-    `;
+    // Spec docs
+    if (window._specsImages.length > 0 || (tender.specsFiles || []).filter(function(f){ return !f.isImage; }).length > 0) {
+        html += '<div style="padding-top:1rem;border-top:1px solid #f1f5f9;">';
+        html += '<p style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#94a3b8;margin:0 0 0.5rem 0;">Spec Documents</p>';
+        html += '<div style="display:flex;flex-wrap:wrap;gap:0.5rem;">';
+        for (var si = 0; si < window._specsImages.length; si++) {
+            html += '<img src="' + window._specsImages[si] + '" data-specindex="' + si + '" class="spec-ref-img" style="width:60px;height:60px;object-fit:cover;border-radius:6px;border:1px solid #e8ecf1;cursor:pointer;">';
+        }
+        var specDocs = (tender.specsFiles || []).filter(function(f){ return !f.isImage; });
+        for (var sd = 0; sd < specDocs.length; sd++) {
+            html += '<div style="background:#f1f5f9;padding:0.4rem 0.75rem;border-radius:6px;font-size:0.75rem;color:#64748b;">&#x1F4C4; ' + specDocs[sd].name + '</div>';
+        }
+        html += '</div></div>';
+    }
 
-    document.getElementById('buyer-bid-detail').innerHTML = html;
+    html += '</div>'; // end left column
+
+    // RIGHT COLUMN — bids
+    html += '<div>';
+    html += '<p style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#94a3b8;margin:0 0 1rem 0;">Supplier Bids</p>';
+
+    if (tenderBids.length === 0) {
+        html += '<div style="text-align:center;padding:3rem 2rem;background:white;border-radius:14px;border:1.5px dashed #e8ecf1;"><p style="color:#94a3b8;font-size:1rem;margin:0;">No bids received yet</p></div>';
+    } else {
+        for (var bi = 0; bi < tenderBids.length; bi++) {
+            var bid = tenderBids[bi];
+            var displayPrice = (bid.counterPrice !== null && bid.counterPrice !== undefined) ? bid.counterPrice : bid.price;
+            var isNeg = (bid.counterPrice !== null && bid.counterPrice !== undefined);
+            var s;
+            if (bid.status === 'accepted') s = {label:'Accepted', bg:'#f0fdf4', border:'#86efac', pill:'#16a34a', pillBg:'#dcfce7'};
+            else if (bid.status === 'rejected') s = {label:'Rejected', bg:'#fef2f2', border:'#fca5a5', pill:'#dc2626', pillBg:'#fee2e2'};
+            else if (isNeg) s = {label:'Negotiating', bg:'#fffbeb', border:'#fcd34d', pill:'#b45309', pillBg:'#fef3c7'};
+            else s = {label:'Pending', bg:'white', border:'#e8ecf1', pill:'#4f46e5', pillBg:'#e0e7ff'};
+            var initials = bid.supplierName.split(' ').map(function(w){ return w[0]; }).join('').substring(0,2).toUpperCase();
+
+            html += '<div style="background:' + s.bg + ';border:1.5px solid ' + s.border + ';border-radius:14px;padding:1.5rem;margin-bottom:1rem;">';
+
+            // Supplier header row
+            html += '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:1rem;">';
+            html += '<div style="display:flex;align-items:center;gap:0.9rem;">';
+            html += '<div style="width:42px;height:42px;background:linear-gradient(135deg,#8b5cf6,#06b6d4);border-radius:50%;display:flex;align-items:center;justify-content:center;color:white;font-weight:700;font-size:0.9rem;flex-shrink:0;">' + initials + '</div>';
+            html += '<div><p style="font-weight:700;font-size:1rem;color:#0f172a;margin:0;">' + bid.supplierName + '</p><p style="font-size:0.8rem;color:#64748b;margin:0.15rem 0 0 0;">' + bid.leadTime + ' day lead time</p></div>';
+            html += '</div>';
+            html += '<span style="background:' + s.pillBg + ';color:' + s.pill + ';padding:0.35rem 0.85rem;border-radius:20px;font-size:0.75rem;font-weight:700;">' + s.label + '</span>';
+            html += '</div>';
+
+            // Price
+            html += '<div style="display:flex;align-items:baseline;gap:0.4rem;margin-bottom:0.5rem;">';
+            html += '<span style="font-size:2rem;font-weight:800;color:#0f172a;letter-spacing:-1px;">&pound;' + displayPrice.toFixed(2) + '</span>';
+            html += '<span style="font-size:0.85rem;color:#94a3b8;">FOB per unit</span>';
+            if (isNeg) html += '<span style="font-size:0.8rem;color:#94a3b8;text-decoration:line-through;margin-left:0.5rem;">was &pound;' + bid.price.toFixed(2) + '</span>';
+            html += '</div>';
+
+            // Negotiation trail
+            var trail = [{from:'supplier', price:bid.price}];
+            if (bid.negotiationHistory && bid.negotiationHistory.length > 0) {
+                for (var ni = 0; ni < bid.negotiationHistory.length; ni++) trail.push(bid.negotiationHistory[ni]);
+            }
+            if (trail.length > 1) {
+                html += '<div style="margin-top:1rem;padding-top:1rem;border-top:1px solid #f1f5f9;">';
+                html += '<p style="font-size:0.7rem;font-weight:700;text-transform:uppercase;color:#94a3b8;margin:0 0 0.6rem 0;">Negotiation</p>';
+                html += '<div style="display:flex;align-items:center;gap:0.4rem;flex-wrap:wrap;">';
+                for (var ti = 0; ti < trail.length; ti++) {
+                    var isLast = ti === trail.length - 1;
+                    html += '<span style="background:' + (isLast ? '#0f172a' : '#f1f5f9') + ';color:' + (isLast ? 'white' : '#64748b') + ';padding:0.3rem 0.7rem;border-radius:20px;font-size:0.8rem;font-weight:600;">';
+                    html += (trail[ti].from === 'buyer' ? '&#x1F464;' : '&#x1F3ED;') + ' &pound;' + trail[ti].price.toFixed(2);
+                    html += '</span>';
+                    if (!isLast) html += '<span style="color:#cbd5e1;">&rarr;</span>';
+                }
+                html += '</div></div>';
+            }
+
+            // Actions
+            var actions = getBidActionsHTML(bid);
+            if (actions) {
+                html += '<div style="margin-top:1.25rem;padding-top:1.25rem;border-top:1px solid #f1f5f9;">' + actions + '</div>';
+            }
+            html += '</div>'; // end bid card
+        }
+    }
+
+    html += '</div>'; // end right column
+    html += '</div>'; // end two col grid
+
+    var container = document.getElementById('buyer-bid-detail');
+    container.innerHTML = html;
+
+    // Attach image click handlers via JS (avoids all escaping issues)
+    container.querySelectorAll('.tender-ref-img').forEach(function(img) {
+        img.addEventListener('click', function() {
+            openImageModal(window._tenderImages[parseInt(this.dataset.imgindex)]);
+        });
+    });
+    container.querySelectorAll('.spec-ref-img').forEach(function(img) {
+        img.addEventListener('click', function() {
+            openImageModal(window._specsImages[parseInt(this.dataset.specindex)]);
+        });
+    });
 }
 
 function switchBuyerTab(tab) {
