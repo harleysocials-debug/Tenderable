@@ -558,9 +558,9 @@
     </div>
     <div class="content">
         <div class="tabs">
-            <button class="tab-btn active" onclick="switchBuyerTab('open')">Open Tenders (<span id="open-count">0</span>)</button>
-            <button class="tab-btn" onclick="switchBuyerTab('accepted')">Accepted (<span id="accepted-count">0</span>)</button>
-            <button class="tab-btn" onclick="switchBuyerTab('expired')">Expired (<span id="expired-count">0</span>)</button>
+            <button class="tab-btn active" onclick="switchBuyerTab('open')">Open Tenders (<span id="buy-open-count">0</span>)</button>
+            <button class="tab-btn" onclick="switchBuyerTab('accepted')">Accepted (<span id="buy-accepted-count">0</span>)</button>
+            <button class="tab-btn" onclick="switchBuyerTab('expired')">Expired (<span id="buy-expired-count">0</span>)</button>
         </div>
         <div style="margin-bottom: 2rem; display: flex; gap: 1rem; align-items: center;">
             <label style="font-weight: 600; color: #0f172a;">Filter by Season:</label>
@@ -1987,9 +1987,9 @@ function renderBuyerDashboard() {
     const acceptedCount = data.tenders.filter(t => data.bids.some(b => b.tenderId === t.id && b.status === 'accepted')).length;
     const expiredCount = data.tenders.filter(t => isExpired(t.deadlineDate) && !data.bids.some(b => b.tenderId === t.id && b.status === 'accepted')).length;
     
-    document.getElementById('open-count').textContent = openCount;
-    document.getElementById('accepted-count').textContent = acceptedCount;
-    document.getElementById('expired-count').textContent = expiredCount;
+    document.getElementById('buy-open-count').textContent = openCount;
+    document.getElementById('buy-accepted-count').textContent = acceptedCount;
+    document.getElementById('buy-expired-count').textContent = expiredCount;
     
     container.innerHTML = tenders.map(tender => {
         const tenderBids = data.bids.filter(b => b.tenderId === tender.id);
