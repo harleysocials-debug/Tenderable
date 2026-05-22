@@ -1308,17 +1308,40 @@ function switchTenderTab(tab) {
 var productCount = 0;
 function addProductRow() {
     productCount++;
-    const id = 'product-row-' + productCount;
-    const div = document.createElement('div');
-    div.id = id;
-    div.style.cssText = 'display:grid;grid-template-columns:2fr 1.5fr 1fr auto;gap:0.75rem;align-items:center;background:#f9fafb;padding:1rem;border-radius:10px;border:1px solid #e8ecf1;';
-    div.innerHTML = `
-        <input type="text" placeholder="Product description e.g. Plain Black Tee" class="product-desc" style="padding:0.75rem;border:1px solid #d1d5db;border-radius:8px;font-size:0.9rem;font-family:inherit;">
-        <input type="text" placeholder="Colourway e.g. Black / #000000" class="product-colour" style="padding:0.75rem;border:1px solid #d1d5db;border-radius:8px;font-size:0.9rem;font-family:inherit;">
-        <input type="number" placeholder="Qty" class="product-qty" min="1" style="padding:0.75rem;border:1px solid #d1d5db;border-radius:8px;font-size:0.9rem;font-family:inherit;">
-        <button type="button" onclick="document.getElementById('${id}').remove();updateProductsHint()" style="background:#fee2e2;color:#991b1b;border:none;padding:0.75rem;border-radius:8px;cursor:pointer;font-weight:700;font-size:1rem;">✕</button>
-    `;
-    document.getElementById('products-list').appendChild(div);
+    var row = document.createElement('div');
+    row.style.cssText = 'display:flex;gap:0.75rem;align-items:center;background:#f9fafb;padding:1rem;border-radius:10px;border:1px solid #e8ecf1;';
+
+    var inp1 = document.createElement('input');
+    inp1.type = 'text';
+    inp1.placeholder = 'Product e.g. Plain Black Tee';
+    inp1.className = 'product-desc';
+    inp1.style.cssText = 'flex:2;padding:0.75rem;border:1px solid #d1d5db;border-radius:8px;font-size:0.9rem;font-family:inherit;min-width:0;';
+
+    var inp2 = document.createElement('input');
+    inp2.type = 'text';
+    inp2.placeholder = 'Colourway e.g. Black';
+    inp2.className = 'product-colour';
+    inp2.style.cssText = 'flex:1.5;padding:0.75rem;border:1px solid #d1d5db;border-radius:8px;font-size:0.9rem;font-family:inherit;min-width:0;';
+
+    var inp3 = document.createElement('input');
+    inp3.type = 'number';
+    inp3.placeholder = 'Qty';
+    inp3.className = 'product-qty';
+    inp3.min = '1';
+    inp3.style.cssText = 'flex:1;padding:0.75rem;border:1px solid #d1d5db;border-radius:8px;font-size:0.9rem;font-family:inherit;min-width:0;';
+
+    var btn = document.createElement('button');
+    btn.type = 'button';
+    btn.textContent = '✕';
+    btn.style.cssText = 'background:#fee2e2;color:#991b1b;border:none;padding:0.75rem 1rem;border-radius:8px;cursor:pointer;font-weight:700;font-size:1rem;flex-shrink:0;';
+    btn.addEventListener('click', function() { row.remove(); updateProductsHint(); });
+
+    row.appendChild(inp1);
+    row.appendChild(inp2);
+    row.appendChild(inp3);
+    row.appendChild(btn);
+
+    document.getElementById('products-list').appendChild(row);
     document.getElementById('products-empty-hint').style.display = 'none';
 }
 
@@ -1785,7 +1808,7 @@ function renderBuyerDashboard() {
                         </div>
                         
                         <!-- Metrics Row -->
-                        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.75rem; margin: 0.75rem 0; padding: 0.75rem 0; border-top: 1px solid #e8ecf1; border-bottom: 1px solid #e8ecf1;">
+                        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 0.75rem; margin: 0.75rem 0; padding: 0.75rem 0; border-top: 1px solid #e8ecf1; border-bottom: 1px solid #e8ecf1;">
                             <div>
                                 <p style="font-size: 0.65rem; color: #94a3b8; margin: 0; font-weight: 600; text-transform: uppercase;">Price</p>
                                 <p style="font-size: 1.1rem; font-weight: 700; color: #8b5cf6; margin: 0.2rem 0 0 0;">£${tender.priceTarget.toFixed(2)}</p>
@@ -1795,7 +1818,11 @@ function renderBuyerDashboard() {
                                 <p style="font-size: 1.1rem; font-weight: 700; color: #06b6d4; margin: 0.2rem 0 0 0;">${tender.orderQty.toLocaleString()}</p>
                             </div>
                             <div>
-                                <p style="font-size: 0.65rem; color: #94a3b8; margin: 0; font-weight: 600; text-transform: uppercase;">Expected Time To Complete</p>
+                                <p style="font-size: 0.65rem; color: #94a3b8; margin: 0; font-weight: 600; text-transform: uppercase;">Fabric</p>
+                                <p style="font-size: 1.1rem; font-weight: 700; color: #0f172a; margin: 0.2rem 0 0 0;">${tender.fabric || '—'}</p>
+                            </div>
+                            <div>
+                                <p style="font-size: 0.65rem; color: #94a3b8; margin: 0; font-weight: 600; text-transform: uppercase;">Lead Time</p>
                                 <p style="font-size: 1.1rem; font-weight: 700; color: #0f172a; margin: 0.2rem 0 0 0;">${tender.leadTimeTarget * 7} days</p>
                             </div>
                         </div>
@@ -1803,13 +1830,13 @@ function renderBuyerDashboard() {
                         <!-- Footer -->
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-top: auto;">
                             <span></span>
-                            <div style="display: flex; gap: 0.5rem;">
+                            <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
                                 ${acceptedBid ? `<button class="btn-primary" style="padding: 0.5rem 1rem; font-size: 0.9rem;" onclick="openBidChat('${acceptedBid.id}')">💬 Chat${chatBadge(acceptedBid.id)}</button>` : ''}
                                 ${tab === 'expired' ? `
                                     <button style="background: #06b6d4; color: white; border: none; padding: 0.5rem 1rem; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 0.9rem;" onclick="acceptHighestBid('${tender.id}')">✓ Accept Highest</button>
                                     <button style="background: #fbbf24; color: #0f172a; border: none; padding: 0.5rem 1rem; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 0.9rem;" onclick="relistTender('${tender.id}')">↻ Re-list</button>
-                                    <button style="background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; padding: 0.5rem 1rem; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 0.9rem;" onclick="deleteTender('${tender.id}')">🗑 Delete</button>
                                 ` : `<button class="btn-primary" style="padding: 0.5rem 1rem; font-size: 0.9rem;" onclick="viewBids('${tender.id}')">View</button>`}
+                                <button style="background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; padding: 0.5rem 1rem; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 0.9rem;" onclick="deleteTender('${tender.id}')">🗑</button>
                             </div>
                         </div>
                     </div>
