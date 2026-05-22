@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tenderable - Development Inquiry Platform</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', sans-serif;
+            background: #f7f9fb;
+            color: #0f172a;
+        }
+        .login-container {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #0a1118 0%, #0f172a 50%, #1a1f2e 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
+        .login-box {
+            width: 100%;
+            max-width: 500px;
+        }
+        .login-box h1 {
+            font-size: 2.75rem;
+            color: white;
+            margin-bottom: 0.75rem;
+            font-weight: 800;
+        }
+        .login-box p {
+            color: #a0aec0;
+            font-size: 1rem;
+            margin-bottom: 3.5rem;
+        }
+        .button-group {
+            display: flex;
+            flex-direction: column;
+            gap: 1.2rem;
+            margin-bottom: 3rem;
+        }
+        button {
+            padding: 1.1rem 1.5rem;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .btn-supplier {
+            background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);
+            color: white;
+        }
+        .btn-buyer {
+            background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%);
+            color: white;
+        }
+        button:hover { 
+            transform: translateY(-2px);
+        }
+        .demo-box {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            padding: 1.5rem;
+            border-radius: 12px;
+            color: #cbd5e1;
+            font-size: 0.875rem;
+        }
+        .dashboard {
+            min-height: 100vh;
+            background: #f7f9fb;
+        }
+        .header {
+            background: white;
+            border-bottom: 1px solid #e8ecf1;
+            padding: 1.5rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 50;
+        }
+        .header h1 {
+            font-size: 1.25rem;
+            font-weight: 700;
+            margin: 0;
+            background: linear-gradient(135deg, #8b5cf6, #0891b2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .content {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2.5rem 2rem;
+        }
+        .tabs {
+            margin-bottom: 2.5rem;
+            border-bottom: 1px solid #e8ecf1;
+            display: flex;
+            gap: 2.5rem;
+        }
+        .tab-btn {
+            background: none;
+            border: none;
+            padding: 1rem 0;
+            font-weight: 600;
+            cursor: pointer;
+            color: #64748b;
+            border-bottom: 3px solid transparent;
+            transition: all 0.25s;
+            font-size: 0.95rem;
+        }
+        .tab-btn.active {
+            color: #8b5cf6;
+            border-bottom-color: #8b5cf6;
+        }
+        .tender-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(480px, 1fr));
+            gap: 1.5rem;
+        }
+        .tender-card {
+            background: white;
+            border-radius: 12px;
+            border: 1px solid #e8ecf1;
+            padding: 1.75rem;
+            cursor: pointer;
+            transition: all 0.35s;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.03);
+        }
+        .tender-card:hover {
+            border-color: #d1d5db;
+            box-shadow: 0 16px 32px rgba(0, 0, 0, 0.1);
+            transform: translateY(-6px);
+        }
+        .form-container {
+            background: white;
+            border-radius: 12px;
+            border: 1px solid #e8ecf1;
+            padding: 2.5rem;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.75rem;
+        }
+        .form-group {
+            margin-bottom: 2rem;
+        }
+        .form-group label {
+            display: block;
+            font-size: 0.875rem;
+            font-weight: 700;
+            color: #0f172a;
+            margin-bottom: 0.75rem;
+        }
+        input, select, textarea {
+            width: 100%;
+            padding: 0.9rem 1.1rem;
+            border: 1px solid #d1d5db;
+            border-radius: 10px;
+            font-family: inherit;
+            font-size: 0.95rem;
+        }
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #8b5cf6;
+            box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.08);
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%);
+            color: white;
+            padding: 0.85rem 1.75rem;
+            border: none;
+            border-radius: 10px;
+            font-weight: 700;
+            cursor: pointer;
+            font-size: 0.95rem;
+        }
+        .back-btn {
+            background: none;
+            border: none;
+            color: #0f172a;
+            font-weight: 700;
+            cursor: pointer;
+            font-size: 0.95rem;
+        }
+        .empty-state {
+            text-align: center;
+            padding: 4rem 2rem;
+            background: white;
+            border-radius: 12px;
+            border: 1px dashed #d1d5db;
+            color: #64748b;
+        }
+        .hidden {
+            display: none !important;
+        }
+    </style>
+</head>
+<body>
+
+<div id="login-page" class="login-container">
+    <div class="login-box">
+        <h1>Tenderable</h1>
+        <p>Development Inquiry Platform</p>
+        <div class="button-group">
+            <button class="btn-supplier" onclick="loginSupplier()">Login as Supplier</button>
+            <button class="btn-buyer" onclick="loginBuyer()">Login as Buyer</button>
+        </div>
+        <div class="demo-box">
+            <strong>Demo Account (Supplier):</strong><br>
+            Global Textiles Ltd<br>
+            Categories: Tops, Bottoms, Outerwear
+        </div>
+    </div>
+</div>
+
+<div id="supplier-page" class="dashboard hidden">
+    <div class="header">
+        <div>
+            <h1>Tenderable</h1>
+            <p>Global Textiles Ltd • Supplier</p>
+        </div>
+        <button class="back-btn" onclick="logout()">Logout</button>
+    </div>
+    <div class="content">
+        <div class="tabs">
+            <button class="tab-btn active" onclick="switchSupplierTab('available')">Available (<span id="available-count">0</span>)</button>
+            <button class="tab-btn" onclick="switchSupplierTab('active')">Active (<span id="active-count">0</span>)</button>
+            <button class="tab-btn" onclick="switchSupplierTab('accepted')">Accepted (<span id="accepted-count">0</span>)</button>
+        </div>
+        <div id="supplier-tenders" class="tender-grid"></div>
+    </div>
+</div>
+
+<div id="buyer-page" class="dashboard hidden">
+    <div class="header">
+        <div>
+            <h1>Tenderable</h1>
+            <p>Buyer Dashboard • Yours Clothing</p>
+        </div>
+        <div>
+            <button class="btn-primary" onclick="showCreateTender()" style="margin-right: 1rem;">+ New Tender</button>
+            <button class="back-btn" onclick="logout()">Logout</button>
+        </div>
+    </div>
+    <div class="content">
+        <div class="tabs">
+            <button class="tab-btn active" onclick="switchBuyerTab('open')">Open Tenders (<span id="open-count">0</span>)</button>
+            <button class="tab-btn" onclick="switchBuyerTab('accepted')">Accepted (<span id="accepted-count">0</span>)</button>
+        </div>
+        <div id="buyer-tenders" class="tender-grid"></div>
+    </div>
+</div>
+
+<div id="create-tender-page" class="dashboard hidden">
+    <div class="header">
+        <button class="back-btn" onclick="backToBuyerDashboard()">← Back</button>
+        <button class="back-btn" onclick="logout()">Logout</button>
+    </div>
+    <div class="content">
+        <h1 style="font-size: 2rem; margin-bottom: 2rem;">Create Development Tender</h1>
+        <form class="form-container" onsubmit="submitTender(event)">
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Brand</label>
+                    <select id="brand">
+                        <option value="">Select Brand</option>
+                        <option>Yours Clothing</option>
+                        <option>BadRhino</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Category</label>
+                    <select id="category">
+                        <option value="">Select Category</option>
+                        <option>TOPS</option>
+                        <option>BOTTOMS</option>
+                        <option>OUTERWEAR</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label>Description</label>
+                <input type="text" id="description" placeholder="e.g., Men's Hoodie">
+            </div>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Price Target £</label>
+                    <input type="number" id="priceTarget" placeholder="e.g., 22.50" step="0.01" min="0">
+                </div>
+                <div class="form-group">
+                    <label>Order Qty</label>
+                    <input type="number" id="orderQty" placeholder="e.g., 500" min="1">
+                </div>
+            </div>
+            
+            <div style="display: flex; gap: 1rem;">
+                <button type="submit" class="btn-primary" style="flex: 1;">Create Tender</button>
+                <button type="button" onclick="backToBuyerDashboard()" style="flex: 1; background: #e2e8f0; color: #0f172a;">Cancel</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+const data = {
+    currentUser: null,
+    tenders: [],
+    bids: []
+};
+
+function loginSupplier() {
+    data.currentUser = { type: 'supplier', id: 'sup1', name: 'Global Textiles Ltd' };
+    showPage('supplier-page');
+    renderSupplierTenders();
+}
+
+function loginBuyer() {
+    data.currentUser = { type: 'buyer', id: 'buyer1', name: 'Yours Clothing' };
+    showPage('buyer-page');
+    renderBuyerDashboard();
+}
+
+function logout() {
+    data.currentUser = null;
+    showPage('login-page');
+}
+
+function showPage(pageId) {
+    document.querySelectorAll('div[id$="-page"]').forEach(p => p.classList.add('hidden'));
+    document.getElementById(pageId).classList.remove('hidden');
+}
+
+function showCreateTender() {
+    showPage('create-tender-page');
+}
+
+function backToBuyerDashboard() {
+    showPage('buyer-page');
+    renderBuyerDashboard();
+}
+
+function submitTender(e) {
+    e.preventDefault();
+    
+    const brand = document.getElementById('brand').value.trim();
+    const category = document.getElementById('category').value.trim();
+    const description = document.getElementById('description').value.trim();
+    const priceTarget = document.getElementById('priceTarget').value.trim();
+    const orderQty = document.getElementById('orderQty').value.trim();
+    
+    if (!brand || !category || !description || !priceTarget || !orderQty) {
+        alert('Please fill all fields');
+        return;
+    }
+    
+    const tender = {
+        id: `tender-${Date.now()}`,
+        brand,
+        category,
+        description,
+        priceTarget: parseFloat(priceTarget),
+        orderQty: parseInt(orderQty),
+        createdAt: new Date()
+    };
+    
+    data.tenders.push(tender);
+    alert('✓ Tender created successfully!');
+    backToBuyerDashboard();
+}
+
+function renderSupplierTenders() {
+    const container = document.getElementById('supplier-tenders');
+    container.innerHTML = '<div class="empty-state"><p>No tenders available</p></div>';
+}
+
+function renderBuyerDashboard() {
+    const container = document.getElementById('buyer-tenders');
+    
+    if (data.tenders.length === 0) {
+        container.innerHTML = '<div class="empty-state" style="grid-column: 1/-1;"><p>No tenders created yet</p></div>';
+        return;
+    }
+    
+    container.innerHTML = data.tenders.map(tender => `
+        <div class="tender-card">
+            <h3>${tender.description}</h3>
+            <p>${tender.brand} • ${tender.category}</p>
+            <p>Price: £${tender.priceTarget} • Qty: ${tender.orderQty}</p>
+        </div>
+    `).join('');
+}
+
+function switchSupplierTab(tab) {
+    document.querySelectorAll('#supplier-page .tab-btn').forEach(b => b.classList.remove('active'));
+    event.target.classList.add('active');
+}
+
+function switchBuyerTab(tab) {
+    document.querySelectorAll('#buyer-page .tab-btn').forEach(b => b.classList.remove('active'));
+    event.target.classList.add('active');
+}
+</script>
+
+</body>
+</html>
