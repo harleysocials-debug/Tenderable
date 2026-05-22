@@ -1118,14 +1118,13 @@ function addSpecField() {
                class="spec-input" style="flex: 1; padding: 0.75rem; border: 1px solid #d1d5db; border-radius: 6px; font-size: 0.95rem;">
         <input type="text" placeholder="e.g., 280gsm, Grade 5" 
                class="spec-value" style="flex: 1; padding: 0.75rem; border: 1px solid #d1d5db; border-radius: 6px; font-size: 0.95rem;">
-        <button type="button" onclick="removeSpec('${specId}')" style="background: #fee2e2; color: #991b1b; border: none; padding: 0.75rem 1rem; border-radius: 6px; cursor: pointer; font-weight: 600;">✕</button>
+        <button type="button" onclick="removeSpec(this)" style="background: #fee2e2; color: #991b1b; border: none; padding: 0.75rem 1rem; border-radius: 6px; cursor: pointer; font-weight: 600;">✕</button>
     `;
     specsList.appendChild(specDiv);
 }
 
-function removeSpec(specId) {
-    const element = document.getElementById(specId);
-    if (element) element.remove();
+function removeSpec(button) {
+    button.parentElement.remove();
 }
 
 function getSpecsFromForm() {
