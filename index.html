@@ -2487,6 +2487,7 @@ function viewDevelopment(devId) {
         html += '<div style="display:flex;gap:0.5rem;flex-wrap:wrap;">';
         html += '<button onclick="showEditTender(' + "'" + devId + "'" + ')" style="background:#f1f5f9;color:#0f172a;border:1px solid #d1d5db;padding:0.6rem 1.1rem;border-radius:8px;cursor:pointer;font-weight:600;font-size:0.875rem;">&#9999; Edit</button>';
         html += '<button onclick="sendDevToTender(' + "'" + devId + "'" + ')" style="background:linear-gradient(135deg,#06b6d4,#0891b2);color:white;border:none;padding:0.6rem 1.1rem;border-radius:8px;cursor:pointer;font-weight:600;font-size:0.875rem;">Send to Tender</button>';
+        html += '<button onclick="confirmDeleteDev(' + "'" + devId + "'" + ')" style="background:#fee2e2;color:#991b1b;border:1px solid #fca5a5;padding:0.6rem 1.1rem;border-radius:8px;cursor:pointer;font-weight:600;font-size:0.875rem;">&#128465; Delete</button>';
         html += '</div>';
     }
     html += '</div>';
@@ -3360,6 +3361,26 @@ function showEditTender(tenderId) {
     html += '<div class="form-group"><label>Order Qty</label><input type="number" id="edit-qty" value="' + (item.orderQty||'') + '"></div></div>';
     html += '<div class="form-group"><label>Expected Time To Complete Order (weeks)</label><input type="number" id="edit-lead" value="' + (item.leadTimeTarget||'') + '"></div>';
 
+
+    // Supplier list section (tenders only)
+    if (isTender) {
+        html += '<div style="margin-bottom:1.5rem;background:#f9fafb;padding:1.25rem;border-radius:10px;">';
+        html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.75rem;">';
+        html += '<div><p style="font-weight:700;color:#0f172a;margin:0 0 0.2rem 0;">Supplier List</p><p style="font-size:0.85rem;color:#94a3b8;margin:0;">Select specific suppliers to invite. Leave empty for all category suppliers.</p></div>';
+        html += '<button type="button" onclick="openEditSupplierPicker()" style="background:linear-gradient(135deg,#8b5cf6,#6d28d9);color:white;border:none;padding:0.6rem 1.1rem;border-radius:8px;cursor:pointer;font-weight:600;font-size:0.875rem;white-space:nowrap;">+ Add Supplier</button>';
+        html += '</div>';
+        html += '<div id="edit-selected-suppliers" style="display:flex;flex-wrap:wrap;gap:0.5rem;"></div>';
+        html += '</div>';
+        // Supplier picker modal
+        html += '<div id="edit-supplier-picker" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:9999;align-items:center;justify-content:center;">';
+        html += '<div style="background:white;border-radius:16px;padding:1.5rem;width:90%;max-width:500px;max-height:80vh;overflow-y:auto;">';
+        html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;"><h3 style="margin:0;font-size:1.1rem;font-weight:700;">Select Suppliers</h3><button onclick="closeEditSupplierPicker()" style="background:none;border:none;font-size:1.5rem;cursor:pointer;color:#64748b;">&times;</button></div>';
+        html += '<input type="text" id="edit-supplier-search" placeholder="Search..." oninput="filterEditSupplierList()" style="width:100%;padding:0.75rem;border:1px solid #d1d5db;border-radius:8px;margin-bottom:1rem;font-family:inherit;">';
+        html += '<div id="edit-supplier-picker-list" style="display:flex;flex-direction:column;gap:0.4rem;"></div>';
+        html += '<button onclick="closeEditSupplierPicker()" style="margin-top:1rem;width:100%;background:linear-gradient(135deg,#8b5cf6,#6d28d9);color:white;border:none;padding:0.85rem;border-radius:10px;cursor:pointer;font-weight:700;">Done</button>';
+        html += '</div></div>';
+    }
+
     document.getElementById('edit-tender-content').innerHTML = html;
 
     // Set dropdowns
@@ -3373,6 +3394,13 @@ function showEditTender(tenderId) {
     renderEditFileList();
     renderEditSpecsFileList();
     (item.products || []).forEach(function(p) { addEditProductRowWithData(p.description, p.colour, p.qty); });
+
+    // Init edit suppliers
+    if (isTender) {
+        data.editInvitedSuppliers = (item.invitedSuppliers || []).slice();
+        renderEditSelectedSuppliers();
+    }
+
 
     document.addEventListener('paste', handleEditPaste);
     showPage('edit-tender-page');
@@ -3446,6 +3474,78 @@ function getEditProducts() {
     return products;
 }
 
+
+// ── EDIT SUPPLIER PICKER ──────────────────────────────────────────────────────
+async function openEditSupplierPicker() {
+    var picker = document.getElementById('edit-supplier-picker');
+    if (picker) picker.style.display = 'flex';
+    var listEl = document.getElementById('edit-supplier-picker-list');
+    if (listEl) listEl.innerHTML = '<p style="color:#94a3b8;text-align:center;padding:1rem;">Loading...</p>';
+    if (!data.allSuppliers || data.allSuppliers.length === 0) {
+        var res = await api('GET', '/suppliers');
+        data.allSuppliers = (res && res.suppliers) ? res.suppliers : [];
+    }
+    renderEditSupplierPickerList(data.allSuppliers);
+}
+
+function closeEditSupplierPicker() {
+    var picker = document.getElementById('edit-supplier-picker');
+    if (picker) picker.style.display = 'none';
+}
+
+function filterEditSupplierList() {
+    var searchEl = document.getElementById('edit-supplier-search');
+    var q = searchEl ? searchEl.value.toLowerCase() : '';
+    var filtered = (data.allSuppliers || []).filter(function(s) { return s.company.toLowerCase().includes(q); });
+    renderEditSupplierPickerList(filtered);
+}
+
+function renderEditSupplierPickerList(suppliers) {
+    var listEl = document.getElementById('edit-supplier-picker-list');
+    if (!listEl) return;
+    if (!suppliers || suppliers.length === 0) {
+        listEl.innerHTML = '<p style="color:#94a3b8;text-align:center;padding:1rem;">No registered suppliers found</p>';
+        return;
+    }
+    var invited = data.editInvitedSuppliers || [];
+    listEl.innerHTML = suppliers.map(function(s) {
+        var isSelected = invited.indexOf(s.company) !== -1;
+        var cats = (s.categories || []).join(', ');
+        return '<div onclick="toggleEditSupplier(\'' + s.company.replace(/'/g, "\\'") + '\')" style="display:flex;align-items:center;gap:0.75rem;padding:0.85rem 1rem;border-radius:10px;border:2px solid ' + (isSelected ? '#8b5cf6' : '#e8ecf1') + ';background:' + (isSelected ? '#faf5ff' : 'white') + ';cursor:pointer;margin-bottom:0.4rem;">'
+            + '<div style="width:22px;height:22px;border-radius:50%;border:2px solid ' + (isSelected ? '#8b5cf6' : '#d1d5db') + ';background:' + (isSelected ? '#8b5cf6' : 'white') + ';display:flex;align-items:center;justify-content:center;flex-shrink:0;">'
+            + (isSelected ? '<span style="color:white;font-size:0.75rem;font-weight:700;">&#10003;</span>' : '')
+            + '</div>'
+            + '<div style="flex:1;"><p style="font-weight:700;color:#0f172a;margin:0;font-size:0.9rem;">' + s.company + '</p>'
+            + (cats ? '<p style="font-size:0.75rem;color:#94a3b8;margin:0.1rem 0 0 0;">' + cats + '</p>' : '')
+            + '</div></div>';
+    }).join('');
+}
+
+function toggleEditSupplier(company) {
+    if (!data.editInvitedSuppliers) data.editInvitedSuppliers = [];
+    var idx = data.editInvitedSuppliers.indexOf(company);
+    if (idx === -1) { data.editInvitedSuppliers.push(company); }
+    else { data.editInvitedSuppliers.splice(idx, 1); }
+    renderEditSelectedSuppliers();
+    filterEditSupplierList();
+}
+
+function renderEditSelectedSuppliers() {
+    var el = document.getElementById('edit-selected-suppliers');
+    if (!el) return;
+    var invited = data.editInvitedSuppliers || [];
+    if (invited.length === 0) {
+        el.innerHTML = '<span style="font-size:0.85rem;color:#94a3b8;font-style:italic;">No suppliers selected — will go to all matching category suppliers</span>';
+        return;
+    }
+    el.innerHTML = invited.map(function(company) {
+        return '<div style="display:flex;align-items:center;gap:0.4rem;background:#ede9fe;color:#5b21b6;padding:0.4rem 0.85rem;border-radius:20px;font-size:0.85rem;font-weight:600;">'
+            + company
+            + '<button type="button" onclick="toggleEditSupplier(\'' + company.replace(/'/g, "\\'") + '\')" style="background:none;border:none;color:#7c3aed;cursor:pointer;font-size:1rem;padding:0;line-height:1;margin-left:0.2rem;">&times;</button>'
+            + '</div>';
+    }).join('');
+}
+
 function updateTender(e) {
     e.preventDefault();
     var newDesc = document.getElementById('edit-description').value.trim();
@@ -3460,6 +3560,7 @@ function updateTender(e) {
     var newFiles = (data.editUploadedFiles||[]).slice();
     var newSpecsFiles = (data.editSpecsFiles||[]).slice();
     var newProducts = getEditProducts();
+    var newInvitedSuppliers = (data.editInvitedSuppliers || []).slice();
 
     if (!newDesc || isNaN(newPrice) || isNaN(newQty) || isNaN(newLead)) { alert('Please fill in all fields'); return; }
 
@@ -3467,14 +3568,14 @@ function updateTender(e) {
 
     if (data.editingType === 'development') {
         var dev = data.developments.find(function(d){ return d.id === data.editingTenderId; });
-        if (dev) { dev.description=newDesc; dev.brand=newBrand; dev.category=newCat; dev.seasonCode=newSeason; dev.fabric=newFabric; dev.priceTarget=newPrice; dev.orderQty=newQty; dev.leadTimeTarget=newLead; dev.labellingReqs=newNotes; dev.files=newFiles; dev.specsFiles=newSpecsFiles; dev.products=newProducts; }
+        if (dev) { dev.description=newDesc; dev.brand=newBrand; dev.category=newCat; dev.seasonCode=newSeason; dev.fabric=newFabric; dev.priceTarget=newPrice; dev.orderQty=newQty; dev.leadTimeTarget=newLead; dev.labellingReqs=newNotes; dev.files=newFiles; dev.specsFiles=newSpecsFiles; dev.products=newProducts; dev.invitedSuppliers=newInvitedSuppliers; }
         saveData(); data.editingTenderId=null; data.editingType=null; data.currentBuyerTab='development';
         alert('✓ Development updated.'); backToBuyerDashboard(); return;
     }
 
     var tender = data.tenders.find(function(t){ return t.id === data.editingTenderId; });
     if (!tender) return;
-    tender.description=newDesc; tender.brand=newBrand; tender.category=newCat; tender.seasonCode=newSeason; tender.fabric=newFabric; tender.priceTarget=newPrice; tender.orderQty=newQty; tender.leadTimeTarget=newLead; tender.labellingReqs=newNotes; tender.files=newFiles; tender.specsFiles=newSpecsFiles; tender.products=newProducts; tender.editedAt=new Date();
+    tender.description=newDesc; tender.brand=newBrand; tender.category=newCat; tender.seasonCode=newSeason; tender.fabric=newFabric; tender.priceTarget=newPrice; tender.orderQty=newQty; tender.leadTimeTarget=newLead; tender.labellingReqs=newNotes; tender.files=newFiles; tender.specsFiles=newSpecsFiles; tender.products=newProducts; tender.invitedSuppliers=newInvitedSuppliers; tender.editedAt=new Date();
     data.bids.forEach(function(b){ if(b.tenderId===tender.id && b.status!=='accepted') b.status='archived'; });
     saveData(); data.editingTenderId=null; data.editingType=null;
     alert('✓ Tender updated. Suppliers will need to re-bid.'); backToBuyerDashboard();
