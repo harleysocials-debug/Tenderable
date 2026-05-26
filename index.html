@@ -745,6 +745,19 @@
     </div>
 </div>
 
+<div id="dev-detail-page" class="dashboard hidden">
+    <div class="header">
+        <div><h1>Tenderable</h1><p>Development Brief</p></div>
+        <div>
+            <button class="back-btn" id="dev-detail-back" onclick="backToBuyerDashboard()" style="margin-right:1rem;">← Back</button>
+            <button class="back-btn" onclick="logout()">Logout</button>
+        </div>
+    </div>
+    <div class="content">
+        <div id="dev-detail-content" style="max-width:1100px;margin:0 auto;"></div>
+    </div>
+</div>
+
 <div id="edit-tender-page" class="dashboard hidden">
     <div class="header">
         <button class="back-btn" onclick="backToBuyerDashboard()">← Back</button>
@@ -2154,6 +2167,165 @@ function renderSupplierTenders() {
     }
 }
 
+function viewDevelopment(devId) {
+    var dev = data.developments.find(function(d) { return d.id === devId; });
+    if (!dev) return;
+    var isStakeholder = data.currentUser && data.currentUser.type === 'stakeholder';
+    var isBuyer = data.currentUser && data.currentUser.type === 'buyer';
+
+    window._devDetailImages = (dev.files || []).filter(function(f) { return f.isImage && f.dataUrl; }).map(function(f) { return f.dataUrl; });
+    window._devDetailSpecImages = (dev.specsFiles || []).filter(function(f) { return f.isImage && f.dataUrl; }).map(function(f) { return f.dataUrl; });
+
+    var backBtn = document.getElementById('dev-detail-back');
+    if (backBtn) {
+        if (isStakeholder) {
+            backBtn.setAttribute('onclick', 'showPage("stakeholder-page");renderStakeholderPage()');
+        } else {
+            backBtn.setAttribute('onclick', 'backToBuyerDashboard()');
+        }
+    }
+
+    var colours = ['#8b5cf6','#06b6d4','#f59e0b','#10b981','#ef4444','#6366f1'];
+    var html = '';
+
+    html += '<div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:2rem;flex-wrap:wrap;gap:1rem;">';
+    html += '<div>';
+    html += '<div style="display:flex;align-items:center;gap:0.75rem;margin-bottom:0.5rem;">';
+    html += '<span style="background:#e0e7ff;color:#4f46e5;font-size:0.7rem;font-weight:700;padding:0.25rem 0.75rem;border-radius:20px;text-transform:uppercase;letter-spacing:0.06em;">Development</span>';
+    html += '<span style="font-size:0.8rem;color:#94a3b8;">' + (dev.brand||'') + ' &middot; ' + (dev.category||'') + ' &middot; ' + (dev.seasonCode||'') + '</span>';
+    html += '</div>';
+    html += '<h1 style="font-size:2rem;font-weight:800;color:#0f172a;margin:0;letter-spacing:-0.5px;">' + dev.description + '</h1>';
+    html += '</div>';
+    if (isBuyer) {
+        html += '<div style="display:flex;gap:0.5rem;flex-wrap:wrap;">';
+        html += '<button onclick="showEditTender(' + "'" + devId + "'" + ')" style="background:#f1f5f9;color:#0f172a;border:1px solid #d1d5db;padding:0.6rem 1.1rem;border-radius:8px;cursor:pointer;font-weight:600;font-size:0.875rem;">&#9999; Edit</button>';
+        html += '<button onclick="sendDevToTender(' + "'" + devId + "'" + ')" style="background:linear-gradient(135deg,#06b6d4,#0891b2);color:white;border:none;padding:0.6rem 1.1rem;border-radius:8px;cursor:pointer;font-weight:600;font-size:0.875rem;">Send to Tender</button>';
+        html += '</div>';
+    }
+    html += '</div>';
+
+    html += '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:#e8ecf1;border-radius:12px;overflow:hidden;margin-bottom:2rem;">';
+    html += '<div style="background:white;padding:1.25rem 1.5rem;"><p style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#94a3b8;margin:0 0 0.35rem 0;">Price Target</p><p style="font-size:1.5rem;font-weight:800;color:#8b5cf6;margin:0;">&pound;' + (dev.priceTarget||0).toFixed(2) + '</p></div>';
+    html += '<div style="background:white;padding:1.25rem 1.5rem;"><p style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#94a3b8;margin:0 0 0.35rem 0;">Total Units</p><p style="font-size:1.5rem;font-weight:800;color:#06b6d4;margin:0;">' + (dev.orderQty ? dev.orderQty.toLocaleString() : '&mdash;') + '</p></div>';
+    html += '<div style="background:white;padding:1.25rem 1.5rem;"><p style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#94a3b8;margin:0 0 0.35rem 0;">Fabric</p><p style="font-size:1.1rem;font-weight:800;color:#0f172a;margin:0;">' + (dev.fabric||'&mdash;') + '</p></div>';
+    html += '<div style="background:white;padding:1.25rem 1.5rem;"><p style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#94a3b8;margin:0 0 0.35rem 0;">Lead Time</p><p style="font-size:1.5rem;font-weight:800;color:#0f172a;margin:0;">' + ((dev.leadTimeTarget||0)*7) + ' days</p></div>';
+    html += '</div>';
+
+    html += '<div style="display:grid;grid-template-columns:1.4fr 1fr;gap:2rem;align-items:start;">';
+    html += '<div style="display:flex;flex-direction:column;gap:1.5rem;">';
+
+    if (window._devDetailImages.length > 0) {
+        html += '<div style="background:white;border:1px solid #e8ecf1;border-radius:14px;padding:1.5rem;">';
+        html += '<p style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#94a3b8;margin:0 0 1rem 0;">Reference Images</p>';
+        html += '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:0.75rem;">';
+        for (var ii = 0; ii < window._devDetailImages.length; ii++) {
+            html += '<img src="' + window._devDetailImages[ii] + '" data-devimgidx="' + ii + '" class="dev-detail-img" style="width:100%;aspect-ratio:1;object-fit:cover;border-radius:10px;cursor:pointer;border:1px solid #e8ecf1;">';
+        }
+        html += '</div></div>';
+    }
+
+    if (dev.products && dev.products.length > 0) {
+        html += '<div style="background:white;border:1px solid #e8ecf1;border-radius:14px;padding:1.5rem;">';
+        html += '<p style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#94a3b8;margin:0 0 1rem 0;">Products (' + dev.products.length + ')</p>';
+        html += '<div style="display:flex;flex-direction:column;gap:0.6rem;">';
+        for (var pi = 0; pi < dev.products.length; pi++) {
+            var p = dev.products[pi];
+            var pc = colours[pi % colours.length];
+            html += '<div style="display:flex;align-items:center;justify-content:space-between;background:#f8fafc;border:1px solid #e8ecf1;border-left:4px solid ' + pc + ';padding:0.75rem 1rem;border-radius:8px;">';
+            html += '<div><p style="font-weight:700;color:#0f172a;margin:0;">' + p.description + '</p>';
+            if (p.colour) html += '<p style="font-size:0.8rem;color:#64748b;margin:0.15rem 0 0 0;">' + p.colour + '</p>';
+            html += '</div>';
+            if (p.qty) html += '<span style="background:white;border:1px solid ' + pc + ';color:' + pc + ';padding:0.3rem 0.8rem;border-radius:20px;font-size:0.8rem;font-weight:700;">' + p.qty.toLocaleString() + ' units</span>';
+            html += '</div>';
+        }
+        html += '</div></div>';
+    }
+
+    if (dev.labellingReqs && dev.labellingReqs.trim()) {
+        html += '<div style="background:white;border:1px solid #e8ecf1;border-radius:14px;padding:1.5rem;">';
+        html += '<p style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#94a3b8;margin:0 0 0.75rem 0;">Notes &amp; Requirements</p>';
+        html += '<p style="font-size:0.95rem;color:#0f172a;line-height:1.7;white-space:pre-wrap;margin:0;">' + dev.labellingReqs + '</p>';
+        html += '</div>';
+    }
+
+    if (window._devDetailSpecImages.length > 0 || (dev.specsFiles||[]).filter(function(f){return !f.isImage;}).length > 0) {
+        html += '<div style="background:white;border:1px solid #e8ecf1;border-radius:14px;padding:1.5rem;">';
+        html += '<p style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#94a3b8;margin:0 0 0.75rem 0;">Spec Documents</p>';
+        html += '<div style="display:flex;flex-wrap:wrap;gap:0.75rem;">';
+        for (var si = 0; si < window._devDetailSpecImages.length; si++) {
+            html += '<img src="' + window._devDetailSpecImages[si] + '" data-devspecidx="' + si + '" class="dev-spec-img" style="width:80px;height:80px;object-fit:cover;border-radius:8px;cursor:pointer;border:1px solid #e8ecf1;">';
+        }
+        var specDocs = (dev.specsFiles||[]).filter(function(f){return !f.isImage;});
+        for (var sd = 0; sd < specDocs.length; sd++) {
+            html += '<div style="background:#f1f5f9;padding:0.6rem 1rem;border-radius:8px;font-size:0.8rem;color:#64748b;">&#x1F4C4; ' + specDocs[sd].name + '</div>';
+        }
+        html += '</div></div>';
+    }
+
+    html += '</div>';
+
+    var comments = data.devComments[devId] || [];
+    html += '<div style="position:sticky;top:90px;">';
+    html += '<div style="background:white;border:1px solid #e8ecf1;border-radius:14px;padding:1.5rem;">';
+    html += '<p style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#94a3b8;margin:0 0 1rem 0;">Team Comments (' + comments.length + ')</p>';
+    if (comments.length > 0) {
+        html += '<div style="max-height:400px;overflow-y:auto;display:flex;flex-direction:column;gap:0.75rem;margin-bottom:1rem;">';
+        for (var ci = 0; ci < comments.length; ci++) {
+            var c = comments[ci];
+            var rc = c.authorType === 'stakeholder' ? '#10b981' : '#8b5cf6';
+            html += '<div style="background:#f8fafc;border-left:3px solid ' + rc + ';padding:0.75rem 1rem;border-radius:0 10px 10px 0;">';
+            html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.3rem;">';
+            html += '<span style="font-size:0.8rem;font-weight:700;color:' + rc + ';">' + c.author + '</span>';
+            html += '<span style="font-size:0.7rem;color:#94a3b8;">' + new Date(c.timestamp).toLocaleString() + '</span>';
+            html += '</div>';
+            html += '<p style="font-size:0.9rem;color:#0f172a;margin:0;line-height:1.5;">' + c.text + '</p>';
+            html += '</div>';
+        }
+        html += '</div>';
+    } else {
+        html += '<p style="color:#94a3b8;font-size:0.9rem;text-align:center;padding:1.5rem 0;margin:0;">No comments yet.</p>';
+    }
+    html += '<div style="display:flex;gap:0.5rem;border-top:1px solid #e8ecf1;padding-top:1rem;">';
+    html += '<input type="text" id="dev-detail-comment" placeholder="Add a comment..." style="flex:1;padding:0.75rem;border:1px solid #d1d5db;border-radius:8px;font-size:0.875rem;">';
+    html += '<button onclick="addDevDetailComment(' + "'" + devId + "'" + ')" style="background:linear-gradient(135deg,#8b5cf6,#6d28d9);color:white;border:none;padding:0.75rem 1.25rem;border-radius:8px;cursor:pointer;font-weight:600;">Post</button>';
+    html += '</div>';
+    html += '</div></div>';
+    html += '</div>';
+
+    document.getElementById('dev-detail-content').innerHTML = html;
+
+    var container = document.getElementById('dev-detail-content');
+    container.querySelectorAll('.dev-detail-img').forEach(function(img) {
+        img.addEventListener('click', function() { openImageModal(window._devDetailImages[parseInt(this.dataset.devimgidx)]); });
+    });
+    container.querySelectorAll('.dev-spec-img').forEach(function(img) {
+        img.addEventListener('click', function() { openImageModal(window._devDetailSpecImages[parseInt(this.dataset.devspecidx)]); });
+    });
+    var ci2 = document.getElementById('dev-detail-comment');
+    if (ci2) ci2.addEventListener('keypress', function(e) { if (e.key === 'Enter') addDevDetailComment(devId); });
+
+    showPage('dev-detail-page');
+}
+
+function addDevDetailComment(devId) {
+    var input = document.getElementById('dev-detail-comment');
+    if (!input || !input.value.trim()) return;
+    if (!data.devComments[devId]) data.devComments[devId] = [];
+    data.devComments[devId].push({
+        id: 'c-' + Date.now(),
+        author: data.currentUser.name,
+        authorType: data.currentUser.type,
+        text: input.value.trim(),
+        timestamp: new Date()
+    });
+    saveData();
+    viewDevelopment(devId);
+    setTimeout(function() {
+        var cl = document.querySelector('#dev-detail-content [style*="max-height:400px"]');
+        if (cl) cl.scrollTop = cl.scrollHeight;
+    }, 50);
+}
+
 function renderDevelopmentTab() {
     var container = document.getElementById('buyer-tenders');
     var devs = data.developments || [];
@@ -2188,18 +2360,18 @@ function renderDevelopmentTab() {
         }
         commentsHTML += '<div style="display:flex;gap:0.5rem;">';
         commentsHTML += '<input type="text" id="comment-' + dev.id + '" placeholder="Add a comment..." style="flex:1;padding:0.6rem 0.9rem;border:1px solid #d1d5db;border-radius:8px;font-size:0.875rem;">';
-        commentsHTML += '<button onclick="addDevComment(\'' + dev.id + '\')" style="background:linear-gradient(135deg,#8b5cf6,#6d28d9);color:white;border:none;padding:0.6rem 1rem;border-radius:8px;cursor:pointer;font-weight:600;font-size:0.875rem;">Post</button>';
+        commentsHTML += '<button onclick="event.stopPropagation();addDevComment(\'' + dev.id + '\')" style="background:linear-gradient(135deg,#8b5cf6,#6d28d9);color:white;border:none;padding:0.6rem 1rem;border-radius:8px;cursor:pointer;font-weight:600;font-size:0.875rem;">Post</button>';
         commentsHTML += '</div>';
         commentsHTML += '</div>';
 
         var actionBtns = '';
         if (!isStakeholder) {
-            actionBtns += '<button onclick="sendDevToTender(\'' + dev.id + '\')" style="background:linear-gradient(135deg,#06b6d4,#0891b2);color:white;border:none;padding:0.5rem 1rem;border-radius:8px;cursor:pointer;font-weight:600;font-size:0.9rem;">Send to Tender</button>';
-            actionBtns += '<button onclick="showEditDevelopment(\'' + dev.id + '\')" style="background:#f1f5f9;color:#0f172a;border:1px solid #d1d5db;padding:0.5rem 1rem;border-radius:8px;cursor:pointer;font-weight:600;font-size:0.9rem;">&#9999;&#65039; Edit</button>';
-            actionBtns += '<button onclick="deleteDevelopment(\'' + dev.id + '\')" style="background:#fee2e2;color:#991b1b;border:1px solid #fca5a5;padding:0.5rem 1rem;border-radius:8px;cursor:pointer;font-weight:600;">&#x1F5D1;</button>';
+            actionBtns += '<button onclick="event.stopPropagation();sendDevToTender(\'' + dev.id + '\')" style="background:linear-gradient(135deg,#06b6d4,#0891b2);color:white;border:none;padding:0.5rem 1rem;border-radius:8px;cursor:pointer;font-weight:600;font-size:0.9rem;">Send to Tender</button>';
+            actionBtns += '<button onclick="event.stopPropagation();showEditDevelopment(\'' + dev.id + '\')" style="background:#f1f5f9;color:#0f172a;border:1px solid #d1d5db;padding:0.5rem 1rem;border-radius:8px;cursor:pointer;font-weight:600;font-size:0.9rem;">&#9999;&#65039; Edit</button>';
+            actionBtns += '<button onclick="event.stopPropagation();deleteDevelopment(\'' + dev.id + '\')" style="background:#fee2e2;color:#991b1b;border:1px solid #fca5a5;padding:0.5rem 1rem;border-radius:8px;cursor:pointer;font-weight:600;">&#x1F5D1;</button>';
         }
 
-        return '<div class="tender-card" style="border:2px solid #e0e7ff;background:#fafaff;">' +
+        return '<div class="tender-card" style="border:2px solid #e0e7ff;background:#fafaff;cursor:pointer;" onclick="viewDevelopment(\'' + dev.id + '\')">' +
             '<div style="display:flex;gap:1.25rem;">' +
             (imageFile ? '<img src="' + imageFile.dataUrl + '" style="width:120px;height:120px;object-fit:cover;border-radius:8px;flex-shrink:0;">' :
                 '<div style="width:120px;height:120px;background:linear-gradient(135deg,#ede9fe,#ddd6fe);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:2rem;flex-shrink:0;">🎨</div>') +
@@ -2317,20 +2489,20 @@ function renderDevelopmentTabInto(container) {
         }
         commentsHTML += '<div style="display:flex;gap:0.5rem;">';
         commentsHTML += '<input type="text" id="comment-' + dev.id + '" placeholder="Add a comment..." style="flex:1;padding:0.6rem 0.9rem;border:1px solid #d1d5db;border-radius:8px;font-size:0.875rem;">';
-        commentsHTML += '<button onclick="addDevCommentAndRefresh(\'' + dev.id + '\')" style="background:linear-gradient(135deg,#10b981,#059669);color:white;border:none;padding:0.6rem 1rem;border-radius:8px;cursor:pointer;font-weight:600;font-size:0.875rem;">Post</button>';
+        commentsHTML += '<button onclick="event.stopPropagation();addDevCommentAndRefresh(\'' + dev.id + '\')" style="background:linear-gradient(135deg,#10b981,#059669);color:white;border:none;padding:0.6rem 1rem;border-radius:8px;cursor:pointer;font-weight:600;font-size:0.875rem;">Post</button>';
         commentsHTML += '</div>';
         commentsHTML += '</div>';
 
         var actionBtns = '';
         if (!isStakeholder) {
             actionBtns = '<div style="display:flex;gap:0.5rem;flex-wrap:wrap;">' +
-                '<button onclick="sendDevToTender(\'' + dev.id + '\')" style="background:linear-gradient(135deg,#06b6d4,#0891b2);color:white;border:none;padding:0.5rem 1rem;border-radius:8px;cursor:pointer;font-weight:600;font-size:0.9rem;">Send to Tender</button>' +
-                '<button onclick="showEditDevelopment(\'' + dev.id + '\')" style="background:#f1f5f9;color:#0f172a;border:1px solid #d1d5db;padding:0.5rem 1rem;border-radius:8px;cursor:pointer;font-weight:600;font-size:0.9rem;">&#9999; Edit</button>' +
-                '<button onclick="deleteDevelopment(\'' + dev.id + '\')" style="background:#fee2e2;color:#991b1b;border:1px solid #fca5a5;padding:0.5rem 1rem;border-radius:8px;cursor:pointer;font-weight:600;">&#128465;</button>' +
+                '<button onclick="event.stopPropagation();sendDevToTender(\'' + dev.id + '\')" style="background:linear-gradient(135deg,#06b6d4,#0891b2);color:white;border:none;padding:0.5rem 1rem;border-radius:8px;cursor:pointer;font-weight:600;font-size:0.9rem;">Send to Tender</button>' +
+                '<button onclick="event.stopPropagation();showEditDevelopment(\'' + dev.id + '\')" style="background:#f1f5f9;color:#0f172a;border:1px solid #d1d5db;padding:0.5rem 1rem;border-radius:8px;cursor:pointer;font-weight:600;font-size:0.9rem;">&#9999; Edit</button>' +
+                '<button onclick="event.stopPropagation();deleteDevelopment(\'' + dev.id + '\')" style="background:#fee2e2;color:#991b1b;border:1px solid #fca5a5;padding:0.5rem 1rem;border-radius:8px;cursor:pointer;font-weight:600;">&#128465;</button>' +
                 '</div>';
         }
 
-        return '<div class="tender-card" style="border:2px solid #e0e7ff;background:#fafaff;">' +
+        return '<div class="tender-card" style="border:2px solid #e0e7ff;background:#fafaff;cursor:pointer;" onclick="viewDevelopment(\'' + dev.id + '\')">' +
             '<div style="display:flex;gap:1.25rem;">' +
             (imageFile ? '<img src="' + imageFile.dataUrl + '" style="width:120px;height:120px;object-fit:cover;border-radius:8px;flex-shrink:0;">' :
                 '<div style="width:120px;height:120px;background:linear-gradient(135deg,#ede9fe,#ddd6fe);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:2rem;flex-shrink:0;">🎨</div>') +
