@@ -586,7 +586,7 @@
             <p id="buyer-header-name">Buyer Dashboard</p>
         </div>
         <div>
-            <button class="btn-primary" onclick="showCreateTender()" style="margin-right: 1rem;">+ New Development</button>
+            ${data.currentUser && data.currentUser.isAdmin ? '<button onclick="showPage(\'admin-page\');renderAdminPage()" style="background:linear-gradient(135deg,#10b981,#059669);color:white;border:none;padding:0.85rem 1.25rem;border-radius:10px;font-weight:700;cursor:pointer;margin-right:0.75rem;">👥 Admin</button>' : ''}<button class="btn-primary" onclick="showCreateTender()" style="margin-right: 1rem;">+ New Development</button>
             <button class="back-btn" onclick="logout()">Logout</button>
         </div>
     </div>
@@ -788,6 +788,20 @@
     </div>
     <div class="content">
         <div id="dev-detail-content" style="max-width:1100px;margin:0 auto;"></div>
+    </div>
+</div>
+
+<div id="admin-page" class="dashboard hidden">
+    <div class="header">
+        <div><h1>Tenderable</h1><p>Admin Panel — Harley Killingsworth</p></div>
+        <button class="back-btn" onclick="logout()">Logout</button>
+    </div>
+    <div class="content">
+        <div class="tabs">
+            <button class="tab-btn active" onclick="switchAdminTab(this,'pending')">Pending Approval (<span id="admin-pending-count">0</span>)</button>
+            <button class="tab-btn" onclick="switchAdminTab(this,'all')">All Users (<span id="admin-all-count">0</span>)</button>
+        </div>
+        <div id="admin-content"></div>
     </div>
 </div>
 
@@ -1317,8 +1331,14 @@ async function doLogin() {
         errEl.style.display = 'block';
         return;
     }
-    data.currentUser = { type: res.role, id: res.id, name: res.name, company: res.company, categories: res.categories || [] };
+    data.currentUser = { type: res.role, id: res.id, name: res.name, company: res.company, categories: res.categories || [], isAdmin: res.isAdmin || false };
     await loadData();
+    // Admin goes to admin panel first
+    if (res.isAdmin) {
+        showPage('admin-page');
+        renderAdminPage();
+        return;
+    }
     goToDashboard();
 }
 
@@ -1341,8 +1361,22 @@ async function doRegister() {
         errEl.style.display = 'block';
         return;
     }
-    data.currentUser = { type: res.role, id: res.id, name: res.name, company: res.company, categories: res.categories || [] };
+    if (res.pending) {
+        // Show pending message
+        document.getElementById('register-form').style.display = 'none';
+        document.getElementById('login-form').innerHTML = '<div style="text-align:center;padding:2rem 0;">'
+            + '<div style="font-size:3rem;margin-bottom:1rem;">⏳</div>'
+            + '<h2 style="color:white;margin:0 0 0.75rem 0;font-size:1.5rem;">Account Requested!</h2>'
+            + '<p style="color:#a0aec0;margin:0 0 2rem 0;">Your account is pending approval from Harley Killingsworth. You will be able to log in once approved.</p>'
+            + '<button class="btn-buyer" onclick="location.reload()" style="width:100%;">Back to Login</button>'
+            + '</div>';
+        document.getElementById('login-form').style.display = 'block';
+        return;
+    }
+    // Harley auto-approved
+    data.currentUser = { type: res.role, id: res.id, name: res.name, company: res.company, categories: res.categories || [], isAdmin: res.isAdmin || false };
     await loadData();
+    if (res.isAdmin) { showPage('admin-page'); renderAdminPage(); return; }
     goToDashboard();
 }
 
