@@ -2716,6 +2716,16 @@ function renderBuyerDashboard() {
     var hn = document.getElementById('buyer-header-name');
     if (hn && data.currentUser) hn.textContent = 'Buyer Dashboard • ' + data.currentUser.name;
 
+    // Inject admin button for Harley
+    var adminContainer = document.getElementById('admin-btn-container');
+    if (adminContainer) {
+        if (data.currentUser && data.currentUser.isAdmin) {
+            adminContainer.innerHTML = '<button onclick="showPage(\'admin-page\');renderAdminPage()" style="background:linear-gradient(135deg,#10b981,#059669);color:white;border:none;padding:0.85rem 1.25rem;border-radius:10px;font-weight:700;cursor:pointer;margin-right:0.75rem;">&#x1F465; Admin</button>';
+        } else {
+            adminContainer.innerHTML = '';
+        }
+    }
+
     var tab = data.currentBuyerTab || 'development';
     // Sync active tab button
     var tabBtns = document.querySelectorAll('#buyer-page .tab-btn');
