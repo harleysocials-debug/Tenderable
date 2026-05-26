@@ -696,8 +696,8 @@
                     <label>Expected Time To Complete Order (weeks)</label>
                     <input type="number" id="leadTimeTarget" placeholder="e.g., 8">
                 </div>
-                <div class="form-group" id="deadline-group" style="display:none;">
-                    <label>Bid Deadline (days)</label>
+                <div class="form-group">
+                    <label>Bid Deadline (days) <span style="font-size:0.78rem;color:#94a3b8;font-weight:400;">— only needed if sending to tender</span></label>
                     <input type="number" id="deadline" placeholder="e.g., 7">
                 </div>
             </div>
@@ -709,7 +709,7 @@
                     <p style="font-size:0.85rem;color:#6366f1;margin:0;">Tick to send live to suppliers immediately. Leave unticked to save to Development board first.</p>
                 </div>
                 <label style="display:flex;align-items:center;gap:0.5rem;cursor:pointer;flex-shrink:0;">
-                    <input type="checkbox" id="sendToTender" onchange="toggleDeadlineField()" style="width:20px;height:20px;accent-color:#6366f1;cursor:pointer;">
+                    <input type="checkbox" id="sendToTender" style="width:20px;height:20px;accent-color:#6366f1;cursor:pointer;">
                     <span style="font-weight:700;color:#3730a3;font-size:0.9rem;">Send live</span>
                 </label>
             </div>
