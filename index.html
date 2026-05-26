@@ -2721,10 +2721,23 @@ function sendDevToTender(devId) {
 
 function deleteDevelopment(devId) {
     if (!confirm('Delete this development? This cannot be undone.')) return;
+    // Tell the server to delete it (this also cascades the comments)
+    api('DELETE', '/developments/' + devId);
+    // Update local state
     data.developments = data.developments.filter(function(d) { return d.id !== devId; });
-    delete data.devComments[devId];
-    api('POST', '/developments/' + devId + '/comments', { id: data.devComments[devId][data.devComments[devId].length-1].id, author: data.currentUser.name, authorType: data.currentUser.type, text: data.devComments[devId][data.devComments[devId].length-1].text, timestamp: new Date() });
+    if (data.devComments) delete data.devComments[devId];
     renderDevelopmentTab();
+}
+
+function confirmDeleteDev(devId) {
+    if (!confirm('Delete this development? This cannot be undone.')) return;
+    // Tell the server to delete it (this also cascades the comments)
+    api('DELETE', '/developments/' + devId);
+    // Update local state
+    data.developments = data.developments.filter(function(d) { return d.id !== devId; });
+    if (data.devComments) delete data.devComments[devId];
+    // We're on the detail page, so return to the dashboard
+    backToBuyerDashboard();
 }
 
 function showEditDevelopment(devId) {
