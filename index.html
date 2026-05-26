@@ -586,7 +586,8 @@
             <p id="buyer-header-name">Buyer Dashboard</p>
         </div>
         <div>
-            ${data.currentUser && data.currentUser.isAdmin ? '<button onclick="showPage(\'admin-page\');renderAdminPage()" style="background:linear-gradient(135deg,#10b981,#059669);color:white;border:none;padding:0.85rem 1.25rem;border-radius:10px;font-weight:700;cursor:pointer;margin-right:0.75rem;">👥 Admin</button>' : ''}<button class="btn-primary" onclick="showCreateTender()" style="margin-right: 1rem;">+ New Development</button>
+            <span id="admin-btn-container"></span>
+            <button class="btn-primary" onclick="showCreateTender()" style="margin-right: 1rem;">+ New Development</button>
             <button class="back-btn" onclick="logout()">Logout</button>
         </div>
     </div>
