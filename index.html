@@ -1285,56 +1285,26 @@ function submitTender(e) {
         const orderQty = document.getElementById('orderQty').value.trim();
         const leadTimeTarget = document.getElementById('leadTimeTarget').value.trim();
         const deadline = document.getElementById('deadline').value.trim();
-        
-        if (!brand || brand === 'Select Brand') {
-            alert('Please select a brand');
+        const sendLive = document.getElementById('sendToTender') && document.getElementById('sendToTender').checked;
+
+        if (!brand || brand === 'Select Brand') { alert('Please select a brand'); return; }
+        if (!category || category === 'Select Category') { alert('Please select a category'); return; }
+        if (!description) { alert('Please enter a description'); return; }
+        if (!seasonCode || seasonCode === 'Select Season') { alert('Please select a season code'); return; }
+        if (!fabric) { alert('Please enter fabric details'); return; }
+        if (!priceTarget || isNaN(parseFloat(priceTarget))) { alert('Please enter a valid price target'); return; }
+        if (!orderQty || isNaN(parseInt(orderQty)) || parseInt(orderQty) <= 0) { alert('Please enter a valid order quantity'); return; }
+        if (!leadTimeTarget || isNaN(parseInt(leadTimeTarget))) { alert('Please enter a valid lead time'); return; }
+        if (sendLive && (!deadline || isNaN(parseInt(deadline)) || parseInt(deadline) <= 0)) {
+            alert('Please enter a bid deadline (days) before sending live');
             return;
         }
-        if (!category || category === 'Select Category') {
-            alert('Please select a category');
-            return;
-        }
-        if (!description) {
-            alert('Please enter a description');
-            return;
-        }
-        if (!seasonCode || seasonCode === 'Select Season') {
-            alert('Please select a season code');
-            return;
-        }
-        if (!fabric) {
-            alert('Please enter fabric details');
-            return;
-        }
-        if (!priceTarget || isNaN(parseFloat(priceTarget))) {
-            alert('Please enter a valid price target');
-            return;
-        }
-        if (!orderQty || isNaN(parseInt(orderQty)) || parseInt(orderQty) <= 0) {
-            alert('Please enter a valid order quantity');
-            return;
-        }
-        if (!leadTimeTarget || isNaN(parseInt(leadTimeTarget))) {
-            alert('Please enter a valid lead time');
-            return;
-        }
-        if (!deadline || isNaN(parseInt(deadline)) || parseInt(deadline) <= 0) {
-            alert('Please enter a valid bid deadline (days)');
-            return;
-        }
-        
-        const tender = {
-            id: `tender-${Date.now()}`,
-            brand,
-            category,
-            description,
-            seasonCode,
-            fabric,
+
+        const itemBase = {
+            brand, category, description, seasonCode, fabric,
             priceTarget: parseFloat(priceTarget),
             orderQty: parseInt(orderQty),
             leadTimeTarget: parseInt(leadTimeTarget),
-            deadline: parseInt(deadline),
-            deadlineDate: new Date(Date.now() + parseInt(deadline) * 24 * 60 * 60 * 1000),
             files: [...data.uploadedFiles],
             specs: [],
             products: getProductsFromForm(),
@@ -1342,31 +1312,42 @@ function submitTender(e) {
             specsFiles: [...data.specsFiles],
             createdAt: new Date()
         };
-        
-        data.tenders.push(tender);
+
+        if (sendLive) {
+            const tender = Object.assign({}, itemBase, {
+                id: 'tender-' + Date.now(),
+                deadline: parseInt(deadline),
+                deadlineDate: new Date(Date.now() + parseInt(deadline) * 86400000)
+            });
+            data.tenders.push(tender);
+        } else {
+            const dev = Object.assign({}, itemBase, {
+                id: 'dev-' + Date.now(),
+                status: 'development'
+            });
+            data.developments.push(dev);
+        }
+
         saveData();
-        
+
         const form = document.querySelector('#create-tender-page form');
         if (form) form.reset();
-        
         const fileInput = document.getElementById('hidden-file-input');
         if (fileInput) fileInput.value = '';
-        
         data.uploadedFiles = [];
         data.specsFiles = [];
-        data.products = [];
         document.getElementById('products-list').innerHTML = '';
         document.getElementById('products-empty-hint').style.display = 'block';
         const fileList = document.getElementById('fileList');
         if (fileList) fileList.innerHTML = '';
-        const specsFileList = document.getElementById('specsFileList');
-        if (specsFileList) specsFileList.innerHTML = '';
-        
-        const seasonFilter = document.getElementById('season-filter');
-        if (seasonFilter) seasonFilter.value = '';
+        const specsFileList2 = document.getElementById('specsFileList');
+        if (specsFileList2) specsFileList2.innerHTML = '';
+        const submitBtn = document.getElementById('submit-btn');
+        if (submitBtn) submitBtn.textContent = 'Save to Development';
         data.selectedSeason = '';
-        
-        alert('✓ Tender created successfully!');
+        data.currentBuyerTab = sendLive ? 'open' : 'development';
+
+        alert(sendLive ? '✓ Development sent live to suppliers!' : '✓ Saved to Development board!');
         backToBuyerDashboard();
     } catch (error) {
         console.error('Error creating tender:', error);
