@@ -2266,34 +2266,10 @@ function deleteDevelopment(devId) {
 }
 
 function showEditDevelopment(devId) {
-    // Reuse edit tender page but for development
-    var dev = data.developments.find(function(d) { return d.id === devId; });
-    if (!dev) return;
-    data.editingTenderId = devId;
-    data.editingType = 'development';
-
-    var html = '<div style="background:#e0e7ff;border:1px solid #c7d2fe;border-radius:10px;padding:1rem 1.25rem;margin-bottom:1.5rem;">';
-    html += '<p style="font-weight:700;color:#3730a3;margin:0;">Editing development — no bids affected</p></div>';
-    html += '<div class="form-row"><div class="form-group"><label>Brand</label><select id="edit-brand"><option value="">Select Brand</option><option>BadRhino</option><option>Evan&#39;s</option><option>Long Tall Sally</option><option>Pixie Girl</option><option>M&amp;Co</option><option>Star x JM</option></select></div>';
-    html += '<div class="form-group"><label>Category</label><select id="edit-category"><option value="">Select Category</option><option>OUTERWEAR</option><option>TOPS</option><option>BOTTOMS</option><option>UNDERWEAR</option><option>NIGHTWEAR</option><option>SWIMWEAR</option><option>ACCESSORIES</option><option>FOOTWEAR</option></select></div></div>';
-    html += '<div class="form-group"><label>Development Name</label><input type="text" id="edit-description" value="' + (dev.description||'').replace(/"/g,'&quot;') + '"></div>';
-    html += '<div class="form-row"><div class="form-group"><label>Season</label><select id="edit-season"><option>SS27</option><option>AW26</option><option>SS26</option><option>AW25</option><option>SS25</option></select></div>';
-    html += '<div class="form-group"><label>Fabric</label><input type="text" id="edit-fabric" value="' + (dev.fabric||'').replace(/"/g,'&quot;') + '"></div></div>';
-    html += '<div class="form-row"><div class="form-group"><label>Price Target £</label><input type="number" id="edit-price" step="0.01" value="' + (dev.priceTarget||'') + '"></div>';
-    html += '<div class="form-group"><label>Order Qty</label><input type="number" id="edit-qty" value="' + (dev.orderQty||'') + '"></div></div>';
-    html += '<div class="form-group"><label>Lead Time (weeks)</label><input type="number" id="edit-lead" value="' + (dev.leadTimeTarget||'') + '"></div>';
-
-    document.getElementById('edit-tender-content').innerHTML = html;
-
-    var brandSel = document.getElementById('edit-brand');
-    for (var i = 0; i < brandSel.options.length; i++) { if (brandSel.options[i].value === dev.brand) { brandSel.selectedIndex = i; break; } }
-    var catSel = document.getElementById('edit-category');
-    for (var i = 0; i < catSel.options.length; i++) { if (catSel.options[i].value === dev.category) { catSel.selectedIndex = i; break; } }
-    var seasonSel = document.getElementById('edit-season');
-    for (var i = 0; i < seasonSel.options.length; i++) { if (seasonSel.options[i].value === dev.seasonCode) { seasonSel.selectedIndex = i; break; } }
-
-    showPage('edit-tender-page');
+    // Delegate to showEditTender which handles both tenders and developments
+    showEditTender(devId);
 }
+
 
 function renderStakeholderPage() {
     var container = document.getElementById('stakeholder-tenders');
