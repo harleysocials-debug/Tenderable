@@ -745,6 +745,31 @@
                 </div>
             </div>
 
+            <!-- Supplier List -->
+            <div style="background:#f9fafb;border:1px solid #e8ecf1;border-radius:12px;padding:1.25rem 1.5rem;margin-bottom:1.5rem;">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.75rem;">
+                    <div>
+                        <p style="font-weight:700;color:#0f172a;margin:0 0 0.2rem 0;">Supplier List</p>
+                        <p style="font-size:0.85rem;color:#94a3b8;margin:0;">Select specific suppliers to invite. Leave empty to send to all matching category suppliers.</p>
+                    </div>
+                    <button type="button" onclick="openSupplierPicker()" style="background:linear-gradient(135deg,#8b5cf6,#6d28d9);color:white;border:none;padding:0.6rem 1.1rem;border-radius:8px;cursor:pointer;font-weight:600;font-size:0.875rem;white-space:nowrap;">+ Add Supplier</button>
+                </div>
+                <div id="selected-suppliers" style="display:flex;flex-wrap:wrap;gap:0.5rem;"></div>
+            </div>
+
+            <!-- Supplier Picker Modal (hidden) -->
+            <div id="supplier-picker" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:9999;align-items:center;justify-content:center;">
+                <div style="background:white;border-radius:16px;padding:1.5rem;width:90%;max-width:500px;max-height:80vh;overflow-y:auto;">
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;">
+                        <h3 style="margin:0;font-size:1.1rem;font-weight:700;">Select Suppliers</h3>
+                        <button onclick="closeSupplierPicker()" style="background:none;border:none;font-size:1.5rem;cursor:pointer;color:#64748b;">&times;</button>
+                    </div>
+                    <input type="text" id="supplier-search" placeholder="Search supplier name..." oninput="filterSupplierList()" style="width:100%;padding:0.75rem;border:1px solid #d1d5db;border-radius:8px;margin-bottom:1rem;font-family:inherit;">
+                    <div id="supplier-picker-list" style="display:flex;flex-direction:column;gap:0.5rem;"></div>
+                    <button onclick="closeSupplierPicker()" style="margin-top:1rem;width:100%;background:linear-gradient(135deg,#8b5cf6,#6d28d9);color:white;border:none;padding:0.85rem;border-radius:10px;cursor:pointer;font-weight:700;">Done</button>
+                </div>
+            </div>
+
             <!-- Send to Tender toggle -->
             <div style="background:#f0f4ff;border:1.5px solid #c7d2fe;border-radius:12px;padding:1.25rem 1.5rem;margin-bottom:1.5rem;display:flex;align-items:center;justify-content:space-between;gap:1rem;">
                 <div>
@@ -874,7 +899,8 @@ async function loadData() {
         var cats = encodeURIComponent((u.categories || []).join(','));
         var supplierId = encodeURIComponent(u.id || '');
 
-        var tParams = '?role=' + role + '&company=' + company + '&categories=' + cats;
+        var supplierCompany = encodeURIComponent(u.company || '');
+        var tParams = '?role=' + role + '&company=' + company + '&categories=' + cats + '&supplierCompany=' + supplierCompany;
         var bParams = '?role=' + role + '&company=' + company + '&supplierId=' + supplierId;
         var dParams = '?role=' + role + '&company=' + company;
 
@@ -917,6 +943,8 @@ const data = {
     devComments: {},
     uploadedFiles: [],
     specsFiles: [],
+    invitedSuppliers: [],
+    allSuppliers: [],
     dismissedTenders: [],
     selectedSeason: '',
     editingTenderId: null,
@@ -1493,6 +1521,7 @@ function submitTender(e) {
             products: getProductsFromForm(),
             labellingReqs: document.getElementById('labellingReqs') ? document.getElementById('labellingReqs').value.trim() : '',
             specsFiles: [...data.specsFiles],
+            invitedSuppliers: [...data.invitedSuppliers],
             createdAt: new Date()
         };
 
@@ -1521,6 +1550,8 @@ function submitTender(e) {
         if (fileInput) fileInput.value = '';
         data.uploadedFiles = [];
         data.specsFiles = [];
+        data.invitedSuppliers = [];
+        renderSelectedSuppliers();
         document.getElementById('products-list').innerHTML = '';
         document.getElementById('products-empty-hint').style.display = 'block';
         const fileList = document.getElementById('fileList');
@@ -2710,6 +2741,100 @@ function addDevCommentAndRefresh(devId) {
     } else {
         renderDevelopmentTab();
     }
+}
+
+
+var adminCurrentTab = 'pending';
+
+function switchAdminTab(btn, tab) {
+    document.querySelectorAll('#admin-page .tab-btn').forEach(function(b) { b.classList.remove('active'); });
+    btn.classList.add('active');
+    adminCurrentTab = tab;
+    renderAdminPage();
+}
+
+async function renderAdminPage() {
+    var container = document.getElementById('admin-content');
+    if (!container) return;
+    container.innerHTML = '<div style="text-align:center;padding:3rem;color:#64748b;">Loading...</div>';
+
+    var res = await api('GET', adminCurrentTab === 'pending' ? '/admin/pending' : '/admin/users');
+    if (!res || !res.users) {
+        container.innerHTML = '<div class="empty-state"><p>Could not load users</p></div>';
+        return;
+    }
+
+    var users = res.users;
+    var pendingCount = users.filter(function(u) { return u.status === 'pending'; }).length;
+    var pendingEl = document.getElementById('admin-pending-count');
+    var allEl = document.getElementById('admin-all-count');
+    if (pendingEl) pendingEl.textContent = adminCurrentTab === 'pending' ? users.length : pendingCount;
+    if (allEl && adminCurrentTab === 'all') allEl.textContent = users.length;
+
+    if (users.length === 0) {
+        container.innerHTML = '<div class="empty-state"><p>No ' + (adminCurrentTab === 'pending' ? 'pending accounts' : 'users') + '</p></div>';
+        return;
+    }
+
+    var roleColour = { buyer: '#8b5cf6', supplier: '#06b6d4', stakeholder: '#10b981' };
+    var statusColour = { approved: '#dcfce7', pending: '#fef3c7', rejected: '#fee2e2' };
+    var statusText = { approved: '#166534', pending: '#92400e', rejected: '#991b1b' };
+
+    // Group by company
+    var groups = {};
+    users.forEach(function(u) {
+        var key = (u.company || 'No Company').trim();
+        if (!groups[key]) groups[key] = [];
+        groups[key].push(u);
+    });
+
+    var html = '';
+    Object.keys(groups).sort().forEach(function(company) {
+        var members = groups[company];
+        html += '<div style="margin-bottom:1.5rem;">';
+        html += '<div style="display:flex;align-items:center;gap:0.75rem;margin-bottom:0.75rem;">';
+        html += '<h2 style="font-size:1rem;font-weight:700;color:#0f172a;margin:0;">' + company + '</h2>';
+        html += '<span style="background:#f1f5f9;color:#64748b;padding:0.2rem 0.65rem;border-radius:20px;font-size:0.75rem;font-weight:600;">' + members.length + ' member' + (members.length > 1 ? 's' : '') + '</span>';
+        html += '</div>';
+        html += '<div style="display:flex;flex-direction:column;gap:0.6rem;">';
+        members.forEach(function(u) {
+            var rc = roleColour[u.role] || '#8b5cf6';
+            var sc = statusColour[u.status] || '#f1f5f9';
+            var st = statusText[u.status] || '#0f172a';
+            var cats = u.categories && u.categories.length > 0 ? u.categories.join(', ') : '';
+            html += '<div style="background:white;border:1px solid #e8ecf1;border-radius:12px;padding:1.25rem;display:flex;justify-content:space-between;align-items:center;gap:1rem;flex-wrap:wrap;">';
+            html += '<div>';
+            html += '<div style="display:flex;align-items:center;gap:0.6rem;margin-bottom:0.25rem;">';
+            html += '<h3 style="margin:0;font-size:1rem;font-weight:700;">' + u.name + '</h3>';
+            html += '<span style="background:' + rc + '20;color:' + rc + ';padding:0.15rem 0.6rem;border-radius:20px;font-size:0.72rem;font-weight:700;text-transform:uppercase;">' + u.role + '</span>';
+            html += '<span style="background:' + sc + ';color:' + st + ';padding:0.15rem 0.6rem;border-radius:20px;font-size:0.72rem;font-weight:700;">' + (u.status || 'pending') + '</span>';
+            html += '</div>';
+            if (cats) html += '<p style="font-size:0.78rem;color:#94a3b8;margin:0;">' + cats + '</p>';
+            html += '<p style="font-size:0.72rem;color:#94a3b8;margin:0.15rem 0 0 0;">Joined: ' + new Date(u.created_at).toLocaleDateString() + '</p>';
+            html += '</div>';
+            html += '<div style="display:flex;gap:0.5rem;">';
+            if (u.status !== 'approved') html += '<button onclick="adminApprove(\'' + u.id + '\')" style="background:linear-gradient(135deg,#10b981,#059669);color:white;border:none;padding:0.5rem 1.1rem;border-radius:8px;cursor:pointer;font-weight:700;font-size:0.875rem;">&#10003; Approve</button>';
+            if (u.status !== 'rejected') html += '<button onclick="adminReject(\'' + u.id + '\')" style="background:#fee2e2;color:#991b1b;border:1px solid #fca5a5;padding:0.5rem 1.1rem;border-radius:8px;cursor:pointer;font-weight:700;font-size:0.875rem;">&#10007; Reject</button>';
+            html += '</div>';
+            html += '</div>';
+        });
+        html += '</div></div>';
+    });
+
+    container.innerHTML = '<div style="max-width:800px;">' + html + '</div>';
+}
+
+async function adminApprove(userId) {
+    var res = await api('POST', '/admin/approve/' + userId);
+    if (res && res.success) { renderAdminPage(); }
+    else { alert('Error approving user'); }
+}
+
+async function adminReject(userId) {
+    if (!confirm('Reject this account?')) return;
+    var res = await api('POST', '/admin/reject/' + userId);
+    if (res && res.success) { renderAdminPage(); }
+    else { alert('Error rejecting user'); }
 }
 
 function renderBuyerDashboard() {
