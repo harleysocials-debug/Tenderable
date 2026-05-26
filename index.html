@@ -864,11 +864,24 @@ async function api(method, path, body) {
 async function loadData() {
     try {
         showLoading(true);
+        var u = data.currentUser;
+        if (!u) return;
+
+        // Build query params for server-side filtering
+        var company = encodeURIComponent(u.company || '');
+        var role = encodeURIComponent(u.type || '');
+        var cats = encodeURIComponent((u.categories || []).join(','));
+        var supplierId = encodeURIComponent(u.id || '');
+
+        var tParams = '?role=' + role + '&company=' + company + '&categories=' + cats;
+        var bParams = '?role=' + role + '&company=' + company + '&supplierId=' + supplierId;
+        var dParams = '?role=' + role + '&company=' + company;
+
         var [tRes, bRes, mRes, dRes] = await Promise.all([
-            api('GET', '/tenders'),
-            api('GET', '/bids'),
+            api('GET', '/tenders' + tParams),
+            api('GET', '/bids' + bParams),
             api('GET', '/messages'),
-            api('GET', '/developments')
+            api('GET', '/developments' + dParams)
         ]);
         if (tRes && tRes.tenders) {
             data.tenders = tRes.tenders.map(function(t) {
@@ -1333,12 +1346,6 @@ async function doLogin() {
     }
     data.currentUser = { type: res.role, id: res.id, name: res.name, company: res.company, categories: res.categories || [], isAdmin: res.isAdmin || false };
     await loadData();
-    // Admin goes to admin panel first
-    if (res.isAdmin) {
-        showPage('admin-page');
-        renderAdminPage();
-        return;
-    }
     goToDashboard();
 }
 
@@ -1376,7 +1383,6 @@ async function doRegister() {
     // Harley auto-approved
     data.currentUser = { type: res.role, id: res.id, name: res.name, company: res.company, categories: res.categories || [], isAdmin: res.isAdmin || false };
     await loadData();
-    if (res.isAdmin) { showPage('admin-page'); renderAdminPage(); return; }
     goToDashboard();
 }
 
