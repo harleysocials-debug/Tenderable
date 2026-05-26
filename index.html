@@ -493,11 +493,12 @@
         <div class="button-group">
             <button class="btn-supplier" onclick="loginSupplier()">Login as Supplier</button>
             <button class="btn-buyer" onclick="loginBuyer()">Login as Buyer</button>
+            <button style="background:linear-gradient(135deg,#10b981,#059669);color:white;box-shadow:0 10px 30px rgba(16,185,129,0.3);" onclick="loginStakeholder()">Login as Internal Stakeholder</button>
         </div>
         <div class="demo-box">
-            <strong>Demo Account (Supplier):</strong><br>
-            Global Textiles Ltd<br>
-            Categories: Tops, Bottoms, Outerwear
+            <strong>Demo Accounts:</strong><br>
+            Supplier: Global Textiles Ltd &nbsp;|&nbsp; Buyer: Yours Clothing<br>
+            Stakeholder: Design &amp; Merch Team
         </div>
     </div>
 </div>
@@ -552,13 +553,14 @@
             <p>Buyer Dashboard • Yours Clothing</p>
         </div>
         <div>
-            <button class="btn-primary" onclick="showCreateTender()" style="margin-right: 1rem;">+ New Tender</button>
+            <button class="btn-primary" onclick="showCreateTender()" style="margin-right: 1rem;">+ New Development</button>
             <button class="back-btn" onclick="logout()">Logout</button>
         </div>
     </div>
     <div class="content">
         <div class="tabs">
-            <button class="tab-btn active" onclick="switchBuyerTab('open')">Open Tenders (<span id="buy-open-count">0</span>)</button>
+            <button class="tab-btn active" onclick="switchBuyerTab('development')">Development (<span id="buy-dev-count">0</span>)</button>
+            <button class="tab-btn" onclick="switchBuyerTab('open')">Open Tenders (<span id="buy-open-count">0</span>)</button>
             <button class="tab-btn" onclick="switchBuyerTab('accepted')">Accepted (<span id="buy-accepted-count">0</span>)</button>
             <button class="tab-btn" onclick="switchBuyerTab('expired')">Expired (<span id="buy-expired-count">0</span>)</button>
         </div>
@@ -582,7 +584,7 @@
         <button class="back-btn" onclick="logout()">Logout</button>
     </div>
     <div class="content">
-        <h1 style="font-size: 2rem; margin-bottom: 2rem;">Create Development Tender</h1>
+        <h1 style="font-size: 2rem; margin-bottom: 2rem;">Create Development</h1>
         <form class="form-container" onsubmit="submitTender(event)">
             <!-- Tabs -->
             <div class="tabs" style="margin-bottom: 1.5rem;">
@@ -694,18 +696,43 @@
                     <label>Expected Time To Complete Order (weeks)</label>
                     <input type="number" id="leadTimeTarget" placeholder="e.g., 8">
                 </div>
-                <div class="form-group">
+                <div class="form-group" id="deadline-group" style="display:none;">
                     <label>Bid Deadline (days)</label>
                     <input type="number" id="deadline" placeholder="e.g., 7">
                 </div>
             </div>
-            
+
+            <!-- Send to Tender toggle -->
+            <div style="background:#f0f4ff;border:1.5px solid #c7d2fe;border-radius:12px;padding:1.25rem 1.5rem;margin-bottom:1.5rem;display:flex;align-items:center;justify-content:space-between;gap:1rem;">
+                <div>
+                    <p style="font-weight:700;color:#3730a3;margin:0 0 0.2rem 0;">Send to Tender</p>
+                    <p style="font-size:0.85rem;color:#6366f1;margin:0;">Tick to send live to suppliers immediately. Leave unticked to save to Development board first.</p>
+                </div>
+                <label style="display:flex;align-items:center;gap:0.5rem;cursor:pointer;flex-shrink:0;">
+                    <input type="checkbox" id="sendToTender" onchange="toggleDeadlineField()" style="width:20px;height:20px;accent-color:#6366f1;cursor:pointer;">
+                    <span style="font-weight:700;color:#3730a3;font-size:0.9rem;">Send live</span>
+                </label>
+            </div>
+
             <div style="display: flex; gap: 1rem;">
-                <button type="submit" class="btn-primary" style="flex: 1;">Create Tender</button>
+                <button type="submit" id="submit-btn" class="btn-primary" style="flex: 1;">Save to Development</button>
                 <button type="button" onclick="backToBuyerDashboard()" style="flex: 1; background: #e2e8f0; color: #0f172a;">Cancel</button>
             </div>
             </div>
         </form>
+    </div>
+</div>
+
+<div id="stakeholder-page" class="dashboard hidden">
+    <div class="header">
+        <div><h1>Tenderable</h1><p>Internal Stakeholder View</p></div>
+        <button class="back-btn" onclick="logout()">Logout</button>
+    </div>
+    <div class="content">
+        <div class="tabs">
+            <button class="tab-btn active">Development (<span id="sh-dev-count">0</span>)</button>
+        </div>
+        <div id="stakeholder-tenders" class="tender-grid"></div>
     </div>
 </div>
 
@@ -738,11 +765,50 @@
 </div>
 
 <script>
+// ── PERSISTENCE ─────────────────────────────────────────────────────────────
+function saveData() {
+    try {
+        var toSave = {
+            tenders: data.tenders.map(function(t) {
+                return Object.assign({}, t, { deadlineDate: new Date(t.deadlineDate).toISOString() });
+            }),
+            bids: data.bids,
+            messages: data.messages,
+            developments: data.developments,
+            devComments: data.devComments,
+            dismissedTenders: data.dismissedTenders,
+            selectedSeason: data.selectedSeason
+        };
+        localStorage.setItem('tenderable_data', JSON.stringify(toSave));
+    } catch(e) { console.warn('Save failed', e); }
+}
+
+function loadData() {
+    try {
+        var saved = localStorage.getItem('tenderable_data');
+        if (!saved) return;
+        var parsed = JSON.parse(saved);
+        if (parsed.tenders) {
+            data.tenders = parsed.tenders.map(function(t) {
+                return Object.assign({}, t, { deadlineDate: new Date(t.deadlineDate), createdAt: t.createdAt ? new Date(t.createdAt) : new Date() });
+            });
+        }
+        if (parsed.bids) data.bids = parsed.bids;
+        if (parsed.messages) data.messages = parsed.messages;
+        if (parsed.developments) data.developments = parsed.developments;
+        if (parsed.devComments) data.devComments = parsed.devComments;
+        if (parsed.dismissedTenders) data.dismissedTenders = parsed.dismissedTenders;
+        if (parsed.selectedSeason) data.selectedSeason = parsed.selectedSeason;
+    } catch(e) { console.warn('Load failed', e); }
+}
+
 const data = {
     currentUser: null,
     tenders: [],
     bids: [],
     messages: [],
+    developments: [],
+    devComments: {},
     uploadedFiles: [],
     specsFiles: [],
     dismissedTenders: [],
@@ -756,6 +822,9 @@ const data = {
         }
     }
 };
+
+// Load saved data immediately
+loadData();
 
 const countdownIntervals = {};
 
@@ -852,6 +921,7 @@ function sendMessage(bidId) {
     };
     
     data.messages.push(chatMessage);
+    saveData();
     input.value = '';
     
     renderBidChat(bidId);
@@ -1145,8 +1215,19 @@ function loginSupplier() {
 
 function loginBuyer() {
     data.currentUser = { type: 'buyer', id: 'buyer1', name: 'Yours Clothing' };
+    data.currentBuyerTab = 'development';
     showPage('buyer-page');
+    // Set first tab active
+    var tabs = document.querySelectorAll('#buyer-page .tab-btn');
+    tabs.forEach(function(t) { t.classList.remove('active'); });
+    if (tabs[0]) tabs[0].classList.add('active');
     renderBuyerDashboard();
+}
+
+function loginStakeholder() {
+    data.currentUser = { type: 'stakeholder', id: 'sh1', name: 'Design & Merch Team' };
+    showPage('stakeholder-page');
+    renderStakeholderPage();
 }
 
 function logout() {
@@ -1263,6 +1344,7 @@ function submitTender(e) {
         };
         
         data.tenders.push(tender);
+        saveData();
         
         const form = document.querySelector('#create-tender-page form');
         if (form) form.reset();
@@ -1401,6 +1483,7 @@ function submitBid(tenderId) {
         negotiationHistory: []
     };
     data.bids.push(bid);
+    saveData();
     alert('✓ Bid submitted! Price: £' + price.toFixed(2));
     renderSupplierTenders();
 }
@@ -1409,6 +1492,7 @@ function acceptBid(bidId) {
     const bid = data.bids.find(b => b.id === bidId);
     if (bid) {
         bid.status = 'accepted';
+        saveData();
         alert('✓ Bid accepted! Opening conversation...');
         openBidChat(bidId);
     }
@@ -1433,6 +1517,7 @@ function counterBid(bidId) {
         timestamp: new Date()
     });
     
+    saveData();
     alert(`✓ Counter offer sent: £${counterPrice.toFixed(2)}\nWaiting for supplier response...`);
     viewBids(bid.tenderId);
 }
@@ -1443,6 +1528,7 @@ function rejectBid(bidId) {
     
     if (confirm('Are you sure you want to reject this bid?')) {
         bid.status = 'rejected';
+        saveData();
         alert('✗ Bid rejected');
         const tender = data.tenders.find(t => t.id === bid.tenderId);
         if (tender) viewBids(tender.id);
@@ -1465,6 +1551,7 @@ function acceptHighestBid(tenderId) {
     });
     
     highestBid.status = 'accepted';
+    saveData();
     alert(`✓ Highest bid accepted from ${highestBid.supplierName} at £${(highestBid.counterPrice !== null ? highestBid.counterPrice : highestBid.price).toFixed(2)}\nOpening conversation...`);
     openBidChat(highestBid.id);
 }
@@ -1482,6 +1569,7 @@ function relistTender(tenderId) {
         }
     });
     
+    saveData();
     alert('✓ Tender re-listed! New deadline: ' + tender.deadlineDate.toLocaleDateString());
     renderBuyerDashboard();
 }
@@ -1490,6 +1578,7 @@ function deleteTender(tenderId) {
     if (confirm('Are you sure you want to delete this tender? This cannot be undone.')) {
         data.tenders = data.tenders.filter(t => t.id !== tenderId);
         data.bids = data.bids.filter(b => b.tenderId !== tenderId);
+        saveData();
         alert('✗ Tender deleted');
         renderBuyerDashboard();
     }
@@ -1525,6 +1614,7 @@ function counterFromSupplier(bidId) {
         timestamp: new Date()
     });
     
+    saveData();
     alert(`✓ Counter offer sent: £${counterPrice.toFixed(2)}\nWaiting for buyer response...`);
     renderSupplierTenders();
 }
@@ -1538,6 +1628,7 @@ function dismissTender(tenderId) {
 
 function undismissTender(tenderId) {
     data.dismissedTenders = data.dismissedTenders.filter(id => id !== tenderId);
+    saveData();
     renderSupplierTenders();
 }
 
@@ -1748,6 +1839,7 @@ function sendSupplierMessage(bidId) {
         timestamp: new Date(),
         readBy: [data.currentUser.id]
     });
+    saveData();
     input.value = '';
     // Re-render the page to show the new message
     var bid = data.bids.find(function(b) { return b.id === bidId; });
@@ -1950,17 +2042,268 @@ function renderSupplierTenders() {
     }
 }
 
+function renderDevelopmentTab() {
+    var container = document.getElementById('buyer-tenders');
+    var devs = data.developments || [];
+    var isStakeholder = data.currentUser && data.currentUser.type === 'stakeholder';
+
+    document.getElementById('buy-dev-count').textContent = devs.length;
+
+    if (devs.length === 0) {
+        container.innerHTML = '<div class="empty-state" style="grid-column:1/-1;"><p>No developments yet. Click "+ New Development" to start.</p></div>';
+        return;
+    }
+
+    container.innerHTML = devs.map(function(dev) {
+        var comments = data.devComments[dev.id] || [];
+        var imageFile = dev.files && dev.files.length > 0 ? dev.files.find(function(f) { return f.isImage; }) : null;
+
+        var commentsHTML = '<div style="margin-top:1rem;padding-top:1rem;border-top:1px solid #e8ecf1;">';
+        commentsHTML += '<p style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:#94a3b8;margin:0 0 0.75rem 0;">Team Comments (' + comments.length + ')</p>';
+        if (comments.length > 0) {
+            commentsHTML += '<div style="max-height:180px;overflow-y:auto;display:flex;flex-direction:column;gap:0.6rem;margin-bottom:0.75rem;">';
+            comments.forEach(function(c) {
+                var roleColor = c.authorType === 'stakeholder' ? '#10b981' : '#8b5cf6';
+                commentsHTML += '<div style="background:#f8fafc;border-left:3px solid ' + roleColor + ';padding:0.6rem 0.9rem;border-radius:0 8px 8px 0;">';
+                commentsHTML += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.2rem;">';
+                commentsHTML += '<span style="font-size:0.78rem;font-weight:700;color:' + roleColor + ';">' + c.author + '</span>';
+                commentsHTML += '<span style="font-size:0.7rem;color:#94a3b8;">' + new Date(c.timestamp).toLocaleString() + '</span>';
+                commentsHTML += '</div>';
+                commentsHTML += '<p style="font-size:0.875rem;color:#0f172a;margin:0;">' + c.text + '</p>';
+                commentsHTML += '</div>';
+            });
+            commentsHTML += '</div>';
+        }
+        commentsHTML += '<div style="display:flex;gap:0.5rem;">';
+        commentsHTML += '<input type="text" id="comment-' + dev.id + '" placeholder="Add a comment..." style="flex:1;padding:0.6rem 0.9rem;border:1px solid #d1d5db;border-radius:8px;font-size:0.875rem;">';
+        commentsHTML += '<button onclick="addDevComment(\'' + dev.id + '\')" style="background:linear-gradient(135deg,#8b5cf6,#6d28d9);color:white;border:none;padding:0.6rem 1rem;border-radius:8px;cursor:pointer;font-weight:600;font-size:0.875rem;">Post</button>';
+        commentsHTML += '</div>';
+        commentsHTML += '</div>';
+
+        var actionBtns = '';
+        if (!isStakeholder) {
+            actionBtns += '<button onclick="sendDevToTender(\'' + dev.id + '\')" style="background:linear-gradient(135deg,#06b6d4,#0891b2);color:white;border:none;padding:0.5rem 1rem;border-radius:8px;cursor:pointer;font-weight:600;font-size:0.9rem;">Send to Tender</button>';
+            actionBtns += '<button onclick="showEditDevelopment(\'' + dev.id + '\')" style="background:#f1f5f9;color:#0f172a;border:1px solid #d1d5db;padding:0.5rem 1rem;border-radius:8px;cursor:pointer;font-weight:600;font-size:0.9rem;">&#9999;&#65039; Edit</button>';
+            actionBtns += '<button onclick="deleteDevelopment(\'' + dev.id + '\')" style="background:#fee2e2;color:#991b1b;border:1px solid #fca5a5;padding:0.5rem 1rem;border-radius:8px;cursor:pointer;font-weight:600;">&#x1F5D1;</button>';
+        }
+
+        return '<div class="tender-card" style="border:2px solid #e0e7ff;background:#fafaff;">' +
+            '<div style="display:flex;gap:1.25rem;">' +
+            (imageFile ? '<img src="' + imageFile.dataUrl + '" style="width:120px;height:120px;object-fit:cover;border-radius:8px;flex-shrink:0;">' :
+                '<div style="width:120px;height:120px;background:linear-gradient(135deg,#ede9fe,#ddd6fe);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:2rem;flex-shrink:0;">🎨</div>') +
+            '<div style="flex:1;">' +
+            '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:0.5rem;">' +
+            '<div>' +
+            '<span style="background:#e0e7ff;color:#4f46e5;font-size:0.7rem;font-weight:700;padding:0.2rem 0.6rem;border-radius:20px;text-transform:uppercase;letter-spacing:0.05em;">Development</span>' +
+            '<h3 style="margin:0.4rem 0 0.25rem 0;font-size:1.05rem;">' + dev.description + '</h3>' +
+            '<p style="font-size:0.8rem;color:#64748b;margin:0;">' + dev.brand + ' &bull; ' + dev.category + ' &bull; <strong>' + dev.seasonCode + '</strong></p>' +
+            '</div>' +
+            (actionBtns ? '<div style="display:flex;gap:0.5rem;flex-wrap:wrap;">' + actionBtns + '</div>' : '') +
+            '</div>' +
+            '<div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:0.75rem;margin:0.75rem 0;padding:0.75rem 0;border-top:1px solid #e8ecf1;border-bottom:1px solid #e8ecf1;">' +
+            '<div><p style="font-size:0.65rem;color:#94a3b8;margin:0;font-weight:600;text-transform:uppercase;">Price</p><p style="font-size:1.1rem;font-weight:700;color:#8b5cf6;margin:0.2rem 0 0 0;">&pound;' + dev.priceTarget.toFixed(2) + '</p></div>' +
+            '<div><p style="font-size:0.65rem;color:#94a3b8;margin:0;font-weight:600;text-transform:uppercase;">Qty</p><p style="font-size:1.1rem;font-weight:700;color:#06b6d4;margin:0.2rem 0 0 0;">' + (dev.orderQty||0).toLocaleString() + '</p></div>' +
+            '<div><p style="font-size:0.65rem;color:#94a3b8;margin:0;font-weight:600;text-transform:uppercase;">Fabric</p><p style="font-size:1.1rem;font-weight:700;color:#0f172a;margin:0.2rem 0 0 0;">' + (dev.fabric||'&mdash;') + '</p></div>' +
+            '<div><p style="font-size:0.65rem;color:#94a3b8;margin:0;font-weight:600;text-transform:uppercase;">Lead Time</p><p style="font-size:1.1rem;font-weight:700;color:#0f172a;margin:0.2rem 0 0 0;">' + (dev.leadTimeTarget * 7) + ' days</p></div>' +
+            '</div>' +
+            commentsHTML +
+            '</div></div></div>';
+    }).join('');
+}
+
+function addDevComment(devId) {
+    var input = document.getElementById('comment-' + devId);
+    if (!input || !input.value.trim()) return;
+    if (!data.devComments[devId]) data.devComments[devId] = [];
+    data.devComments[devId].push({
+        id: 'c-' + Date.now(),
+        author: data.currentUser.name,
+        authorType: data.currentUser.type,
+        text: input.value.trim(),
+        timestamp: new Date()
+    });
+    saveData();
+    renderDevelopmentTab();
+}
+
+function sendDevToTender(devId) {
+    var dev = data.developments.find(function(d) { return d.id === devId; });
+    if (!dev) return;
+    var deadlineDays = parseInt(prompt('How many days should the bid window be open? (e.g. 7)'));
+    if (isNaN(deadlineDays) || deadlineDays <= 0) { alert('Please enter a valid number of days'); return; }
+    var tender = Object.assign({}, dev, {
+        id: 'tender-' + Date.now(),
+        deadline: deadlineDays,
+        deadlineDate: new Date(Date.now() + deadlineDays * 86400000),
+        sentFromDev: devId
+    });
+    data.tenders.push(tender);
+    data.developments = data.developments.filter(function(d) { return d.id !== devId; });
+    saveData();
+    data.currentBuyerTab = 'open';
+    alert('✓ Development sent to tender! Suppliers can now bid.');
+    backToBuyerDashboard();
+}
+
+function deleteDevelopment(devId) {
+    if (!confirm('Delete this development? This cannot be undone.')) return;
+    data.developments = data.developments.filter(function(d) { return d.id !== devId; });
+    delete data.devComments[devId];
+    saveData();
+    renderDevelopmentTab();
+}
+
+function showEditDevelopment(devId) {
+    // Reuse edit tender page but for development
+    var dev = data.developments.find(function(d) { return d.id === devId; });
+    if (!dev) return;
+    data.editingTenderId = devId;
+    data.editingType = 'development';
+
+    var html = '<div style="background:#e0e7ff;border:1px solid #c7d2fe;border-radius:10px;padding:1rem 1.25rem;margin-bottom:1.5rem;">';
+    html += '<p style="font-weight:700;color:#3730a3;margin:0;">Editing development — no bids affected</p></div>';
+    html += '<div class="form-row"><div class="form-group"><label>Brand</label><select id="edit-brand"><option>Yours Clothing</option><option>BadRhino</option></select></div>';
+    html += '<div class="form-group"><label>Category</label><select id="edit-category"><option>TOPS</option><option>BOTTOMS</option><option>OUTERWEAR</option></select></div></div>';
+    html += '<div class="form-group"><label>Development Name</label><input type="text" id="edit-description" value="' + (dev.description||'').replace(/"/g,'&quot;') + '"></div>';
+    html += '<div class="form-row"><div class="form-group"><label>Season</label><select id="edit-season"><option>SS27</option><option>AW26</option><option>SS26</option><option>AW25</option><option>SS25</option></select></div>';
+    html += '<div class="form-group"><label>Fabric</label><input type="text" id="edit-fabric" value="' + (dev.fabric||'').replace(/"/g,'&quot;') + '"></div></div>';
+    html += '<div class="form-row"><div class="form-group"><label>Price Target £</label><input type="number" id="edit-price" step="0.01" value="' + (dev.priceTarget||'') + '"></div>';
+    html += '<div class="form-group"><label>Order Qty</label><input type="number" id="edit-qty" value="' + (dev.orderQty||'') + '"></div></div>';
+    html += '<div class="form-group"><label>Lead Time (weeks)</label><input type="number" id="edit-lead" value="' + (dev.leadTimeTarget||'') + '"></div>';
+
+    document.getElementById('edit-tender-content').innerHTML = html;
+
+    var brandSel = document.getElementById('edit-brand');
+    for (var i = 0; i < brandSel.options.length; i++) { if (brandSel.options[i].value === dev.brand) { brandSel.selectedIndex = i; break; } }
+    var catSel = document.getElementById('edit-category');
+    for (var i = 0; i < catSel.options.length; i++) { if (catSel.options[i].value === dev.category) { catSel.selectedIndex = i; break; } }
+    var seasonSel = document.getElementById('edit-season');
+    for (var i = 0; i < seasonSel.options.length; i++) { if (seasonSel.options[i].value === dev.seasonCode) { seasonSel.selectedIndex = i; break; } }
+
+    showPage('edit-tender-page');
+}
+
+function renderStakeholderPage() {
+    var container = document.getElementById('stakeholder-tenders');
+    var devs = data.developments || [];
+    document.getElementById('sh-dev-count').textContent = devs.length;
+    if (devs.length === 0) {
+        container.innerHTML = '<div class="empty-state" style="grid-column:1/-1;"><p>No developments on the board yet.</p></div>';
+        return;
+    }
+    // Reuse renderDevelopmentTab but render into stakeholder container
+    var saved = data.currentUser;
+    var savedContainer = document.getElementById('buyer-tenders');
+    // Temporarily swap container reference by calling with stakeholder context
+    renderDevelopmentTabInto(container);
+}
+
+function renderDevelopmentTabInto(container) {
+    var devs = data.developments || [];
+    var isStakeholder = data.currentUser && data.currentUser.type === 'stakeholder';
+
+    if (devs.length === 0) {
+        container.innerHTML = '<div class="empty-state" style="grid-column:1/-1;"><p>No developments on the board yet.</p></div>';
+        return;
+    }
+
+    container.innerHTML = devs.map(function(dev) {
+        var comments = data.devComments[dev.id] || [];
+        var imageFile = dev.files && dev.files.length > 0 ? dev.files.find(function(f) { return f.isImage; }) : null;
+
+        var commentsHTML = '<div style="margin-top:1rem;padding-top:1rem;border-top:1px solid #e8ecf1;">';
+        commentsHTML += '<p style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:#94a3b8;margin:0 0 0.75rem 0;">Team Comments (' + comments.length + ')</p>';
+        if (comments.length > 0) {
+            commentsHTML += '<div style="max-height:180px;overflow-y:auto;display:flex;flex-direction:column;gap:0.6rem;margin-bottom:0.75rem;">';
+            comments.forEach(function(c) {
+                var roleColor = c.authorType === 'stakeholder' ? '#10b981' : '#8b5cf6';
+                commentsHTML += '<div style="background:#f8fafc;border-left:3px solid ' + roleColor + ';padding:0.6rem 0.9rem;border-radius:0 8px 8px 0;">';
+                commentsHTML += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.2rem;">';
+                commentsHTML += '<span style="font-size:0.78rem;font-weight:700;color:' + roleColor + ';">' + c.author + '</span>';
+                commentsHTML += '<span style="font-size:0.7rem;color:#94a3b8;">' + new Date(c.timestamp).toLocaleString() + '</span>';
+                commentsHTML += '</div>';
+                commentsHTML += '<p style="font-size:0.875rem;color:#0f172a;margin:0;">' + c.text + '</p>';
+                commentsHTML += '</div>';
+            });
+            commentsHTML += '</div>';
+        }
+        commentsHTML += '<div style="display:flex;gap:0.5rem;">';
+        commentsHTML += '<input type="text" id="comment-' + dev.id + '" placeholder="Add a comment..." style="flex:1;padding:0.6rem 0.9rem;border:1px solid #d1d5db;border-radius:8px;font-size:0.875rem;">';
+        commentsHTML += '<button onclick="addDevCommentAndRefresh(\'' + dev.id + '\')" style="background:linear-gradient(135deg,#10b981,#059669);color:white;border:none;padding:0.6rem 1rem;border-radius:8px;cursor:pointer;font-weight:600;font-size:0.875rem;">Post</button>';
+        commentsHTML += '</div>';
+        commentsHTML += '</div>';
+
+        var actionBtns = '';
+        if (!isStakeholder) {
+            actionBtns = '<div style="display:flex;gap:0.5rem;flex-wrap:wrap;">' +
+                '<button onclick="sendDevToTender(\'' + dev.id + '\')" style="background:linear-gradient(135deg,#06b6d4,#0891b2);color:white;border:none;padding:0.5rem 1rem;border-radius:8px;cursor:pointer;font-weight:600;font-size:0.9rem;">Send to Tender</button>' +
+                '<button onclick="showEditDevelopment(\'' + dev.id + '\')" style="background:#f1f5f9;color:#0f172a;border:1px solid #d1d5db;padding:0.5rem 1rem;border-radius:8px;cursor:pointer;font-weight:600;font-size:0.9rem;">&#9999; Edit</button>' +
+                '<button onclick="deleteDevelopment(\'' + dev.id + '\')" style="background:#fee2e2;color:#991b1b;border:1px solid #fca5a5;padding:0.5rem 1rem;border-radius:8px;cursor:pointer;font-weight:600;">&#128465;</button>' +
+                '</div>';
+        }
+
+        return '<div class="tender-card" style="border:2px solid #e0e7ff;background:#fafaff;">' +
+            '<div style="display:flex;gap:1.25rem;">' +
+            (imageFile ? '<img src="' + imageFile.dataUrl + '" style="width:120px;height:120px;object-fit:cover;border-radius:8px;flex-shrink:0;">' :
+                '<div style="width:120px;height:120px;background:linear-gradient(135deg,#ede9fe,#ddd6fe);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:2rem;flex-shrink:0;">🎨</div>') +
+            '<div style="flex:1;">' +
+            '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:0.5rem;flex-wrap:wrap;gap:0.5rem;">' +
+            '<div><span style="background:#e0e7ff;color:#4f46e5;font-size:0.7rem;font-weight:700;padding:0.2rem 0.6rem;border-radius:20px;text-transform:uppercase;letter-spacing:0.05em;">Development</span>' +
+            '<h3 style="margin:0.4rem 0 0.25rem 0;font-size:1.05rem;">' + dev.description + '</h3>' +
+            '<p style="font-size:0.8rem;color:#64748b;margin:0;">' + dev.brand + ' &bull; ' + dev.category + ' &bull; <strong>' + dev.seasonCode + '</strong></p></div>' +
+            actionBtns +
+            '</div>' +
+            '<div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:0.75rem;margin:0.75rem 0;padding:0.75rem 0;border-top:1px solid #e8ecf1;border-bottom:1px solid #e8ecf1;">' +
+            '<div><p style="font-size:0.65rem;color:#94a3b8;margin:0;font-weight:600;text-transform:uppercase;">Price</p><p style="font-size:1.1rem;font-weight:700;color:#8b5cf6;margin:0.2rem 0 0 0;">&pound;' + dev.priceTarget.toFixed(2) + '</p></div>' +
+            '<div><p style="font-size:0.65rem;color:#94a3b8;margin:0;font-weight:600;text-transform:uppercase;">Qty</p><p style="font-size:1.1rem;font-weight:700;color:#06b6d4;margin:0.2rem 0 0 0;">' + (dev.orderQty||0).toLocaleString() + '</p></div>' +
+            '<div><p style="font-size:0.65rem;color:#94a3b8;margin:0;font-weight:600;text-transform:uppercase;">Fabric</p><p style="font-size:1.1rem;font-weight:700;color:#0f172a;margin:0.2rem 0 0 0;">' + (dev.fabric||'&mdash;') + '</p></div>' +
+            '<div><p style="font-size:0.65rem;color:#94a3b8;margin:0;font-weight:600;text-transform:uppercase;">Lead Time</p><p style="font-size:1.1rem;font-weight:700;color:#0f172a;margin:0.2rem 0 0 0;">' + (dev.leadTimeTarget * 7) + ' days</p></div>' +
+            '</div>' +
+            commentsHTML +
+            '</div></div></div>';
+    }).join('');
+}
+
+function addDevCommentAndRefresh(devId) {
+    var input = document.getElementById('comment-' + devId);
+    if (!input || !input.value.trim()) return;
+    if (!data.devComments[devId]) data.devComments[devId] = [];
+    data.devComments[devId].push({
+        id: 'c-' + Date.now(),
+        author: data.currentUser.name,
+        authorType: data.currentUser.type,
+        text: input.value.trim(),
+        timestamp: new Date()
+    });
+    saveData();
+    if (data.currentUser.type === 'stakeholder') {
+        renderStakeholderPage();
+    } else {
+        renderDevelopmentTab();
+    }
+}
+
 function renderBuyerDashboard() {
-    const activeTab = document.querySelector('#buyer-page .tab-btn.active');
-    let tab = 'open';
-    if (activeTab.textContent.includes('Accepted')) {
-        tab = 'accepted';
-    } else if (activeTab.textContent.includes('Expired')) {
-        tab = 'expired';
+    var tab = data.currentBuyerTab || 'development';
+    // Sync active tab button
+    var tabBtns = document.querySelectorAll('#buyer-page .tab-btn');
+    tabBtns.forEach(function(btn) {
+        btn.classList.remove('active');
+        var t = btn.getAttribute('onclick') ? btn.getAttribute('onclick').match(/'([^']+)'/)[1] : '';
+        if (t === tab) btn.classList.add('active');
+    });
+
+    // Show/hide season filter only for non-development tabs
+    var seasonFilter = document.querySelector('#buyer-page [style*="Filter by Season"], #buyer-page .season-filter-row');
+    
+    // Handle development tab
+    if (tab === 'development') {
+        renderDevelopmentTab();
+        return;
     }
     
     const container = document.getElementById('buyer-tenders');
-    const seasonFilter = data.selectedSeason;
+    var seasonFilterVal = data.selectedSeason;
     
     let tenders = [];
     if (tab === 'open') {
@@ -1986,7 +2329,9 @@ function renderBuyerDashboard() {
     const openCount = data.tenders.filter(t => !isExpired(t.deadlineDate) && !data.bids.some(b => b.tenderId === t.id && b.status === 'accepted')).length;
     const acceptedCount = data.tenders.filter(t => data.bids.some(b => b.tenderId === t.id && b.status === 'accepted')).length;
     const expiredCount = data.tenders.filter(t => isExpired(t.deadlineDate) && !data.bids.some(b => b.tenderId === t.id && b.status === 'accepted')).length;
+    const devCount = (data.developments || []).length;
     
+    document.getElementById('buy-dev-count').textContent = devCount;
     document.getElementById('buy-open-count').textContent = openCount;
     document.getElementById('buy-accepted-count').textContent = acceptedCount;
     document.getElementById('buy-expired-count').textContent = expiredCount;
@@ -2277,8 +2622,9 @@ function renderViewBids(tender, tenderBids) {
 }
 
 function switchBuyerTab(tab) {
-    document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+    document.querySelectorAll('#buyer-page .tab-btn').forEach(function(btn) { btn.classList.remove('active'); });
     event.target.classList.add('active');
+    data.currentBuyerTab = tab;
     renderBuyerDashboard();
 }
 
@@ -2377,7 +2723,30 @@ function updateTender(e) {
         }
     });
 
+    if (data.editingType === 'development') {
+        // Update development
+        var dev = data.developments.find(function(d) { return d.id === data.editingTenderId; });
+        if (dev) {
+            dev.description = newDesc;
+            dev.brand = newBrand;
+            dev.category = newCat;
+            dev.seasonCode = newSeason;
+            dev.fabric = newFabric;
+            dev.priceTarget = newPrice;
+            dev.orderQty = newQty;
+            dev.leadTimeTarget = newLead;
+        }
+        saveData();
+        data.editingTenderId = null;
+        data.editingType = null;
+        data.currentBuyerTab = 'development';
+        alert('✓ Development updated.');
+        backToBuyerDashboard();
+        return;
+    }
+    saveData();
     data.editingTenderId = null;
+    data.editingType = null;
     alert('✓ Tender updated. Existing bids have been reset — suppliers will need to re-bid.');
     backToBuyerDashboard();
 }
