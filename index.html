@@ -1440,89 +1440,161 @@ function removeSpec(specId) {
     if (element) element.remove();
 }
 
+// ── MULTI-PRODUCT BID HELPERS ─────────────────────────────────────────
+function computeOverallBidStatus(bid) {
+    if (!bid.isMultiProduct) return bid.status;
+    var pbs = bid.productBids || [];
+    if (pbs.length === 0) return bid.status;
+    // All accepted → whole bid accepted (rejected products excluded — supplier must re-bid those)
+    var activePbs = pbs.filter(function(pb) { return pb.status !== 'rejected'; });
+    if (activePbs.length > 0 && activePbs.every(function(pb) { return pb.status === 'accepted'; })) return 'accepted';
+    // Any counter pending from buyer → countered
+    if (pbs.some(function(pb) { return pb.counterPrice !== null && pb.counterPrice !== undefined && pb.status !== 'accepted' && pb.status !== 'rejected'; })) return 'countered';
+    return 'submitted';
+}
+
+function syncBidStatus(bid) {
+    if (bid.isMultiProduct) {
+        bid.status = computeOverallBidStatus(bid);
+    }
+}
+
 function submitBid(tenderId) {
-    const price = parseFloat(prompt('Enter your price (FOB) - e.g., 22.50:'));
-    if (isNaN(price) || price <= 0) {
-        alert('Please enter a valid price');
-        return;
-    }
-    
-    const leadTime = parseInt(prompt('Enter lead time (days):'));
-    if (isNaN(leadTime) || leadTime <= 0) {
-        alert('Please enter a valid lead time');
-        return;
-    }
-    
-    const sampleTime = parseInt(prompt('Enter sample time (days):'));
-    if (isNaN(sampleTime) || sampleTime <= 0) {
-        alert('Please enter a valid sample time');
-        return;
-    }
-    
-    const bid = {
-        id: `bid-${Date.now()}`,
-        tenderId,
+    var tender = data.tenders.find(function(t) { return t.id === tenderId; });
+    if (!tender) return;
+
+    var leadTime = parseInt(prompt('Enter your lead time (days):'));
+    if (isNaN(leadTime) || leadTime <= 0) { alert('Please enter a valid lead time'); return; }
+
+    var isMulti = tender.products && tender.products.length > 1;
+
+    var bid = {
+        id: 'bid-' + Date.now(),
+        tenderId: tenderId,
         supplierId: data.currentUser.id,
         supplierName: data.currentUser.name,
-        price,
-        counterPrice: null,
-        leadTime,
-        sampleTime,
+        leadTime: leadTime,
         status: 'submitted',
-        lastCounterFrom: null,
+        isMultiProduct: isMulti,
         negotiationHistory: []
     };
+
+    if (isMulti) {
+        var productBids = [];
+        for (var i = 0; i < tender.products.length; i++) {
+            var p = tender.products[i];
+            var label = p.description + (p.colour ? ' (' + p.colour + ')' : '');
+            var price = parseFloat(prompt('Price for ' + label + ' (FOB £):'));
+            if (isNaN(price) || price <= 0) { alert('Please enter a valid price for ' + label); return; }
+            productBids.push({
+                productIndex: i,
+                description: p.description,
+                colour: p.colour || '',
+                qty: p.qty || 0,
+                price: price,
+                counterPrice: null,
+                status: 'submitted',
+                negotiationHistory: []
+            });
+        }
+        bid.productBids = productBids;
+        alert('✓ Bid submitted on ' + productBids.length + ' products!');
+    } else {
+        var singlePrice = parseFloat(prompt('Enter your price (FOB £):'));
+        if (isNaN(singlePrice) || singlePrice <= 0) { alert('Please enter a valid price'); return; }
+        bid.price = singlePrice;
+        bid.counterPrice = null;
+        alert('✓ Bid submitted at £' + singlePrice.toFixed(2));
+    }
+
     data.bids.push(bid);
     saveData();
-    alert('✓ Bid submitted! Price: £' + price.toFixed(2));
     renderSupplierTenders();
 }
 
 function acceptBid(bidId) {
-    const bid = data.bids.find(b => b.id === bidId);
-    if (bid) {
-        bid.status = 'accepted';
-        saveData();
-        alert('✓ Bid accepted! Opening conversation...');
+    var bid = data.bids.find(function(b) { return b.id === bidId; });
+    if (!bid) return;
+    if (bid.isMultiProduct) { alert('Please accept each product individually.'); viewBids(bid.tenderId); return; }
+    bid.status = 'accepted';
+    saveData();
+    alert('✓ Bid accepted! Opening conversation...');
+    openBidChat(bidId);
+}
+
+function acceptProductBid(bidId, pIdx) {
+    var bid = data.bids.find(function(b) { return b.id === bidId; });
+    if (!bid || !bid.productBids) return;
+    var pb = bid.productBids[pIdx];
+    if (!pb) return;
+    pb.status = 'accepted';
+    pb.counterPrice = null;
+    syncBidStatus(bid);
+    saveData();
+    if (bid.status === 'accepted') {
+        alert('✓ All products accepted! Opening conversation...');
         openBidChat(bidId);
+    } else {
+        viewBids(bid.tenderId);
     }
 }
 
 function counterBid(bidId) {
-    const bid = data.bids.find(b => b.id === bidId);
+    var bid = data.bids.find(function(b) { return b.id === bidId; });
     if (!bid) return;
-    
-    const counterPrice = parseFloat(prompt(`Current bid: £${bid.price.toFixed(2)}\n\nEnter your counter price (FOB) - e.g., 18.50:`));
-    if (isNaN(counterPrice) || counterPrice <= 0) {
-        alert('Please enter a valid price');
-        return;
-    }
-    
+    if (bid.isMultiProduct) { alert('Please counter each product individually.'); viewBids(bid.tenderId); return; }
+    var counterPrice = parseFloat(prompt('Current bid: £' + bid.price.toFixed(2) + '\n\nEnter your counter price (FOB):'));
+    if (isNaN(counterPrice) || counterPrice <= 0) { alert('Please enter a valid price'); return; }
     bid.counterPrice = counterPrice;
     bid.status = 'countered';
     bid.lastCounterFrom = 'buyer';
-    bid.negotiationHistory.push({
-        from: 'buyer',
-        price: counterPrice,
-        timestamp: new Date()
-    });
-    
+    bid.negotiationHistory.push({ from: 'buyer', price: counterPrice, timestamp: new Date() });
     saveData();
-    alert(`✓ Counter offer sent: £${counterPrice.toFixed(2)}\nWaiting for supplier response...`);
+    alert('✓ Counter offer sent: £' + counterPrice.toFixed(2));
+    viewBids(bid.tenderId);
+}
+
+function counterProductBid(bidId, pIdx) {
+    var bid = data.bids.find(function(b) { return b.id === bidId; });
+    if (!bid || !bid.productBids) return;
+    var pb = bid.productBids[pIdx];
+    if (!pb) return;
+    var counterPrice = parseFloat(prompt('Current bid for ' + pb.description + ': £' + pb.price.toFixed(2) + '\n\nEnter your counter price:'));
+    if (isNaN(counterPrice) || counterPrice <= 0) { alert('Please enter a valid price'); return; }
+    pb.counterPrice = counterPrice;
+    pb.status = 'countered';
+    pb.negotiationHistory.push({ from: 'buyer', price: counterPrice, timestamp: new Date() });
+    syncBidStatus(bid);
+    saveData();
+    alert('✓ Counter sent on ' + pb.description + ': £' + counterPrice.toFixed(2));
     viewBids(bid.tenderId);
 }
 
 function rejectBid(bidId) {
-    const bid = data.bids.find(b => b.id === bidId);
+    var bid = data.bids.find(function(b) { return b.id === bidId; });
     if (!bid) return;
-    
+    if (bid.isMultiProduct) { alert('Please reject each product individually.'); viewBids(bid.tenderId); return; }
     if (confirm('Are you sure you want to reject this bid?')) {
         bid.status = 'rejected';
         saveData();
         alert('✗ Bid rejected');
-        const tender = data.tenders.find(t => t.id === bid.tenderId);
+        var tender = data.tenders.find(function(t) { return t.id === bid.tenderId; });
         if (tender) viewBids(tender.id);
     }
+}
+
+function rejectProductBid(bidId, pIdx) {
+    var bid = data.bids.find(function(b) { return b.id === bidId; });
+    if (!bid || !bid.productBids) return;
+    var pb = bid.productBids[pIdx];
+    if (!pb) return;
+    if (!confirm('Reject ' + pb.description + '? The supplier will need to re-bid on this product only.')) return;
+    pb.status = 'rejected';
+    pb.counterPrice = null;
+    syncBidStatus(bid);
+    saveData();
+    alert('✗ ' + pb.description + ' rejected. The supplier can re-bid on this product.');
+    viewBids(bid.tenderId);
 }
 
 function acceptHighestBid(tenderId) {
@@ -1575,37 +1647,87 @@ function deleteTender(tenderId) {
 }
 
 function acceptCounterFromBuyer(bidId) {
-    const bid = data.bids.find(b => b.id === bidId);
+    var bid = data.bids.find(function(b) { return b.id === bidId; });
     if (!bid || bid.counterPrice === null) return;
-    
-    bid.status = 'accepted';
     bid.price = bid.counterPrice;
-    alert(`✓ Counter accepted at £${bid.counterPrice.toFixed(2)}!\nOpening conversation...`);
+    bid.counterPrice = null;
+    bid.status = 'accepted';
+    saveData();
+    alert('✓ Counter accepted at £' + bid.price.toFixed(2) + '! Opening conversation...');
     openBidChat(bidId);
 }
 
-function counterFromSupplier(bidId) {
-    const bid = data.bids.find(b => b.id === bidId);
-    if (!bid) return;
-    
-    const counterPrice = parseFloat(prompt(`Buyer offered: £${bid.counterPrice.toFixed(2)}\nYour original: £${bid.price.toFixed(2)}\n\nEnter your counter price (FOB):`));
-    if (isNaN(counterPrice) || counterPrice <= 0) {
-        alert('Please enter a valid price');
-        return;
+// Supplier accepts a buyer counter on a specific product
+function acceptCounterOnProduct(bidId, pIdx) {
+    var bid = data.bids.find(function(b) { return b.id === bidId; });
+    if (!bid || !bid.productBids) return;
+    var pb = bid.productBids[pIdx];
+    if (!pb || pb.counterPrice === null) return;
+    pb.price = pb.counterPrice;
+    pb.counterPrice = null;
+    pb.status = 'accepted';
+    pb.negotiationHistory.push({ from: 'supplier', price: pb.price, timestamp: new Date() });
+    syncBidStatus(bid);
+    saveData();
+    if (bid.status === 'accepted') {
+        alert('✓ All products accepted! Opening conversation...');
+        openBidChat(bidId);
+    } else {
+        var tender = data.tenders.find(function(t) { return t.id === bid.tenderId; });
+        if (tender) viewSupplierTender(tender.id);
     }
-    
-    bid.price = counterPrice;
+}
+
+// Supplier counters back on a specific product
+function resubmitProductBid(bidId, pIdx) {
+    var bid = data.bids.find(function(b) { return b.id === bidId; });
+    if (!bid || !bid.productBids) return;
+    var pb = bid.productBids[pIdx];
+    if (!pb) return;
+    var newPrice = parseFloat(prompt('Re-bid on ' + pb.description + (pb.colour ? ' (' + pb.colour + ')' : '') + '\nEnter your new price (FOB £):'));
+    if (isNaN(newPrice) || newPrice <= 0) { alert('Please enter a valid price'); return; }
+    // Keep history, reset to submitted with new price
+    pb.negotiationHistory.push({ from: 'supplier', price: newPrice, timestamp: new Date(), note: 're-bid' });
+    pb.price = newPrice;
+    pb.counterPrice = null;
+    pb.status = 'submitted';
+    syncBidStatus(bid);
+    saveData();
+    alert('✓ Re-bid submitted on ' + pb.description + ' at £' + newPrice.toFixed(2));
+    var tender = data.tenders.find(function(t) { return t.id === bid.tenderId; });
+    if (tender) viewSupplierTender(tender.id);
+}
+
+function counterBackOnProduct(bidId, pIdx) {
+    var bid = data.bids.find(function(b) { return b.id === bidId; });
+    if (!bid || !bid.productBids) return;
+    var pb = bid.productBids[pIdx];
+    if (!pb) return;
+    var newPrice = parseFloat(prompt('Buyer offered: £' + pb.counterPrice.toFixed(2) + '\nYour original: £' + pb.price.toFixed(2) + '\n\nYour counter price for ' + pb.description + ':'));
+    if (isNaN(newPrice) || newPrice <= 0) { alert('Please enter a valid price'); return; }
+    pb.price = newPrice;
+    pb.counterPrice = null;
+    pb.status = 'countered';
+    pb.negotiationHistory.push({ from: 'supplier', price: newPrice, timestamp: new Date() });
+    syncBidStatus(bid);
+    saveData();
+    alert('✓ Counter sent on ' + pb.description + ': £' + newPrice.toFixed(2));
+    var tender = data.tenders.find(function(t) { return t.id === bid.tenderId; });
+    if (tender) viewSupplierTender(tender.id);
+}
+
+function counterFromSupplier(bidId) {
+    var bid = data.bids.find(function(b) { return b.id === bidId; });
+    if (!bid) return;
+    var newPrice = parseFloat(prompt('Buyer offered: £' + bid.counterPrice.toFixed(2) + '\nYour original: £' + bid.price.toFixed(2) + '\n\nEnter your counter price (FOB):'));
+    if (isNaN(newPrice) || newPrice <= 0) { alert('Please enter a valid price'); return; }
+    bid.price = newPrice;
     bid.counterPrice = null;
     bid.status = 'countered';
     bid.lastCounterFrom = 'supplier';
-    bid.negotiationHistory.push({
-        from: 'supplier',
-        price: counterPrice,
-        timestamp: new Date()
-    });
-    
+    bid.negotiationHistory.push({ from: 'supplier', price: newPrice, timestamp: new Date() });
     saveData();
-    alert(`✓ Counter offer sent: £${counterPrice.toFixed(2)}\nWaiting for buyer response...`);
+    alert('✓ Counter offer sent: £' + newPrice.toFixed(2) + '\nWaiting for buyer response...');
     renderSupplierTenders();
 }
 
@@ -1965,25 +2087,25 @@ function renderSupplierTenders() {
                                 <button style="background: #f1f5f9; color: #0f172a; border: 1px solid #d1d5db; padding: 0.5rem 0.75rem; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 1.1rem;" onclick="dismissTender('${tender.id}')" title="Dismiss">✕</button>
                             `;
         } else if (tab === 'active' && myBid) {
-            const displayPrice = myBid.counterPrice !== null ? myBid.counterPrice : myBid.price;
-            const hasCounter = myBid.counterPrice !== null;
             const unreadOnBid = getUnreadCount(myBid.id);
+            const overallStatus = computeOverallBidStatus(myBid);
+            const hasCounter = myBid.isMultiProduct
+                ? (myBid.productBids || []).some(pb => pb.counterPrice !== null && pb.counterPrice !== undefined && pb.status !== 'accepted' && pb.status !== 'rejected')
+                : myBid.counterPrice !== null;
+            const pendingCounters = myBid.isMultiProduct
+                ? (myBid.productBids || []).filter(pb => pb.counterPrice !== null && pb.counterPrice !== undefined && pb.status !== 'accepted' && pb.status !== 'rejected').length
+                : 0;
             cardHTML += `
                                 <div style="display:flex;flex-direction:column;gap:0.5rem;width:100%;">
                                     ${unreadOnBid > 0 ? `<div style="background:#ef4444;color:white;padding:0.4rem 0.75rem;border-radius:6px;font-size:0.8rem;font-weight:700;text-align:center;cursor:pointer;" onclick="viewSupplierTender('${tender.id}')">📩 ${unreadOnBid} new message${unreadOnBid > 1 ? 's' : ''} from buyer — tap to read</div>` : ''}
                                     ${hasCounter ? `
-                                        <div style="background: #fef3c7; color: #92400e; padding: 0.5rem 0.75rem; border-radius: 6px; font-weight: 600; font-size: 0.85rem; text-align: center;">
-                                            ⟷ Buyer counter: £${displayPrice.toFixed(2)}
-                                            <br><span style="font-size: 0.75rem; font-weight: normal;">Original: £${myBid.price.toFixed(2)}</span>
+                                        <div style="background:#fef3c7;color:#92400e;padding:0.5rem 0.75rem;border-radius:6px;font-weight:600;font-size:0.85rem;text-align:center;">
+                                            ⟷ ${myBid.isMultiProduct ? pendingCounters + ' product counter' + (pendingCounters > 1 ? 's' : '') + ' from buyer' : 'Buyer counter: £' + myBid.counterPrice.toFixed(2)}
                                         </div>
-                                        <div style="display: flex; gap: 0.5rem;">
-                                            <button class="btn-primary" style="flex: 1; padding: 0.4rem 0.75rem; font-size: 0.85rem;" onclick="acceptCounterFromBuyer('${myBid.id}')">✓ Accept</button>
-                                            <button style="flex: 1; background: #fef3c7; color: #92400e; border: 1px solid #f59e0b; padding: 0.4rem 0.75rem; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 0.85rem;" onclick="counterFromSupplier('${myBid.id}')">⟷ Counter</button>
-                                            <button style="background:#f1f5f9;color:#0f172a;border:1px solid #d1d5db;padding:0.4rem 0.75rem;border-radius:8px;cursor:pointer;font-weight:600;font-size:0.85rem;" onclick="viewSupplierTender('${tender.id}')">View</button>
-                                        </div>
+                                        <button style="background:#f1f5f9;color:#0f172a;border:1px solid #d1d5db;padding:0.4rem 0.75rem;border-radius:8px;cursor:pointer;font-weight:600;font-size:0.85rem;width:100%;" onclick="viewSupplierTender('${tender.id}')">View & Respond</button>
                                     ` : `
                                         <div style="display:flex;gap:0.5rem;">
-                                            <div style="background: #dcfce7; color: #166534; padding: 0.4rem 0.8rem; border-radius: 6px; font-weight: 600; font-size: 0.85rem;">✓ £${myBid.price}</div>
+                                            <div style="background:#dcfce7;color:#166534;padding:0.4rem 0.8rem;border-radius:6px;font-weight:600;font-size:0.85rem;">${myBid.isMultiProduct ? '✓ ' + (myBid.productBids||[]).length + ' products bid' : '✓ £' + myBid.price}</div>
                                             <button style="background:#f1f5f9;color:#0f172a;border:1px solid #d1d5db;padding:0.4rem 0.75rem;border-radius:8px;cursor:pointer;font-weight:600;font-size:0.85rem;" onclick="viewSupplierTender('${tender.id}')">View</button>
                                         </div>
                                     `}
