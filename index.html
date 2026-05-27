@@ -533,7 +533,7 @@
             <p style="text-align:center;color:#64748b;margin:0;">Already have an account? <span onclick="showLogin()" style="color:#8b5cf6;cursor:pointer;font-weight:600;">Sign in</span></p>
             <div id="reg-error" style="display:none;background:rgba(220,38,38,0.2);border:1px solid rgba(220,38,38,0.4);color:#fca5a5;padding:0.75rem 1rem;border-radius:8px;margin-top:1rem;font-size:0.875rem;text-align:center;"></div>
         </div>
-        <p style="text-align:center;color:#475569;margin:1.5rem 0 0 0;font-size:0.7rem;letter-spacing:0.05em;">v2026.05.27 · paste-edit</p>
+        <p style="text-align:center;color:#475569;margin:1.5rem 0 0 0;font-size:0.7rem;letter-spacing:0.05em;">v2026.05.27 · per-style-targets</p>
     </div>
 </div>
 
@@ -710,7 +710,7 @@
                 <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;">
                     <div>
                         <label style="display:block;font-size:0.875rem;font-weight:700;color:#0f172a;">Products</label>
-                        <p style="font-size:0.8rem;color:#94a3b8;margin:0.25rem 0 0 0;">Add each product variant — e.g. Black Tee, Navy Tee, Burgundy Tee</p>
+                        <p style="font-size:0.8rem;color:#94a3b8;margin:0.25rem 0 0 0;">Add each style with its quantity and target price — suppliers bid per style</p>
                     </div>
                     <button type="button" onclick="addProductRow()" style="background:linear-gradient(135deg,#8b5cf6,#6d28d9);color:white;border:none;padding:0.6rem 1.2rem;border-radius:8px;cursor:pointer;font-weight:600;font-size:0.85rem;white-space:nowrap;">+ Add Product</button>
                 </div>
@@ -738,12 +738,12 @@
             
             <div class="form-row">
                 <div class="form-group">
-                    <label>Price Target £</label>
-                    <input type="number" id="priceTarget" placeholder="e.g., 22.50" step="0.01" min="0">
+                    <label>Order Qty <span style="font-weight:400;color:#94a3b8;font-size:0.8rem;">(auto-total of products)</span></label>
+                    <input type="number" id="orderQty" placeholder="Add products above" min="1" readonly style="background:#f1f5f9;cursor:not-allowed;">
                 </div>
                 <div class="form-group">
-                    <label>Order Qty</label>
-                    <input type="number" id="orderQty" placeholder="e.g., 500" min="1">
+                    <label>Price Target <span style="font-weight:400;color:#94a3b8;font-size:0.8rem;">(set per style above)</span></label>
+                    <input type="text" id="priceTargetRange" placeholder="Add a target per product" readonly style="background:#f1f5f9;cursor:not-allowed;">
                 </div>
             </div>
             
@@ -1638,33 +1638,38 @@ function submitTender(e) {
         const description = document.getElementById('description').value.trim();
         const seasonCode = document.getElementById('seasonCode').value.trim();
         const fabric = document.getElementById('fabric').value.trim();
-        const priceTarget = document.getElementById('priceTarget').value.trim();
-        const orderQty = document.getElementById('orderQty').value.trim();
         const leadTimeTarget = document.getElementById('leadTimeTarget').value.trim();
         const deadline = document.getElementById('deadline').value.trim();
         const sendLive = document.getElementById('sendToTender') && document.getElementById('sendToTender').checked;
+
+        const productsFromForm = getProductsFromForm();
 
         if (!brand || brand === 'Select Brand') { alert('Please select a brand'); return; }
         if (!category || category === 'Select Category') { alert('Please select a category'); return; }
         if (!description) { alert('Please enter a description'); return; }
         if (!seasonCode || seasonCode === 'Select Season') { alert('Please select a season code'); return; }
         if (!fabric) { alert('Please enter fabric details'); return; }
-        if (!priceTarget || isNaN(parseFloat(priceTarget))) { alert('Please enter a valid price target'); return; }
-        if (!orderQty || isNaN(parseInt(orderQty)) || parseInt(orderQty) <= 0) { alert('Please enter a valid order quantity'); return; }
+        if (productsFromForm.length === 0) { alert('Please add at least one product'); return; }
+        if (productsFromForm.some(function(p){ return !p.priceTarget || p.priceTarget <= 0; })) { alert('Please enter a target price for every product'); return; }
+        if (productsFromForm.some(function(p){ return !p.qty || p.qty <= 0; })) { alert('Please enter a quantity for every product'); return; }
         if (!leadTimeTarget || isNaN(parseInt(leadTimeTarget))) { alert('Please enter a valid lead time'); return; }
         if (sendLive && (!deadline || isNaN(parseInt(deadline)) || parseInt(deadline) <= 0)) {
             alert('Please enter a bid deadline (days) before sending live');
             return;
         }
 
+        // Derived totals from per-style data
+        const orderQtyTotal = productsFromForm.reduce(function(s,p){ return s + (p.qty || 0); }, 0);
+        const minTarget = Math.min.apply(null, productsFromForm.map(function(p){ return p.priceTarget; }));
+
         const itemBase = {
             brand, category, description, seasonCode, fabric,
-            priceTarget: parseFloat(priceTarget),
-            orderQty: parseInt(orderQty),
+            priceTarget: minTarget,
+            orderQty: orderQtyTotal,
             leadTimeTarget: parseInt(leadTimeTarget),
             files: [...data.uploadedFiles],
             specs: [],
-            products: getProductsFromForm(),
+            products: productsFromForm,
             labellingReqs: document.getElementById('labellingReqs') ? document.getElementById('labellingReqs').value.trim() : '',
             specsFiles: [...data.specsFiles],
             invitedSuppliers: [...data.invitedSuppliers],
@@ -1700,6 +1705,7 @@ function submitTender(e) {
         renderSelectedSuppliers();
         document.getElementById('products-list').innerHTML = '';
         document.getElementById('products-empty-hint').style.display = 'block';
+        recomputeCreateTotals();
         const fileList = document.getElementById('fileList');
         if (fileList) fileList.innerHTML = '';
         const specsFileList2 = document.getElementById('specsFileList');
@@ -1755,19 +1761,54 @@ function addProductRow() {
     inp3.min = '1';
     inp3.style.cssText = 'flex:1;padding:0.75rem;border:1px solid #d1d5db;border-radius:8px;font-size:0.9rem;font-family:inherit;min-width:0;';
 
+    var inp4 = document.createElement('input');
+    inp4.type = 'number';
+    inp4.placeholder = 'Target £';
+    inp4.className = 'product-target';
+    inp4.step = '0.01';
+    inp4.min = '0';
+    inp4.style.cssText = 'flex:1;padding:0.75rem;border:1px solid #d1d5db;border-radius:8px;font-size:0.9rem;font-family:inherit;min-width:0;';
+
     var btn = document.createElement('button');
     btn.type = 'button';
     btn.textContent = '✕';
     btn.style.cssText = 'background:#fee2e2;color:#991b1b;border:none;padding:0.75rem 1rem;border-radius:8px;cursor:pointer;font-weight:700;font-size:1rem;flex-shrink:0;';
-    btn.addEventListener('click', function() { row.remove(); updateProductsHint(); });
+    btn.addEventListener('click', function() { row.remove(); updateProductsHint(); recomputeCreateTotals(); });
+
+    inp3.addEventListener('input', recomputeCreateTotals);
+    inp4.addEventListener('input', recomputeCreateTotals);
 
     row.appendChild(inp1);
     row.appendChild(inp2);
     row.appendChild(inp3);
+    row.appendChild(inp4);
     row.appendChild(btn);
 
     document.getElementById('products-list').appendChild(row);
     document.getElementById('products-empty-hint').style.display = 'none';
+    recomputeCreateTotals();
+}
+
+// Order Qty = sum of product qtys; Price Target = min–max range across styles
+function recomputeCreateTotals() {
+    var rows = document.querySelectorAll('#products-list > div');
+    var totalQty = 0;
+    var targets = [];
+    rows.forEach(function(r) {
+        var q = r.querySelector('.product-qty'); if (q) totalQty += parseInt(q.value) || 0;
+        var t = r.querySelector('.product-target'); var tv = t ? parseFloat(t.value) : NaN;
+        if (!isNaN(tv) && tv > 0) targets.push(tv);
+    });
+    var qtyField = document.getElementById('orderQty');
+    if (qtyField) qtyField.value = totalQty > 0 ? totalQty : '';
+    var rangeField = document.getElementById('priceTargetRange');
+    if (rangeField) {
+        if (targets.length === 0) { rangeField.value = ''; }
+        else {
+            var min = Math.min.apply(null, targets), max = Math.max.apply(null, targets);
+            rangeField.value = (min === max) ? ('£' + min.toFixed(2)) : ('£' + min.toFixed(2) + ' – £' + max.toFixed(2));
+        }
+    }
 }
 
 function updateProductsHint() {
@@ -1783,7 +1824,9 @@ function getProductsFromForm() {
         const desc = row.querySelector('.product-desc').value.trim();
         const colour = row.querySelector('.product-colour').value.trim();
         const qty = row.querySelector('.product-qty').value.trim();
-        if (desc) products.push({ description: desc, colour: colour, qty: parseInt(qty) || 0 });
+        const targetEl = row.querySelector('.product-target');
+        const target = targetEl ? targetEl.value.trim() : '';
+        if (desc) products.push({ description: desc, colour: colour, qty: parseInt(qty) || 0, priceTarget: parseFloat(target) || 0 });
     });
     return products;
 }
@@ -1794,6 +1837,19 @@ function removeSpec(specId) {
 }
 
 // ── MULTI-PRODUCT BID HELPERS ─────────────────────────────────────────
+// Format an item's price target. With per-style targets it shows a range
+// (e.g. "£8.00 – £22.00"); older items without per-style targets fall back
+// to the single stored priceTarget.
+function formatTargetRange(item) {
+    var prods = (item.products || []).filter(function(p){ return p.priceTarget && p.priceTarget > 0; });
+    if (prods.length > 0) {
+        var vals = prods.map(function(p){ return p.priceTarget; });
+        var min = Math.min.apply(null, vals), max = Math.max.apply(null, vals);
+        return (min === max) ? ('£' + min.toFixed(2)) : ('£' + min.toFixed(2) + ' – £' + max.toFixed(2));
+    }
+    return '£' + (item.priceTarget || 0).toFixed(2);
+}
+
 function computeOverallBidStatus(bid) {
     if (!bid.isMultiProduct) return bid.status;
     var pbs = bid.productBids || [];
@@ -1837,13 +1893,15 @@ function submitBid(tenderId) {
         for (var i = 0; i < tender.products.length; i++) {
             var p = tender.products[i];
             var label = p.description + (p.colour ? ' (' + p.colour + ')' : '');
-            var price = parseFloat(prompt('Price for ' + label + ' (FOB £):'));
+            var targetHint = (p.priceTarget && p.priceTarget > 0) ? ('\nTarget: £' + p.priceTarget.toFixed(2)) : '';
+            var price = parseFloat(prompt('Price for ' + label + ' (FOB £):' + targetHint));
             if (isNaN(price) || price <= 0) { alert('Please enter a valid price for ' + label); return; }
             productBids.push({
                 productIndex: i,
                 description: p.description,
                 colour: p.colour || '',
                 qty: p.qty || 0,
+                priceTarget: p.priceTarget || 0,
                 price: price,
                 counterPrice: null,
                 status: 'submitted',
@@ -1853,7 +1911,9 @@ function submitBid(tenderId) {
         bid.productBids = productBids;
         alert('✓ Bid submitted on ' + productBids.length + ' products!');
     } else {
-        var singlePrice = parseFloat(prompt('Enter your price (FOB £):'));
+        var p0 = (tender.products && tender.products[0]) ? tender.products[0] : null;
+        var tHint = (p0 && p0.priceTarget && p0.priceTarget > 0) ? ('\nTarget: £' + p0.priceTarget.toFixed(2)) : '';
+        var singlePrice = parseFloat(prompt('Enter your price (FOB £):' + tHint));
         if (isNaN(singlePrice) || singlePrice <= 0) { alert('Please enter a valid price'); return; }
         bid.price = singlePrice;
         bid.counterPrice = null;
@@ -2125,7 +2185,7 @@ function viewSupplierTender(tenderId) {
 
     // Stats bar
     html += '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:#e8ecf1;border-radius:12px;overflow:hidden;margin-bottom:2rem;">';
-    html += '<div style="background:white;padding:1.25rem 1.5rem;"><p style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#94a3b8;margin:0 0 0.35rem 0;">Price Target</p><p style="font-size:1.5rem;font-weight:800;color:#8b5cf6;margin:0;">&pound;' + tender.priceTarget + '</p></div>';
+    html += '<div style="background:white;padding:1.25rem 1.5rem;"><p style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#94a3b8;margin:0 0 0.35rem 0;">Price Target</p><p style="font-size:1.5rem;font-weight:800;color:#8b5cf6;margin:0;">' + formatTargetRange(tender) + '</p></div>';
     html += '<div style="background:white;padding:1.25rem 1.5rem;"><p style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#94a3b8;margin:0 0 0.35rem 0;">Total Units</p><p style="font-size:1.5rem;font-weight:800;color:#06b6d4;margin:0;">' + (tender.orderQty ? tender.orderQty.toLocaleString() : '&mdash;') + '</p></div>';
     html += '<div style="background:white;padding:1.25rem 1.5rem;"><p style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#94a3b8;margin:0 0 0.35rem 0;">Fabric</p><p style="font-size:1.5rem;font-weight:800;color:#0f172a;margin:0;font-size:1.1rem;">' + (tender.fabric || '&mdash;') + '</p></div>';
     html += '<div style="background:white;padding:1.25rem 1.5rem;"><p style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#94a3b8;margin:0 0 0.35rem 0;">Lead Time</p><p style="font-size:1.5rem;font-weight:800;color:#0f172a;margin:0;">' + (tender.leadTimeTarget * 7) + ' days</p></div>';
@@ -2149,6 +2209,7 @@ function viewSupplierTender(tenderId) {
             html += '<span style="font-weight:700;color:#0f172a;">' + p.description + '</span>';
             if (p.colour) html += ' <span style="color:#94a3b8;">&middot;</span> <span style="color:#64748b;">' + p.colour + '</span>';
             if (p.qty) html += ' <span style="color:#94a3b8;">&middot;</span> <span style="font-weight:600;color:' + pc + ';">' + p.qty.toLocaleString() + ' units</span>';
+            if (p.priceTarget && p.priceTarget > 0) html += ' <span style="color:#94a3b8;">&middot;</span> <span style="font-weight:700;color:#8b5cf6;">Target &pound;' + p.priceTarget.toFixed(2) + '</span>';
             html += '</div>';
         }
         html += '</div>';
@@ -2418,7 +2479,7 @@ function renderSupplierTenders() {
                         <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.75rem; margin: 0.75rem 0; padding: 0.75rem 0; border-top: 1px solid #e8ecf1; border-bottom: 1px solid #e8ecf1;">
                             <div>
                                 <p style="font-size: 0.65rem; color: #94a3b8; margin: 0; font-weight: 600; text-transform: uppercase;">Price</p>
-                                <p style="font-size: 1.1rem; font-weight: 700; color: #8b5cf6; margin: 0.2rem 0 0 0;">£${tender.priceTarget.toFixed(2)}</p>
+                                <p style="font-size: 1.1rem; font-weight: 700; color: #8b5cf6; margin: 0.2rem 0 0 0;">${formatTargetRange(tender)}</p>
                             </div>
                             <div>
                                 <p style="font-size: 0.65rem; color: #94a3b8; margin: 0; font-weight: 600; text-transform: uppercase;">Qty</p>
@@ -2550,7 +2611,7 @@ function viewDevelopment(devId) {
     html += '</div>';
 
     html += '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:#e8ecf1;border-radius:12px;overflow:hidden;margin-bottom:2rem;">';
-    html += '<div style="background:white;padding:1.25rem 1.5rem;"><p style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#94a3b8;margin:0 0 0.35rem 0;">Price Target</p><p style="font-size:1.5rem;font-weight:800;color:#8b5cf6;margin:0;">&pound;' + (dev.priceTarget||0).toFixed(2) + '</p></div>';
+    html += '<div style="background:white;padding:1.25rem 1.5rem;"><p style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#94a3b8;margin:0 0 0.35rem 0;">Price Target</p><p style="font-size:1.5rem;font-weight:800;color:#8b5cf6;margin:0;">' + formatTargetRange(dev) + '</p></div>';
     html += '<div style="background:white;padding:1.25rem 1.5rem;"><p style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#94a3b8;margin:0 0 0.35rem 0;">Total Units</p><p style="font-size:1.5rem;font-weight:800;color:#06b6d4;margin:0;">' + (dev.orderQty ? dev.orderQty.toLocaleString() : '&mdash;') + '</p></div>';
     html += '<div style="background:white;padding:1.25rem 1.5rem;"><p style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#94a3b8;margin:0 0 0.35rem 0;">Fabric</p><p style="font-size:1.1rem;font-weight:800;color:#0f172a;margin:0;">' + (dev.fabric||'&mdash;') + '</p></div>';
     html += '<div style="background:white;padding:1.25rem 1.5rem;"><p style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#94a3b8;margin:0 0 0.35rem 0;">Lead Time</p><p style="font-size:1.5rem;font-weight:800;color:#0f172a;margin:0;">' + ((dev.leadTimeTarget||0)*7) + ' days</p></div>';
@@ -2580,7 +2641,10 @@ function viewDevelopment(devId) {
             html += '<div><p style="font-weight:700;color:#0f172a;margin:0;">' + p.description + '</p>';
             if (p.colour) html += '<p style="font-size:0.8rem;color:#64748b;margin:0.15rem 0 0 0;">' + p.colour + '</p>';
             html += '</div>';
+            html += '<div style="display:flex;align-items:center;gap:0.5rem;">';
+            if (p.priceTarget && p.priceTarget > 0) html += '<span style="background:#f5f3ff;border:1px solid #ddd6fe;color:#8b5cf6;padding:0.3rem 0.8rem;border-radius:20px;font-size:0.8rem;font-weight:700;">Target &pound;' + p.priceTarget.toFixed(2) + '</span>';
             if (p.qty) html += '<span style="background:white;border:1px solid ' + pc + ';color:' + pc + ';padding:0.3rem 0.8rem;border-radius:20px;font-size:0.8rem;font-weight:700;">' + p.qty.toLocaleString() + ' units</span>';
+            html += '</div>';
             html += '</div>';
         }
         html += '</div></div>';
@@ -2748,7 +2812,7 @@ function renderDevelopmentTab() {
             (actionBtns ? '<div style="display:flex;gap:0.5rem;flex-wrap:wrap;">' + actionBtns + '</div>' : '') +
             '</div>' +
             '<div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr 1fr;gap:0.75rem;margin:0.75rem 0;padding:0.75rem 0;border-top:1px solid #e8ecf1;border-bottom:1px solid #e8ecf1;">' +
-            '<div><p style="font-size:0.65rem;color:#94a3b8;margin:0;font-weight:600;text-transform:uppercase;">Price</p><p style="font-size:1.1rem;font-weight:700;color:#8b5cf6;margin:0.2rem 0 0 0;">&pound;' + dev.priceTarget.toFixed(2) + '</p></div>' +
+            '<div><p style="font-size:0.65rem;color:#94a3b8;margin:0;font-weight:600;text-transform:uppercase;">Price</p><p style="font-size:1.1rem;font-weight:700;color:#8b5cf6;margin:0.2rem 0 0 0;">' + formatTargetRange(dev) + '</p></div>' +
             '<div><p style="font-size:0.65rem;color:#94a3b8;margin:0;font-weight:600;text-transform:uppercase;">Qty</p><p style="font-size:1.1rem;font-weight:700;color:#06b6d4;margin:0.2rem 0 0 0;">' + dynQty.toLocaleString() + '</p></div>' +
             '<div><p style="font-size:0.65rem;color:#94a3b8;margin:0;font-weight:600;text-transform:uppercase;">Styles</p><p style="font-size:1.1rem;font-weight:700;color:#0f172a;margin:0.2rem 0 0 0;">' + styleCount + '</p></div>' +
             '<div><p style="font-size:0.65rem;color:#94a3b8;margin:0;font-weight:600;text-transform:uppercase;">Fabric</p><p style="font-size:1.1rem;font-weight:700;color:#0f172a;margin:0.2rem 0 0 0;">' + (dev.fabric||'&mdash;') + '</p></div>' +
@@ -2933,7 +2997,7 @@ async function showAgreedOffline(devId) {
         var label = p.description + (p.colour ? ' (' + p.colour + ')' : '');
         return '<div style="display:flex;align-items:center;gap:0.75rem;margin-bottom:0.6rem;">'
             + '<div style="flex:1;"><p style="margin:0;font-weight:600;font-size:0.9rem;color:#0f172a;">' + label + '</p>'
-            + '<p style="margin:0;font-size:0.78rem;color:#94a3b8;">Qty: ' + (p.qty || 0) + '</p></div>'
+            + '<p style="margin:0;font-size:0.78rem;color:#94a3b8;">Qty: ' + (p.qty || 0) + ((p.priceTarget && p.priceTarget > 0) ? ' &middot; Target £' + p.priceTarget.toFixed(2) : '') + '</p></div>'
             + '<div style="display:flex;align-items:center;gap:0.35rem;"><span style="color:#64748b;font-weight:600;">£</span>'
             + '<input type="number" step="0.01" min="0" class="agreed-price" data-pidx="' + i + '" placeholder="0.00" style="width:110px;padding:0.6rem;border:1px solid #d1d5db;border-radius:8px;font-family:inherit;font-size:0.9rem;"></div>'
             + '</div>';
@@ -3134,7 +3198,7 @@ function renderDevelopmentTabInto(container) {
             actionBtns +
             '</div>' +
             '<div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:0.75rem;margin:0.75rem 0;padding:0.75rem 0;border-top:1px solid #e8ecf1;border-bottom:1px solid #e8ecf1;">' +
-            '<div><p style="font-size:0.65rem;color:#94a3b8;margin:0;font-weight:600;text-transform:uppercase;">Price</p><p style="font-size:1.1rem;font-weight:700;color:#8b5cf6;margin:0.2rem 0 0 0;">&pound;' + dev.priceTarget.toFixed(2) + '</p></div>' +
+            '<div><p style="font-size:0.65rem;color:#94a3b8;margin:0;font-weight:600;text-transform:uppercase;">Price</p><p style="font-size:1.1rem;font-weight:700;color:#8b5cf6;margin:0.2rem 0 0 0;">' + formatTargetRange(dev) + '</p></div>' +
             '<div><p style="font-size:0.65rem;color:#94a3b8;margin:0;font-weight:600;text-transform:uppercase;">Qty</p><p style="font-size:1.1rem;font-weight:700;color:#06b6d4;margin:0.2rem 0 0 0;">' + (dev.orderQty||0).toLocaleString() + '</p></div>' +
             '<div><p style="font-size:0.65rem;color:#94a3b8;margin:0;font-weight:600;text-transform:uppercase;">Fabric</p><p style="font-size:1.1rem;font-weight:700;color:#0f172a;margin:0.2rem 0 0 0;">' + (dev.fabric||'&mdash;') + '</p></div>' +
             '<div><p style="font-size:0.65rem;color:#94a3b8;margin:0;font-weight:600;text-transform:uppercase;">Lead Time</p><p style="font-size:1.1rem;font-weight:700;color:#0f172a;margin:0.2rem 0 0 0;">' + (dev.leadTimeTarget * 7) + ' days</p></div>' +
@@ -3364,7 +3428,7 @@ function renderBuyerDashboard() {
                         <div style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr 1fr; gap: 0.75rem; margin: 0.75rem 0; padding: 0.75rem 0; border-top: 1px solid #e8ecf1; border-bottom: 1px solid #e8ecf1;">
                             <div>
                                 <p style="font-size: 0.65rem; color: #94a3b8; margin: 0; font-weight: 600; text-transform: uppercase;">Price</p>
-                                <p style="font-size: 1.1rem; font-weight: 700; color: #8b5cf6; margin: 0.2rem 0 0 0;">£${tender.priceTarget.toFixed(2)}</p>
+                                <p style="font-size: 1.1rem; font-weight: 700; color: #8b5cf6; margin: 0.2rem 0 0 0;">${formatTargetRange(tender)}</p>
                             </div>
                             <div>
                                 <p style="font-size: 0.65rem; color: #94a3b8; margin: 0; font-weight: 600; text-transform: uppercase;">Qty</p>
@@ -3472,7 +3536,7 @@ function renderViewBids(tender, tenderBids) {
 
     // ── STATS BAR ────────────────────────────────────────
     html += '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:#e8ecf1;border-radius:12px;overflow:hidden;margin-bottom:2rem;">';
-    html += '<div style="background:white;padding:1.25rem 1.5rem;"><p style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#94a3b8;margin:0 0 0.35rem 0;">Price Target</p><p style="font-size:1.5rem;font-weight:800;color:#8b5cf6;margin:0;">&pound;' + tender.priceTarget + '</p></div>';
+    html += '<div style="background:white;padding:1.25rem 1.5rem;"><p style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#94a3b8;margin:0 0 0.35rem 0;">Price Target</p><p style="font-size:1.5rem;font-weight:800;color:#8b5cf6;margin:0;">' + formatTargetRange(tender) + '</p></div>';
     html += '<div style="background:white;padding:1.25rem 1.5rem;"><p style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#94a3b8;margin:0 0 0.35rem 0;">Total Units</p><p style="font-size:1.5rem;font-weight:800;color:#06b6d4;margin:0;">' + (tender.orderQty ? tender.orderQty.toLocaleString() : '&mdash;') + '</p></div>';
     html += '<div style="background:white;padding:1.25rem 1.5rem;"><p style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#94a3b8;margin:0 0 0.35rem 0;">Time To Complete</p><p style="font-size:1.5rem;font-weight:800;color:#0f172a;margin:0;">' + (tender.leadTimeTarget * 7) + ' days</p></div>';
     html += '<div style="background:white;padding:1.25rem 1.5rem;"><p style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#94a3b8;margin:0 0 0.35rem 0;">Bids Received</p><p style="font-size:1.5rem;font-weight:800;color:#0f172a;margin:0;">' + tenderBids.length + '</p></div>';
@@ -3496,6 +3560,7 @@ function renderViewBids(tender, tenderBids) {
             html += '<span style="font-weight:700;color:#0f172a;">' + p.description + '</span>';
             if (p.colour) html += ' <span style="color:#94a3b8;">&middot;</span> <span style="color:#64748b;">' + p.colour + '</span>';
             if (p.qty) html += ' <span style="color:#94a3b8;">&middot;</span> <span style="font-weight:600;color:' + pc + ';">' + p.qty.toLocaleString() + ' units</span>';
+            if (p.priceTarget && p.priceTarget > 0) html += ' <span style="color:#94a3b8;">&middot;</span> <span style="font-weight:700;color:#8b5cf6;">Target &pound;' + p.priceTarget.toFixed(2) + '</span>';
             html += '</div>';
         }
         html += '</div>';
@@ -3705,7 +3770,7 @@ function showEditTender(tenderId) {
     html += '<div class="form-group"><label>' + (isTender ? 'Tender Name' : 'Development Name') + '</label><input type="text" id="edit-description" value="' + (item.description||'').replace(/"/g,'&quot;') + '"></div>';
     html += '<div class="form-row"><div class="form-group"><label>Season</label><select id="edit-season"><option>SS27</option><option>AW26</option><option>SS26</option><option>AW25</option><option>SS25</option></select></div>';
     html += '<div class="form-group"><label>Fabric</label><input type="text" id="edit-fabric" value="' + (item.fabric||'').replace(/"/g,'&quot;') + '"></div></div>';
-    html += '<div class="form-row"><div class="form-group"><label>Price Target £</label><input type="number" id="edit-price" step="0.01" value="' + (item.priceTarget||'') + '"></div>';
+    html += '<div class="form-row"><div class="form-group"><label>Price Target <span style="font-weight:400;color:#94a3b8;font-size:0.8rem;">(set per style above)</span></label><input type="text" id="edit-price-range" readonly style="background:#f1f5f9;cursor:not-allowed;" value=""></div>';
     html += '<div class="form-group"><label>Order Qty <span style="font-weight:400;color:#94a3b8;font-size:0.8rem;">(auto-total of products)</span></label><input type="number" id="edit-qty" value="' + (item.orderQty||'') + '" readonly style="background:#f1f5f9;cursor:not-allowed;"></div></div>';
     html += '<div class="form-group"><label>Expected Time To Complete Order (weeks)</label><input type="number" id="edit-lead" value="' + (item.leadTimeTarget||'') + '"></div>';
 
@@ -3739,7 +3804,7 @@ function showEditTender(tenderId) {
 
     renderEditFileList();
     renderEditSpecsFileList();
-    (item.products || []).forEach(function(p) { addEditProductRowWithData(p.description, p.colour, p.qty); });
+    (item.products || []).forEach(function(p) { addEditProductRowWithData(p.description, p.colour, p.qty, p.priceTarget); });
 
     // Init edit suppliers (tenders and developments)
     data.editInvitedSuppliers = (item.invitedSuppliers || []).slice();
@@ -3808,31 +3873,45 @@ function renderEditSpecsFileList() {
     }).join('');
 }
 var editProductCount = 0;
-function addEditProductRow() { addEditProductRowWithData('','',''); }
-function addEditProductRowWithData(desc,colour,qty) {
+function addEditProductRow() { addEditProductRowWithData('','','',''); }
+function addEditProductRowWithData(desc,colour,qty,target) {
     editProductCount++;
     var row=document.createElement('div'); row.style.cssText='display:flex;gap:0.6rem;align-items:center;background:white;padding:0.75rem;border-radius:8px;border:1px solid #e8ecf1;';
     var i1=document.createElement('input'); i1.type='text'; i1.placeholder='Product e.g. Plain Black Tee'; i1.className='edit-product-desc'; i1.value=desc||''; i1.style.cssText='flex:2;padding:0.65rem;border:1px solid #d1d5db;border-radius:6px;font-size:0.875rem;font-family:inherit;min-width:0;';
     var i2=document.createElement('input'); i2.type='text'; i2.placeholder='Colourway'; i2.className='edit-product-colour'; i2.value=colour||''; i2.style.cssText='flex:1.5;padding:0.65rem;border:1px solid #d1d5db;border-radius:6px;font-size:0.875rem;font-family:inherit;min-width:0;';
     var i3=document.createElement('input'); i3.type='number'; i3.placeholder='Qty'; i3.className='edit-product-qty'; i3.value=qty||''; i3.min='1'; i3.style.cssText='flex:1;padding:0.65rem;border:1px solid #d1d5db;border-radius:6px;font-size:0.875rem;font-family:inherit;min-width:0;';
     i3.addEventListener('input', recomputeEditQty);
+    var i4=document.createElement('input'); i4.type='number'; i4.placeholder='Target £'; i4.className='edit-product-target'; i4.value=(target||'')===0?'':(target||''); i4.step='0.01'; i4.min='0'; i4.style.cssText='flex:1;padding:0.65rem;border:1px solid #d1d5db;border-radius:6px;font-size:0.875rem;font-family:inherit;min-width:0;';
+    i4.addEventListener('input', recomputeEditQty);
     var btn=document.createElement('button'); btn.type='button'; btn.textContent='✕'; btn.style.cssText='background:#fee2e2;color:#991b1b;border:none;padding:0.65rem 0.85rem;border-radius:6px;cursor:pointer;font-weight:700;flex-shrink:0;';
     btn.onclick=function(){ row.remove(); recomputeEditQty(); };
-    row.appendChild(i1); row.appendChild(i2); row.appendChild(i3); row.appendChild(btn);
+    row.appendChild(i1); row.appendChild(i2); row.appendChild(i3); row.appendChild(i4); row.appendChild(btn);
     document.getElementById('edit-products-list').appendChild(row);
     recomputeEditQty();
 }
-// Order Qty auto-populates as the sum of all product quantities
+// Order Qty = sum of product qtys; Price Target = min–max range across styles
 function recomputeEditQty() {
-    var qtyInputs = document.querySelectorAll('#edit-products-list .edit-product-qty');
-    var total = 0;
-    qtyInputs.forEach(function(inp){ total += parseInt(inp.value) || 0; });
+    var rows = document.querySelectorAll('#edit-products-list > div');
+    var total = 0; var targets = [];
+    rows.forEach(function(r){
+        var q = r.querySelector('.edit-product-qty'); if (q) total += parseInt(q.value) || 0;
+        var t = r.querySelector('.edit-product-target'); var tv = t ? parseFloat(t.value) : NaN;
+        if (!isNaN(tv) && tv > 0) targets.push(tv);
+    });
     var qtyField = document.getElementById('edit-qty');
     if (qtyField) qtyField.value = total > 0 ? total : '';
+    var rangeField = document.getElementById('edit-price-range');
+    if (rangeField) {
+        if (targets.length === 0) { rangeField.value = ''; }
+        else {
+            var min = Math.min.apply(null, targets), max = Math.max.apply(null, targets);
+            rangeField.value = (min === max) ? ('£' + min.toFixed(2)) : ('£' + min.toFixed(2) + ' – £' + max.toFixed(2));
+        }
+    }
 }
 function getEditProducts() {
     var rows=document.querySelectorAll('#edit-products-list > div'); var products=[];
-    rows.forEach(function(r){ var d=r.querySelector('.edit-product-desc').value.trim(); var c=r.querySelector('.edit-product-colour').value.trim(); var q=r.querySelector('.edit-product-qty').value.trim(); if(d) products.push({description:d,colour:c,qty:parseInt(q)||0}); });
+    rows.forEach(function(r){ var d=r.querySelector('.edit-product-desc').value.trim(); var c=r.querySelector('.edit-product-colour').value.trim(); var q=r.querySelector('.edit-product-qty').value.trim(); var tEl=r.querySelector('.edit-product-target'); var t=tEl?tEl.value.trim():''; if(d) products.push({description:d,colour:c,qty:parseInt(q)||0,priceTarget:parseFloat(t)||0}); });
     return products;
 }
 
@@ -3915,7 +3994,6 @@ function updateTender(e) {
     var newCat = document.getElementById('edit-category').value;
     var newSeason = document.getElementById('edit-season').value;
     var newFabric = document.getElementById('edit-fabric').value.trim();
-    var newPrice = parseFloat(document.getElementById('edit-price').value);
     var newQty = parseInt(document.getElementById('edit-qty').value);
     var newLead = parseInt(document.getElementById('edit-lead').value);
     var newNotes = document.getElementById('edit-labellingReqs') ? document.getElementById('edit-labellingReqs').value.trim() : '';
@@ -3924,12 +4002,18 @@ function updateTender(e) {
     var newProducts = getEditProducts();
     var newInvitedSuppliers = (data.editInvitedSuppliers || []).slice();
 
-    // Order Qty is the sum of product quantities (auto-computed)
+    // Order Qty and Price Target are derived from the per-style products
+    var newPrice = NaN;
     if (newProducts.length > 0) {
         newQty = newProducts.reduce(function(s, p){ return s + (parseInt(p.qty) || 0); }, 0);
+        var tgts = newProducts.map(function(p){ return p.priceTarget; }).filter(function(v){ return v && v > 0; });
+        if (tgts.length > 0) newPrice = Math.min.apply(null, tgts);
     }
 
-    if (!newDesc || isNaN(newPrice) || isNaN(newQty) || isNaN(newLead)) { alert('Please fill in all fields'); return; }
+    if (!newDesc || isNaN(newQty) || isNaN(newLead)) { alert('Please fill in all fields'); return; }
+    if (newProducts.length === 0) { alert('Please add at least one product'); return; }
+    if (newProducts.some(function(p){ return !p.priceTarget || p.priceTarget <= 0; })) { alert('Please enter a target price for every product'); return; }
+    if (isNaN(newPrice)) { alert('Please enter a target price for every product'); return; }
 
     if (data.editingType === 'development') {
         var dev = data.developments.find(function(d){ return d.id === data.editingTenderId; });
