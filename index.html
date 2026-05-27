@@ -3858,11 +3858,59 @@ function removeEditFile(idx) { data.editUploadedFiles.splice(idx,1); renderEditF
 function removeEditSpecsFile(idx) { data.editSpecsFiles.splice(idx,1); renderEditSpecsFileList(); }
 function renderEditFileList() {
     var fl = document.getElementById('edit-fileList'); if (!fl) return;
-    fl.innerHTML = (data.editUploadedFiles||[]).map(function(f,i) {
-        return f.isImage
-            ? '<div style="position:relative;display:inline-block;"><img src="'+f.dataUrl+'" style="width:90px;height:90px;object-fit:contain;background:#f8fafc;border-radius:8px;border:1px solid #e8ecf1;"><button type="button" onclick="removeEditFile('+i+')" style="position:absolute;top:-6px;right:-6px;background:#dc2626;color:white;border:none;width:20px;height:20px;border-radius:50%;cursor:pointer;font-size:0.7rem;font-weight:bold;padding:0;">&#10005;</button></div>'
-            : '<div style="background:#ede9fe;color:#5b21b6;padding:0.5rem 0.9rem;border-radius:8px;font-size:0.85rem;display:flex;align-items:center;gap:0.5rem;">&#x1F4C4; '+f.name+'<button onclick="removeEditFile('+i+')" style="background:none;border:none;color:#7c3aed;cursor:pointer;font-size:1rem;padding:0;">&#10005;</button></div>';
+    var files = data.editUploadedFiles || [];
+    var imageCount = files.filter(function(f){ return f.isImage; }).length;
+    var hintHTML = imageCount > 1
+        ? '<p style="width:100%;font-size:0.75rem;color:#94a3b8;margin:0 0 0.5rem 0;">&#8597; Drag images to reorder &mdash; the first image is the cover shown on the card.</p>'
+        : '';
+    fl.innerHTML = hintHTML + files.map(function(f,i) {
+        if (f.isImage) {
+            return '<div class="edit-img-thumb" draggable="true" data-imgidx="'+i+'" style="position:relative;display:inline-block;cursor:grab;border-radius:8px;" title="Drag to reorder">'
+                + '<img src="'+f.dataUrl+'" style="width:90px;height:90px;object-fit:contain;background:#f8fafc;border-radius:8px;border:1px solid #e8ecf1;pointer-events:none;">'
+                + (i===0 ? '<span style="position:absolute;bottom:3px;left:3px;background:rgba(139,92,246,0.9);color:white;font-size:0.6rem;font-weight:700;padding:0.1rem 0.4rem;border-radius:6px;pointer-events:none;">COVER</span>' : '')
+                + '<button type="button" onclick="removeEditFile('+i+')" style="position:absolute;top:-6px;right:-6px;background:#dc2626;color:white;border:none;width:20px;height:20px;border-radius:50%;cursor:pointer;font-size:0.7rem;font-weight:bold;padding:0;z-index:3;">&#10005;</button>'
+                + '</div>';
+        }
+        return '<div style="background:#ede9fe;color:#5b21b6;padding:0.5rem 0.9rem;border-radius:8px;font-size:0.85rem;display:flex;align-items:center;gap:0.5rem;">&#x1F4C4; '+f.name+'<button onclick="removeEditFile('+i+')" style="background:none;border:none;color:#7c3aed;cursor:pointer;font-size:1rem;padding:0;">&#10005;</button></div>';
     }).join('');
+    enableEditImageReorder();
+}
+
+// Drag-and-drop reordering of the edit image thumbnails
+var _dragImgIdx = null;
+function enableEditImageReorder() {
+    var thumbs = document.querySelectorAll('#edit-fileList .edit-img-thumb');
+    thumbs.forEach(function(thumb) {
+        thumb.addEventListener('dragstart', function(e) {
+            _dragImgIdx = parseInt(thumb.getAttribute('data-imgidx'));
+            thumb.style.opacity = '0.4';
+            e.dataTransfer.effectAllowed = 'move';
+        });
+        thumb.addEventListener('dragend', function() {
+            thumb.style.opacity = '';
+            document.querySelectorAll('#edit-fileList .edit-img-thumb img').forEach(function(im){ im.style.borderColor = '#e8ecf1'; });
+        });
+        thumb.addEventListener('dragover', function(e) {
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'move';
+            var img = thumb.querySelector('img');
+            if (img && parseInt(thumb.getAttribute('data-imgidx')) !== _dragImgIdx) img.style.borderColor = '#8b5cf6';
+        });
+        thumb.addEventListener('dragleave', function() {
+            var img = thumb.querySelector('img');
+            if (img) img.style.borderColor = '#e8ecf1';
+        });
+        thumb.addEventListener('drop', function(e) {
+            e.preventDefault();
+            var toIdx = parseInt(thumb.getAttribute('data-imgidx'));
+            if (_dragImgIdx === null || _dragImgIdx === toIdx) return;
+            var arr = data.editUploadedFiles;
+            var moved = arr.splice(_dragImgIdx, 1)[0];
+            arr.splice(toIdx, 0, moved);
+            _dragImgIdx = null;
+            renderEditFileList();
+        });
+    });
 }
 function renderEditSpecsFileList() {
     var fl = document.getElementById('edit-specsFileList'); if (!fl) return;
