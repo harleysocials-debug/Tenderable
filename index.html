@@ -820,7 +820,10 @@
 <div id="admin-page" class="dashboard hidden">
     <div class="header">
         <div><h1>Tenderable</h1><p>Admin Panel — Harley Killingsworth</p></div>
-        <button class="back-btn" onclick="logout()">Logout</button>
+        <div style="display:flex;gap:0.75rem;">
+            <button class="back-btn" onclick="goToDashboard()">← Back to Dashboard</button>
+            <button class="back-btn" onclick="logout()">Logout</button>
+        </div>
     </div>
     <div class="content">
         <div class="tabs">
@@ -2525,6 +2528,7 @@ function viewDevelopment(devId) {
         html += '<div style="display:flex;gap:0.5rem;flex-wrap:wrap;">';
         html += '<button onclick="showEditTender(' + "'" + devId + "'" + ')" style="background:#f1f5f9;color:#0f172a;border:1px solid #d1d5db;padding:0.6rem 1.1rem;border-radius:8px;cursor:pointer;font-weight:600;font-size:0.875rem;">&#9999; Edit</button>';
         html += '<button onclick="sendDevToTender(' + "'" + devId + "'" + ')" style="background:linear-gradient(135deg,#06b6d4,#0891b2);color:white;border:none;padding:0.6rem 1.1rem;border-radius:8px;cursor:pointer;font-weight:600;font-size:0.875rem;">Send to Tender</button>';
+        html += '<button onclick="showAgreedOffline(' + "'" + devId + "'" + ')" style="background:linear-gradient(135deg,#10b981,#059669);color:white;border:none;padding:0.6rem 1.1rem;border-radius:8px;cursor:pointer;font-weight:600;font-size:0.875rem;">&#129309; Agreed Offline</button>';
         html += '<button onclick="confirmDeleteDev(' + "'" + devId + "'" + ')" style="background:#fee2e2;color:#991b1b;border:1px solid #fca5a5;padding:0.6rem 1.1rem;border-radius:8px;cursor:pointer;font-weight:600;font-size:0.875rem;">&#128465; Delete</button>';
         html += '</div>';
     }
@@ -2754,6 +2758,143 @@ function sendDevToTender(devId) {
     data.developments = data.developments.filter(function(d) { return d.id !== devId; });
     data.currentBuyerTab = 'open';
     alert('✓ Development sent to tender! Suppliers can now bid.');
+    backToBuyerDashboard();
+}
+
+// ── AGREED OFFLINE ────────────────────────────────────────────────────────────
+// Record a deal already agreed with a supplier outside the platform.
+// Converts the development into a closed tender with an accepted bid, so it
+// lands straight in the Accepted tab.
+async function showAgreedOffline(devId) {
+    var dev = data.developments.find(function(d) { return d.id === devId; });
+    if (!dev) return;
+
+    // Load suppliers if not already cached
+    if (!data.allSuppliers || data.allSuppliers.length === 0) {
+        var res = await api('GET', '/suppliers');
+        data.allSuppliers = (res && res.suppliers) ? res.suppliers : [];
+    }
+
+    var products = (dev.products && dev.products.length > 0) ? dev.products : [{ description: dev.description || 'Item', colour: '', qty: dev.orderQty || 0 }];
+
+    // Build supplier <option> list
+    var supplierOptions = '<option value="">Select a supplier…</option>';
+    (data.allSuppliers || []).forEach(function(s) {
+        var label = s.company + (s.name ? ' — ' + s.name : '');
+        supplierOptions += '<option value="' + String(s.company).replace(/"/g, '&quot;') + '">' + label + '</option>';
+    });
+    // Allow any invited suppliers that may not be in the registered list
+    (dev.invitedSuppliers || []).forEach(function(c) {
+        if (!(data.allSuppliers || []).some(function(s){ return s.company === c; })) {
+            supplierOptions += '<option value="' + String(c).replace(/"/g, '&quot;') + '">' + c + '</option>';
+        }
+    });
+
+    // Price inputs (one per product)
+    var priceRows = products.map(function(p, i) {
+        var label = p.description + (p.colour ? ' (' + p.colour + ')' : '');
+        return '<div style="display:flex;align-items:center;gap:0.75rem;margin-bottom:0.6rem;">'
+            + '<div style="flex:1;"><p style="margin:0;font-weight:600;font-size:0.9rem;color:#0f172a;">' + label + '</p>'
+            + '<p style="margin:0;font-size:0.78rem;color:#94a3b8;">Qty: ' + (p.qty || 0) + '</p></div>'
+            + '<div style="display:flex;align-items:center;gap:0.35rem;"><span style="color:#64748b;font-weight:600;">£</span>'
+            + '<input type="number" step="0.01" min="0" class="agreed-price" data-pidx="' + i + '" placeholder="0.00" style="width:110px;padding:0.6rem;border:1px solid #d1d5db;border-radius:8px;font-family:inherit;font-size:0.9rem;"></div>'
+            + '</div>';
+    }).join('');
+
+    var modal = document.createElement('div');
+    modal.id = 'agreed-offline-modal';
+    modal.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:10000;display:flex;align-items:center;justify-content:center;';
+    modal.innerHTML =
+        '<div style="background:white;border-radius:16px;padding:1.75rem;width:90%;max-width:520px;max-height:85vh;overflow-y:auto;">'
+        + '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.25rem;">'
+        + '<h3 style="margin:0;font-size:1.15rem;font-weight:700;">&#129309; Agreed Offline</h3>'
+        + '<button onclick="closeAgreedOffline()" style="background:none;border:none;font-size:1.5rem;cursor:pointer;color:#64748b;">&times;</button></div>'
+        + '<p style="font-size:0.85rem;color:#64748b;margin:0 0 1.25rem 0;">Record a deal already agreed with a supplier. This moves the development straight to Accepted.</p>'
+        + '<label style="display:block;font-size:0.8rem;font-weight:700;color:#0f172a;margin-bottom:0.4rem;">Agreed with supplier</label>'
+        + '<select id="agreed-supplier" style="width:100%;padding:0.7rem;border:1px solid #d1d5db;border-radius:8px;font-family:inherit;font-size:0.9rem;margin-bottom:1.25rem;">' + supplierOptions + '</select>'
+        + '<label style="display:block;font-size:0.8rem;font-weight:700;color:#0f172a;margin-bottom:0.6rem;">Agreed price' + (products.length > 1 ? 's (per product, FOB £)' : ' (FOB £)') + '</label>'
+        + priceRows
+        + '<div style="display:flex;gap:0.6rem;margin-top:1.5rem;">'
+        + '<button onclick="closeAgreedOffline()" style="flex:1;background:#f1f5f9;color:#0f172a;border:1px solid #d1d5db;padding:0.85rem;border-radius:10px;cursor:pointer;font-weight:700;">Cancel</button>'
+        + '<button onclick="confirmAgreedOffline(' + "'" + devId + "'" + ')" style="flex:2;background:linear-gradient(135deg,#10b981,#059669);color:white;border:none;padding:0.85rem;border-radius:10px;cursor:pointer;font-weight:700;">Confirm &amp; Move to Accepted</button>'
+        + '</div></div>';
+    document.body.appendChild(modal);
+}
+
+function closeAgreedOffline() {
+    var m = document.getElementById('agreed-offline-modal');
+    if (m) m.remove();
+}
+
+function confirmAgreedOffline(devId) {
+    var dev = data.developments.find(function(d) { return d.id === devId; });
+    if (!dev) { closeAgreedOffline(); return; }
+
+    var supplier = document.getElementById('agreed-supplier').value;
+    if (!supplier) { alert('Please select the supplier you agreed with.'); return; }
+
+    var products = (dev.products && dev.products.length > 0) ? dev.products : [{ description: dev.description || 'Item', colour: '', qty: dev.orderQty || 0 }];
+    var priceInputs = document.querySelectorAll('#agreed-offline-modal .agreed-price');
+    var prices = [];
+    for (var i = 0; i < priceInputs.length; i++) {
+        var v = parseFloat(priceInputs[i].value);
+        if (isNaN(v) || v <= 0) { alert('Please enter a valid agreed price for every product.'); return; }
+        prices.push(v);
+    }
+
+    var now = Date.now();
+    // 1. Convert development into a closed tender
+    var tender = Object.assign({}, dev, {
+        id: 'tender-' + now,
+        deadline: 0,
+        deadlineDate: new Date(now),   // closed immediately — it's already done
+        sentFromDev: devId,
+        agreedOffline: true
+    });
+    data.tenders.push(tender);
+    api('POST', '/tenders', tender);
+
+    // 2. Create an accepted bid from the chosen supplier
+    var isMulti = tender.products && tender.products.length > 1;
+    var bid = {
+        id: 'bid-' + now,
+        tenderId: tender.id,
+        supplierId: 'offline-' + now,
+        supplierName: supplier,
+        leadTime: dev.leadTimeTarget || 0,
+        status: 'accepted',
+        isMultiProduct: isMulti,
+        negotiationHistory: [],
+        agreedOffline: true
+    };
+    if (isMulti) {
+        bid.productBids = products.map(function(p, i) {
+            return {
+                productIndex: i,
+                description: p.description,
+                colour: p.colour || '',
+                qty: p.qty || 0,
+                price: prices[i],
+                counterPrice: null,
+                status: 'accepted',
+                negotiationHistory: []
+            };
+        });
+    } else {
+        bid.price = prices[0];
+        bid.counterPrice = null;
+    }
+    data.bids.push(bid);
+    api('POST', '/bids', bid);
+
+    // 3. Remove the development
+    api('DELETE', '/developments/' + devId);
+    data.developments = data.developments.filter(function(d) { return d.id !== devId; });
+    if (data.devComments) delete data.devComments[devId];
+
+    closeAgreedOffline();
+    data.currentBuyerTab = 'accepted';
+    alert('✓ Deal recorded with ' + supplier + '. Moved to Accepted.');
     backToBuyerDashboard();
 }
 
