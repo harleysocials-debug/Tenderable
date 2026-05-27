@@ -599,7 +599,7 @@
             <button class="tab-btn" onclick="switchBuyerTab('accepted')">Accepted (<span id="buy-accepted-count">0</span>)</button>
             <button class="tab-btn" onclick="switchBuyerTab('expired')">Expired (<span id="buy-expired-count">0</span>)</button>
         </div>
-        <div style="margin-bottom: 2rem; display: flex; gap: 1rem; align-items: center;">
+        <div style="margin-bottom: 2rem; display: flex; gap: 1rem; align-items: center; flex-wrap: wrap;">
             <label style="font-weight: 600; color: #0f172a;">Filter by Season:</label>
             <select id="season-filter" onchange="filterBySeason(this.value)" style="padding: 0.5rem; border: 1px solid #d1d5db; border-radius: 6px;">
                 <option value="">All Seasons</option>
@@ -607,6 +607,18 @@
                 <option value="AW26">AW26</option>
                 <option value="SS26">SS26</option>
                 <option value="AW25">AW25</option>
+            </select>
+            <label style="font-weight: 600; color: #0f172a;">Filter by Category:</label>
+            <select id="category-filter" onchange="filterByCategory(this.value)" style="padding: 0.5rem; border: 1px solid #d1d5db; border-radius: 6px;">
+                <option value="">All Categories</option>
+                <option value="OUTERWEAR">OUTERWEAR</option>
+                <option value="TOPS">TOPS</option>
+                <option value="BOTTOMS">BOTTOMS</option>
+                <option value="UNDERWEAR">UNDERWEAR</option>
+                <option value="NIGHTWEAR">NIGHTWEAR</option>
+                <option value="SWIMWEAR">SWIMWEAR</option>
+                <option value="ACCESSORIES">ACCESSORIES</option>
+                <option value="FOOTWEAR">FOOTWEAR</option>
             </select>
         </div>
         <div id="buyer-tenders" class="tender-grid"></div>
@@ -923,6 +935,7 @@ async function loadData() {
         if (mRes && mRes.messages) data.messages = mRes.messages;
         if (dRes && dRes.developments) data.developments = dRes.developments;
         if (dRes && dRes.devComments) data.devComments = dRes.devComments;
+        applyDevOrder();
     } catch(e) {
         console.warn('Load error:', e);
     } finally {
@@ -951,6 +964,7 @@ const data = {
     allSuppliers: [],
     dismissedTenders: [],
     selectedSeason: '',
+    selectedCategory: '',
     editingTenderId: null,
     suppliers: {
         sup1: {
@@ -2660,19 +2674,30 @@ function addDevDetailComment(devId) {
 
 function renderDevelopmentTab() {
     var container = document.getElementById('buyer-tenders');
-    var devs = data.developments || [];
+    var devs = (data.developments || []).slice();
     var isStakeholder = data.currentUser && data.currentUser.type === 'stakeholder';
 
-    document.getElementById('buy-dev-count').textContent = devs.length;
+    // Apply category filter (developments respect the dashboard category filter too)
+    var categoryFilterVal = data.selectedCategory;
+    if (categoryFilterVal) {
+        devs = devs.filter(function(d) { return d.category === categoryFilterVal; });
+    }
+
+    document.getElementById('buy-dev-count').textContent = (data.developments || []).length;
 
     if (devs.length === 0) {
-        container.innerHTML = '<div class="empty-state" style="grid-column:1/-1;"><p>No developments yet. Click "+ New Development" to start.</p></div>';
+        container.innerHTML = '<div class="empty-state" style="grid-column:1/-1;"><p>' + (categoryFilterVal ? 'No developments in this category.' : 'No developments yet. Click "+ New Development" to start.') + '</p></div>';
         return;
     }
 
     container.innerHTML = devs.map(function(dev) {
         var comments = data.devComments[dev.id] || [];
-        var imageFile = dev.files && dev.files.length > 0 ? dev.files.find(function(f) { return f.isImage; }) : null;
+        var devImages = (dev.files || []).filter(function(f) { return f.isImage && f.dataUrl; });
+        // Dynamic qty = sum of product quantities (falls back to stored orderQty if no products)
+        var dynQty = (dev.products && dev.products.length > 0)
+            ? dev.products.reduce(function(s, p) { return s + (parseInt(p.qty) || 0); }, 0)
+            : (dev.orderQty || 0);
+        var styleCount = (dev.products && dev.products.length > 0) ? dev.products.length : 1;
 
         var commentsHTML = '<div style="margin-top:1rem;padding-top:1rem;border-top:1px solid #e8ecf1;">';
         commentsHTML += '<p style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:#94a3b8;margin:0 0 0.75rem 0;">Team Comments (' + comments.length + ')</p>';
@@ -2691,7 +2716,7 @@ function renderDevelopmentTab() {
             commentsHTML += '</div>';
         }
         commentsHTML += '<div style="display:flex;gap:0.5rem;">';
-        commentsHTML += '<input type="text" id="comment-' + dev.id + '" placeholder="Add a comment..." style="flex:1;padding:0.6rem 0.9rem;border:1px solid #d1d5db;border-radius:8px;font-size:0.875rem;">';
+        commentsHTML += '<input type="text" id="comment-' + dev.id + '" placeholder="Add a comment..." onclick="event.stopPropagation();" style="flex:1;padding:0.6rem 0.9rem;border:1px solid #d1d5db;border-radius:8px;font-size:0.875rem;">';
         commentsHTML += '<button onclick="event.stopPropagation();addDevComment(\'' + dev.id + '\')" style="background:linear-gradient(135deg,#8b5cf6,#6d28d9);color:white;border:none;padding:0.6rem 1rem;border-radius:8px;cursor:pointer;font-weight:600;font-size:0.875rem;">Post</button>';
         commentsHTML += '</div>';
         commentsHTML += '</div>';
@@ -2699,32 +2724,144 @@ function renderDevelopmentTab() {
         var actionBtns = '';
         if (!isStakeholder) {
             actionBtns += '<button onclick="event.stopPropagation();sendDevToTender(\'' + dev.id + '\')" style="background:linear-gradient(135deg,#06b6d4,#0891b2);color:white;border:none;padding:0.5rem 1rem;border-radius:8px;cursor:pointer;font-weight:600;font-size:0.9rem;">Send to Tender</button>';
+            actionBtns += '<button onclick="event.stopPropagation();showAgreedOffline(\'' + dev.id + '\')" style="background:linear-gradient(135deg,#10b981,#059669);color:white;border:none;padding:0.5rem 1rem;border-radius:8px;cursor:pointer;font-weight:600;font-size:0.9rem;">&#129309; Agreed Offline</button>';
             actionBtns += '<button onclick="event.stopPropagation();showEditDevelopment(\'' + dev.id + '\')" style="background:#f1f5f9;color:#0f172a;border:1px solid #d1d5db;padding:0.5rem 1rem;border-radius:8px;cursor:pointer;font-weight:600;font-size:0.9rem;">&#9999;&#65039; Edit</button>';
             actionBtns += '<button onclick="event.stopPropagation();deleteDevelopment(\'' + dev.id + '\')" style="background:#fee2e2;color:#991b1b;border:1px solid #fca5a5;padding:0.5rem 1rem;border-radius:8px;cursor:pointer;font-weight:600;">&#x1F5D1;</button>';
         }
 
-        return '<div class="tender-card" style="border:2px solid #e0e7ff;background:#fafaff;cursor:pointer;" onclick="viewDevelopment(\'' + dev.id + '\')">' +
+        // Drag handle is only enabled when no category filter is active (reordering the full list)
+        var draggable = (!isStakeholder && !categoryFilterVal) ? ' draggable="true"' : '';
+        var dragHandle = (!isStakeholder && !categoryFilterVal)
+            ? '<span class="dev-drag-handle" title="Drag to reorder" style="cursor:grab;color:#cbd5e1;font-size:1.2rem;padding:0 0.5rem 0 0;user-select:none;">&#8942;&#8942;</span>'
+            : '';
+
+        return '<div class="tender-card dev-card" data-devid="' + dev.id + '"' + draggable + ' style="border:2px solid #e0e7ff;background:#fafaff;cursor:pointer;" onclick="viewDevelopment(\'' + dev.id + '\')">' +
             '<div style="display:flex;gap:1.25rem;">' +
-            (imageFile ? '<img src="' + imageFile.dataUrl + '" style="width:120px;height:120px;object-fit:contain;background:#f8fafc;border-radius:8px;flex-shrink:0;">' :
-                '<div style="width:120px;height:120px;background:linear-gradient(135deg,#ede9fe,#ddd6fe);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:2rem;flex-shrink:0;">🎨</div>') +
+            renderDevCardCarousel(dev.id, devImages) +
             '<div style="flex:1;">' +
             '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:0.5rem;">' +
-            '<div>' +
+            '<div style="display:flex;align-items:flex-start;">' + dragHandle + '<div>' +
             '<span style="background:#e0e7ff;color:#4f46e5;font-size:0.7rem;font-weight:700;padding:0.2rem 0.6rem;border-radius:20px;text-transform:uppercase;letter-spacing:0.05em;">Development</span>' +
             '<h3 style="margin:0.4rem 0 0.25rem 0;font-size:1.05rem;">' + dev.description + '</h3>' +
             '<p style="font-size:0.8rem;color:#64748b;margin:0;">' + dev.brand + ' &bull; ' + dev.category + ' &bull; <strong>' + dev.seasonCode + '</strong></p>' +
-            '</div>' +
+            '</div></div>' +
             (actionBtns ? '<div style="display:flex;gap:0.5rem;flex-wrap:wrap;">' + actionBtns + '</div>' : '') +
             '</div>' +
-            '<div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:0.75rem;margin:0.75rem 0;padding:0.75rem 0;border-top:1px solid #e8ecf1;border-bottom:1px solid #e8ecf1;">' +
+            '<div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr 1fr;gap:0.75rem;margin:0.75rem 0;padding:0.75rem 0;border-top:1px solid #e8ecf1;border-bottom:1px solid #e8ecf1;">' +
             '<div><p style="font-size:0.65rem;color:#94a3b8;margin:0;font-weight:600;text-transform:uppercase;">Price</p><p style="font-size:1.1rem;font-weight:700;color:#8b5cf6;margin:0.2rem 0 0 0;">&pound;' + dev.priceTarget.toFixed(2) + '</p></div>' +
-            '<div><p style="font-size:0.65rem;color:#94a3b8;margin:0;font-weight:600;text-transform:uppercase;">Qty</p><p style="font-size:1.1rem;font-weight:700;color:#06b6d4;margin:0.2rem 0 0 0;">' + (dev.orderQty||0).toLocaleString() + '</p></div>' +
+            '<div><p style="font-size:0.65rem;color:#94a3b8;margin:0;font-weight:600;text-transform:uppercase;">Qty</p><p style="font-size:1.1rem;font-weight:700;color:#06b6d4;margin:0.2rem 0 0 0;">' + dynQty.toLocaleString() + '</p></div>' +
+            '<div><p style="font-size:0.65rem;color:#94a3b8;margin:0;font-weight:600;text-transform:uppercase;">Styles</p><p style="font-size:1.1rem;font-weight:700;color:#0f172a;margin:0.2rem 0 0 0;">' + styleCount + '</p></div>' +
             '<div><p style="font-size:0.65rem;color:#94a3b8;margin:0;font-weight:600;text-transform:uppercase;">Fabric</p><p style="font-size:1.1rem;font-weight:700;color:#0f172a;margin:0.2rem 0 0 0;">' + (dev.fabric||'&mdash;') + '</p></div>' +
             '<div><p style="font-size:0.65rem;color:#94a3b8;margin:0;font-weight:600;text-transform:uppercase;">Lead Time</p><p style="font-size:1.1rem;font-weight:700;color:#0f172a;margin:0.2rem 0 0 0;">' + (dev.leadTimeTarget * 7) + ' days</p></div>' +
             '</div>' +
             commentsHTML +
             '</div></div></div>';
     }).join('');
+
+    // Wire up drag-and-drop reordering (only when not filtered / not stakeholder)
+    if (!isStakeholder && !categoryFilterVal) {
+        enableDevDragAndDrop();
+    }
+}
+
+// ── DEV CARD IMAGE CAROUSEL ───────────────────────────────────────────────────
+var _devCarouselIdx = {};   // devId -> current image index
+function renderDevCardCarousel(devId, images) {
+    if (!images || images.length === 0) {
+        return '<div style="width:120px;height:120px;background:linear-gradient(135deg,#ede9fe,#ddd6fe);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:2rem;flex-shrink:0;">🎨</div>';
+    }
+    if (_devCarouselIdx[devId] === undefined) _devCarouselIdx[devId] = 0;
+    var idx = _devCarouselIdx[devId];
+    if (idx >= images.length) idx = _devCarouselIdx[devId] = 0;
+
+    var html = '<div style="position:relative;width:120px;height:120px;flex-shrink:0;" onclick="event.stopPropagation();">';
+    html += '<img id="devcar-img-' + devId + '" src="' + images[idx].dataUrl + '" style="width:120px;height:120px;object-fit:contain;background:#f8fafc;border-radius:8px;border:1px solid #e8ecf1;">';
+    if (images.length > 1) {
+        // Left arrow
+        html += '<button onclick="event.stopPropagation();devCarouselNav(\'' + devId + '\',-1)" style="position:absolute;left:2px;top:50%;transform:translateY(-50%);background:rgba(15,23,42,0.6);color:white;border:none;width:24px;height:24px;border-radius:50%;cursor:pointer;font-size:0.85rem;line-height:1;display:flex;align-items:center;justify-content:center;">&#8249;</button>';
+        // Right arrow
+        html += '<button onclick="event.stopPropagation();devCarouselNav(\'' + devId + '\',1)" style="position:absolute;right:2px;top:50%;transform:translateY(-50%);background:rgba(15,23,42,0.6);color:white;border:none;width:24px;height:24px;border-radius:50%;cursor:pointer;font-size:0.85rem;line-height:1;display:flex;align-items:center;justify-content:center;">&#8250;</button>';
+        // Counter
+        html += '<div id="devcar-count-' + devId + '" style="position:absolute;bottom:3px;left:50%;transform:translateX(-50%);background:rgba(15,23,42,0.65);color:white;font-size:0.65rem;font-weight:700;padding:0.1rem 0.4rem;border-radius:10px;">' + (idx+1) + '/' + images.length + '</div>';
+    }
+    html += '</div>';
+    return html;
+}
+
+function devCarouselNav(devId, dir) {
+    var dev = (data.developments || []).find(function(d){ return d.id === devId; });
+    if (!dev) return;
+    var images = (dev.files || []).filter(function(f) { return f.isImage && f.dataUrl; });
+    if (images.length < 2) return;
+    var idx = _devCarouselIdx[devId] || 0;
+    idx = (idx + dir + images.length) % images.length;
+    _devCarouselIdx[devId] = idx;
+    var img = document.getElementById('devcar-img-' + devId);
+    if (img) img.src = images[idx].dataUrl;
+    var counter = document.getElementById('devcar-count-' + devId);
+    if (counter) counter.textContent = (idx+1) + '/' + images.length;
+}
+
+// ── DRAG & DROP REORDERING OF DEVELOPMENTS ────────────────────────────────────
+var _dragDevId = null;
+function enableDevDragAndDrop() {
+    var cards = document.querySelectorAll('#buyer-tenders .dev-card');
+    cards.forEach(function(card) {
+        card.addEventListener('dragstart', function(e) {
+            _dragDevId = card.getAttribute('data-devid');
+            card.style.opacity = '0.4';
+            e.dataTransfer.effectAllowed = 'move';
+        });
+        card.addEventListener('dragend', function() {
+            card.style.opacity = '';
+            document.querySelectorAll('#buyer-tenders .dev-card').forEach(function(c){ c.style.borderColor = '#e0e7ff'; });
+        });
+        card.addEventListener('dragover', function(e) {
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'move';
+            if (card.getAttribute('data-devid') !== _dragDevId) card.style.borderColor = '#8b5cf6';
+        });
+        card.addEventListener('dragleave', function() {
+            card.style.borderColor = '#e0e7ff';
+        });
+        card.addEventListener('drop', function(e) {
+            e.preventDefault();
+            var targetId = card.getAttribute('data-devid');
+            if (!_dragDevId || _dragDevId === targetId) return;
+            var list = data.developments;
+            var fromIdx = list.findIndex(function(d){ return d.id === _dragDevId; });
+            var toIdx = list.findIndex(function(d){ return d.id === targetId; });
+            if (fromIdx === -1 || toIdx === -1) return;
+            var moved = list.splice(fromIdx, 1)[0];
+            list.splice(toIdx, 0, moved);
+            _dragDevId = null;
+            saveDevOrder();
+            renderDevelopmentTab();
+        });
+    });
+}
+
+// Persist the new order locally so it survives refresh
+function saveDevOrder() {
+    try {
+        var order = (data.developments || []).map(function(d){ return d.id; });
+        localStorage.setItem('tenderable_dev_order', JSON.stringify(order));
+    } catch (e) {}
+}
+
+// Re-apply a saved order to the loaded developments (called after data loads)
+function applyDevOrder() {
+    var saved = null;
+    try { saved = localStorage.getItem('tenderable_dev_order'); } catch (e) {}
+    if (!saved) return;
+    var order;
+    try { order = JSON.parse(saved); } catch (e) { return; }
+    if (!Array.isArray(order) || !data.developments) return;
+    data.developments.sort(function(a, b) {
+        var ia = order.indexOf(a.id); var ib = order.indexOf(b.id);
+        if (ia === -1) ia = 9999; if (ib === -1) ib = 9999;
+        return ia - ib;
+    });
 }
 
 function addDevComment(devId) {
@@ -3155,25 +3292,29 @@ function renderBuyerDashboard() {
     
     const container = document.getElementById('buyer-tenders');
     var seasonFilterVal = data.selectedSeason;
-    
+    var categoryFilterVal = data.selectedCategory;
+
     let tenders = [];
     if (tab === 'open') {
         tenders = data.tenders.filter(t => {
             const tenderBids = data.bids.filter(b => b.tenderId === t.id);
-            const matchesSeason = !seasonFilter || t.seasonCode === seasonFilter;
-            return !isExpired(t.deadlineDate) && !tenderBids.some(b => b.status === 'accepted') && matchesSeason;
+            const matchesSeason = !seasonFilterVal || t.seasonCode === seasonFilterVal;
+            const matchesCategory = !categoryFilterVal || t.category === categoryFilterVal;
+            return !isExpired(t.deadlineDate) && !tenderBids.some(b => b.status === 'accepted') && matchesSeason && matchesCategory;
         });
     } else if (tab === 'accepted') {
         tenders = data.tenders.filter(t => {
             const tenderBids = data.bids.filter(b => b.tenderId === t.id);
-            const matchesSeason = !seasonFilter || t.seasonCode === seasonFilter;
-            return tenderBids.some(b => b.status === 'accepted') && matchesSeason;
+            const matchesSeason = !seasonFilterVal || t.seasonCode === seasonFilterVal;
+            const matchesCategory = !categoryFilterVal || t.category === categoryFilterVal;
+            return tenderBids.some(b => b.status === 'accepted') && matchesSeason && matchesCategory;
         });
     } else if (tab === 'expired') {
         tenders = data.tenders.filter(t => {
             const tenderBids = data.bids.filter(b => b.tenderId === t.id);
-            const matchesSeason = !seasonFilter || t.seasonCode === seasonFilter;
-            return isExpired(t.deadlineDate) && !tenderBids.some(b => b.status === 'accepted') && matchesSeason;
+            const matchesSeason = !seasonFilterVal || t.seasonCode === seasonFilterVal;
+            const matchesCategory = !categoryFilterVal || t.category === categoryFilterVal;
+            return isExpired(t.deadlineDate) && !tenderBids.some(b => b.status === 'accepted') && matchesSeason && matchesCategory;
         });
     }
     
@@ -3220,7 +3361,7 @@ function renderBuyerDashboard() {
                         </div>
                         
                         <!-- Metrics Row -->
-                        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 0.75rem; margin: 0.75rem 0; padding: 0.75rem 0; border-top: 1px solid #e8ecf1; border-bottom: 1px solid #e8ecf1;">
+                        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr 1fr; gap: 0.75rem; margin: 0.75rem 0; padding: 0.75rem 0; border-top: 1px solid #e8ecf1; border-bottom: 1px solid #e8ecf1;">
                             <div>
                                 <p style="font-size: 0.65rem; color: #94a3b8; margin: 0; font-weight: 600; text-transform: uppercase;">Price</p>
                                 <p style="font-size: 1.1rem; font-weight: 700; color: #8b5cf6; margin: 0.2rem 0 0 0;">£${tender.priceTarget.toFixed(2)}</p>
@@ -3228,6 +3369,10 @@ function renderBuyerDashboard() {
                             <div>
                                 <p style="font-size: 0.65rem; color: #94a3b8; margin: 0; font-weight: 600; text-transform: uppercase;">Qty</p>
                                 <p style="font-size: 1.1rem; font-weight: 700; color: #06b6d4; margin: 0.2rem 0 0 0;">${tender.orderQty.toLocaleString()}</p>
+                            </div>
+                            <div>
+                                <p style="font-size: 0.65rem; color: #94a3b8; margin: 0; font-weight: 600; text-transform: uppercase;">Styles</p>
+                                <p style="font-size: 1.1rem; font-weight: 700; color: #0f172a; margin: 0.2rem 0 0 0;">${(tender.products && tender.products.length > 0) ? tender.products.length : 1}</p>
                             </div>
                             <div>
                                 <p style="font-size: 0.65rem; color: #94a3b8; margin: 0; font-weight: 600; text-transform: uppercase;">Fabric</p>
@@ -3273,6 +3418,16 @@ function renderBuyerDashboard() {
 function filterBySeason(season) {
     data.selectedSeason = season;
     renderBuyerDashboard();
+}
+
+function filterByCategory(category) {
+    data.selectedCategory = category;
+    // Re-render whichever view is active (developments respect the filter too)
+    if ((data.currentBuyerTab || 'development') === 'development') {
+        renderDevelopmentTab();
+    } else {
+        renderBuyerDashboard();
+    }
 }
 
 function getBidActionsHTML(bid) {
@@ -3551,28 +3706,26 @@ function showEditTender(tenderId) {
     html += '<div class="form-row"><div class="form-group"><label>Season</label><select id="edit-season"><option>SS27</option><option>AW26</option><option>SS26</option><option>AW25</option><option>SS25</option></select></div>';
     html += '<div class="form-group"><label>Fabric</label><input type="text" id="edit-fabric" value="' + (item.fabric||'').replace(/"/g,'&quot;') + '"></div></div>';
     html += '<div class="form-row"><div class="form-group"><label>Price Target £</label><input type="number" id="edit-price" step="0.01" value="' + (item.priceTarget||'') + '"></div>';
-    html += '<div class="form-group"><label>Order Qty</label><input type="number" id="edit-qty" value="' + (item.orderQty||'') + '"></div></div>';
+    html += '<div class="form-group"><label>Order Qty <span style="font-weight:400;color:#94a3b8;font-size:0.8rem;">(auto-total of products)</span></label><input type="number" id="edit-qty" value="' + (item.orderQty||'') + '" readonly style="background:#f1f5f9;cursor:not-allowed;"></div></div>';
     html += '<div class="form-group"><label>Expected Time To Complete Order (weeks)</label><input type="number" id="edit-lead" value="' + (item.leadTimeTarget||'') + '"></div>';
 
 
-    // Supplier list section (tenders only)
-    if (isTender) {
-        html += '<div style="margin-bottom:1.5rem;background:#f9fafb;padding:1.25rem;border-radius:10px;">';
-        html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.75rem;">';
-        html += '<div><p style="font-weight:700;color:#0f172a;margin:0 0 0.2rem 0;">Supplier List</p><p style="font-size:0.85rem;color:#94a3b8;margin:0;">Select specific suppliers to invite. Leave empty for all category suppliers.</p></div>';
-        html += '<button type="button" onclick="openEditSupplierPicker()" style="background:linear-gradient(135deg,#8b5cf6,#6d28d9);color:white;border:none;padding:0.6rem 1.1rem;border-radius:8px;cursor:pointer;font-weight:600;font-size:0.875rem;white-space:nowrap;">+ Add Supplier</button>';
-        html += '</div>';
-        html += '<div id="edit-selected-suppliers" style="display:flex;flex-wrap:wrap;gap:0.5rem;"></div>';
-        html += '</div>';
-        // Supplier picker modal
-        html += '<div id="edit-supplier-picker" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:9999;align-items:center;justify-content:center;">';
-        html += '<div style="background:white;border-radius:16px;padding:1.5rem;width:90%;max-width:500px;max-height:80vh;overflow-y:auto;">';
-        html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;"><h3 style="margin:0;font-size:1.1rem;font-weight:700;">Select Suppliers</h3><button onclick="closeEditSupplierPicker()" style="background:none;border:none;font-size:1.5rem;cursor:pointer;color:#64748b;">&times;</button></div>';
-        html += '<input type="text" id="edit-supplier-search" placeholder="Search..." oninput="filterEditSupplierList()" style="width:100%;padding:0.75rem;border:1px solid #d1d5db;border-radius:8px;margin-bottom:1rem;font-family:inherit;">';
-        html += '<div id="edit-supplier-picker-list" style="display:flex;flex-direction:column;gap:0.4rem;"></div>';
-        html += '<button onclick="closeEditSupplierPicker()" style="margin-top:1rem;width:100%;background:linear-gradient(135deg,#8b5cf6,#6d28d9);color:white;border:none;padding:0.85rem;border-radius:10px;cursor:pointer;font-weight:700;">Done</button>';
-        html += '</div></div>';
-    }
+    // Supplier list section (tenders AND developments)
+    html += '<div style="margin-bottom:1.5rem;background:#f9fafb;padding:1.25rem;border-radius:10px;">';
+    html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.75rem;">';
+    html += '<div><p style="font-weight:700;color:#0f172a;margin:0 0 0.2rem 0;">Supplier List</p><p style="font-size:0.85rem;color:#94a3b8;margin:0;">Select specific suppliers to invite. Leave empty for all category suppliers.</p></div>';
+    html += '<button type="button" onclick="openEditSupplierPicker()" style="background:linear-gradient(135deg,#8b5cf6,#6d28d9);color:white;border:none;padding:0.6rem 1.1rem;border-radius:8px;cursor:pointer;font-weight:600;font-size:0.875rem;white-space:nowrap;">+ Add Supplier</button>';
+    html += '</div>';
+    html += '<div id="edit-selected-suppliers" style="display:flex;flex-wrap:wrap;gap:0.5rem;"></div>';
+    html += '</div>';
+    // Supplier picker modal
+    html += '<div id="edit-supplier-picker" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:9999;align-items:center;justify-content:center;">';
+    html += '<div style="background:white;border-radius:16px;padding:1.5rem;width:90%;max-width:500px;max-height:80vh;overflow-y:auto;">';
+    html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;"><h3 style="margin:0;font-size:1.1rem;font-weight:700;">Select Suppliers</h3><button onclick="closeEditSupplierPicker()" style="background:none;border:none;font-size:1.5rem;cursor:pointer;color:#64748b;">&times;</button></div>';
+    html += '<input type="text" id="edit-supplier-search" placeholder="Search..." oninput="filterEditSupplierList()" style="width:100%;padding:0.75rem;border:1px solid #d1d5db;border-radius:8px;margin-bottom:1rem;font-family:inherit;">';
+    html += '<div id="edit-supplier-picker-list" style="display:flex;flex-direction:column;gap:0.4rem;"></div>';
+    html += '<button onclick="closeEditSupplierPicker()" style="margin-top:1rem;width:100%;background:linear-gradient(135deg,#8b5cf6,#6d28d9);color:white;border:none;padding:0.85rem;border-radius:10px;cursor:pointer;font-weight:700;">Done</button>';
+    html += '</div></div>';
 
     document.getElementById('edit-tender-content').innerHTML = html;
 
@@ -3588,11 +3741,9 @@ function showEditTender(tenderId) {
     renderEditSpecsFileList();
     (item.products || []).forEach(function(p) { addEditProductRowWithData(p.description, p.colour, p.qty); });
 
-    // Init edit suppliers
-    if (isTender) {
-        data.editInvitedSuppliers = (item.invitedSuppliers || []).slice();
-        renderEditSelectedSuppliers();
-    }
+    // Init edit suppliers (tenders and developments)
+    data.editInvitedSuppliers = (item.invitedSuppliers || []).slice();
+    renderEditSelectedSuppliers();
 
 
     // Paste handling is now done by the always-on global paste listener,
@@ -3664,10 +3815,20 @@ function addEditProductRowWithData(desc,colour,qty) {
     var i1=document.createElement('input'); i1.type='text'; i1.placeholder='Product e.g. Plain Black Tee'; i1.className='edit-product-desc'; i1.value=desc||''; i1.style.cssText='flex:2;padding:0.65rem;border:1px solid #d1d5db;border-radius:6px;font-size:0.875rem;font-family:inherit;min-width:0;';
     var i2=document.createElement('input'); i2.type='text'; i2.placeholder='Colourway'; i2.className='edit-product-colour'; i2.value=colour||''; i2.style.cssText='flex:1.5;padding:0.65rem;border:1px solid #d1d5db;border-radius:6px;font-size:0.875rem;font-family:inherit;min-width:0;';
     var i3=document.createElement('input'); i3.type='number'; i3.placeholder='Qty'; i3.className='edit-product-qty'; i3.value=qty||''; i3.min='1'; i3.style.cssText='flex:1;padding:0.65rem;border:1px solid #d1d5db;border-radius:6px;font-size:0.875rem;font-family:inherit;min-width:0;';
+    i3.addEventListener('input', recomputeEditQty);
     var btn=document.createElement('button'); btn.type='button'; btn.textContent='✕'; btn.style.cssText='background:#fee2e2;color:#991b1b;border:none;padding:0.65rem 0.85rem;border-radius:6px;cursor:pointer;font-weight:700;flex-shrink:0;';
-    btn.onclick=function(){ row.remove(); };
+    btn.onclick=function(){ row.remove(); recomputeEditQty(); };
     row.appendChild(i1); row.appendChild(i2); row.appendChild(i3); row.appendChild(btn);
     document.getElementById('edit-products-list').appendChild(row);
+    recomputeEditQty();
+}
+// Order Qty auto-populates as the sum of all product quantities
+function recomputeEditQty() {
+    var qtyInputs = document.querySelectorAll('#edit-products-list .edit-product-qty');
+    var total = 0;
+    qtyInputs.forEach(function(inp){ total += parseInt(inp.value) || 0; });
+    var qtyField = document.getElementById('edit-qty');
+    if (qtyField) qtyField.value = total > 0 ? total : '';
 }
 function getEditProducts() {
     var rows=document.querySelectorAll('#edit-products-list > div'); var products=[];
@@ -3762,6 +3923,11 @@ function updateTender(e) {
     var newSpecsFiles = (data.editSpecsFiles||[]).slice();
     var newProducts = getEditProducts();
     var newInvitedSuppliers = (data.editInvitedSuppliers || []).slice();
+
+    // Order Qty is the sum of product quantities (auto-computed)
+    if (newProducts.length > 0) {
+        newQty = newProducts.reduce(function(s, p){ return s + (parseInt(p.qty) || 0); }, 0);
+    }
 
     if (!newDesc || isNaN(newPrice) || isNaN(newQty) || isNaN(newLead)) { alert('Please fill in all fields'); return; }
 
