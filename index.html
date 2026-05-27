@@ -533,6 +533,7 @@
             <p style="text-align:center;color:#64748b;margin:0;">Already have an account? <span onclick="showLogin()" style="color:#8b5cf6;cursor:pointer;font-weight:600;">Sign in</span></p>
             <div id="reg-error" style="display:none;background:rgba(220,38,38,0.2);border:1px solid rgba(220,38,38,0.4);color:#fca5a5;padding:0.75rem 1rem;border-radius:8px;margin-top:1rem;font-size:0.875rem;text-align:center;"></div>
         </div>
+        <p style="text-align:center;color:#475569;margin:1.5rem 0 0 0;font-size:0.7rem;letter-spacing:0.05em;">v2026.05.27 · paste-edit</p>
     </div>
 </div>
 
@@ -3625,8 +3626,15 @@ function handleEditPaste(e) {
     for (var i=0;i<items.length;i++) {
         if (items[i].type.startsWith('image/')) {
             e.preventDefault();
-            (function(it){ var f=it.getAsFile(); var sz=f.size>1048576?(f.size/1048576).toFixed(2)+' MB':(f.size/1024).toFixed(1)+' KB';
-            var r=new FileReader(); r.onload=function(ev){ data.editUploadedFiles.push({name:'pasted-'+Date.now()+'.png',size:sz,isImage:true,dataUrl:ev.target.result}); renderEditFileList(); }; r.readAsDataURL(f); })(items[i]);
+            (function(it){ var f=it.getAsFile(); if(!f) return; var sz=f.size>1048576?(f.size/1048576).toFixed(2)+' MB':(f.size/1024).toFixed(1)+' KB';
+            var r=new FileReader(); r.onload=function(ev){
+                if(!data.editUploadedFiles) data.editUploadedFiles=[];
+                data.editUploadedFiles.push({name:'pasted-'+Date.now()+'.png',size:sz,isImage:true,dataUrl:ev.target.result});
+                renderEditFileList();
+                // Flash the edit upload zone green to confirm the paste landed
+                var zone=document.getElementById('edit-uploadZone');
+                if(zone){ zone.style.borderColor='#22c55e'; zone.style.background='#f0fdf4'; setTimeout(function(){ zone.style.borderColor=''; zone.style.background=''; },800); }
+            }; r.readAsDataURL(f); })(items[i]);
         }
     }
 }
