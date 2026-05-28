@@ -482,6 +482,129 @@
             color: #166534;
             font-weight: 500;
         }
+
+    /* ── MOBILE RESPONSIVE ─────────────────────────────────────────────────── */
+    @media (max-width: 768px) {
+
+        /* Login */
+        .login-container { padding: 1.5rem 1rem; align-items: flex-start; padding-top: 3rem; }
+        .login-box h1 { font-size: 2.2rem; }
+        .login-box > p { margin-bottom: 2rem; }
+        .button-group { gap: 0.9rem; }
+        button { padding: 1rem 1.25rem; font-size: 0.95rem; }
+
+        /* Header */
+        .header { padding: 0.9rem 1rem; flex-wrap: wrap; gap: 0.5rem; }
+        .header h1 { font-size: 1.1rem; }
+        .header p { font-size: 0.75rem; margin: 0; }
+        .header > div:last-child { display: flex; flex-wrap: wrap; gap: 0.4rem; align-items: center; }
+        .back-btn { font-size: 0.85rem; padding: 0.5rem 0.75rem; }
+        .btn-primary { padding: 0.65rem 1rem !important; font-size: 0.85rem !important; }
+        #admin-btn-container button { padding: 0.65rem 0.9rem !important; font-size: 0.8rem !important; margin-right: 0.3rem !important; }
+
+        /* Content area */
+        .content { padding: 1rem 0.85rem; }
+
+        /* Tabs — horizontal scroll, no wrap */
+        .tabs { gap: 0 !important; overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; flex-wrap: nowrap !important; margin-bottom: 1.25rem; }
+        .tabs::-webkit-scrollbar { display: none; }
+        .tab-btn { white-space: nowrap; padding: 0.75rem 0.85rem !important; font-size: 0.78rem !important; flex-shrink: 0; }
+
+        /* Single column grid */
+        .tender-grid { grid-template-columns: 1fr !important; gap: 0.85rem !important; }
+
+        /* Cards */
+        .tender-card { padding: 1rem !important; }
+        .tender-card h3 { font-size: 0.95rem !important; }
+
+        /* Card image + content stacked vertically */
+        .tender-card > div { flex-direction: column !important; gap: 0.75rem !important; }
+        .tender-card img { width: 100% !important; height: 180px !important; }
+        .tender-card div[style*="140px"] { width: 100% !important; height: 130px !important; }
+
+        /* Metrics — 2 col */
+        .metrics-row,
+        div[style*="grid-template-columns: 1fr 1fr 1fr 1fr"],
+        div[style*="grid-template-columns:1fr 1fr 1fr 1fr"] { grid-template-columns: 1fr 1fr !important; gap: 0.5rem !important; }
+        .metric-value { font-size: 0.95rem !important; }
+
+        /* Stats bars (4 col → 2x2) */
+        div[style*="grid-template-columns:repeat(4,1fr)"],
+        div[style*="grid-template-columns: repeat(4, 1fr)"] { grid-template-columns: 1fr 1fr !important; }
+
+        /* Two col layouts → single */
+        div[style*="grid-template-columns:1fr 1.6fr"],
+        div[style*="grid-template-columns:1.4fr 1fr"],
+        div[style*="grid-template-columns: 1fr 1.6fr"],
+        div[style*="grid-template-columns: 1.4fr 1fr"] { grid-template-columns: 1fr !important; gap: 1rem !important; }
+
+        /* Forms */
+        .form-container { padding: 1rem !important; }
+        .form-row { grid-template-columns: 1fr !important; gap: 0 !important; }
+        .form-group { margin-bottom: 1.1rem !important; }
+        input, select, textarea { font-size: 16px !important; padding: 0.8rem 0.9rem !important; }
+
+        /* Upload zones */
+        .upload-zone { padding: 1.5rem 1rem !important; }
+        .upload-zone p { font-size: 0.875rem !important; }
+
+        /* Sticky → static on mobile */
+        div[style*="position:sticky"],
+        div[style*="position: sticky"] { position: static !important; }
+
+        /* Bid cards inner layout */
+        div[style*="border-radius:14px"] { border-radius: 10px !important; }
+
+        /* Card footer buttons wrap */
+        div[style*="justify-content: flex-end"],
+        div[style*="justify-content:flex-end"] { justify-content: flex-start !important; flex-wrap: wrap !important; gap: 0.4rem !important; }
+
+        /* Dev detail images — 2 col */
+        div[style*="minmax(160px"] { grid-template-columns: repeat(2, 1fr) !important; gap: 0.5rem !important; }
+
+        /* Supplier picker modal */
+        #supplier-picker > div,
+        #edit-supplier-picker > div { width: 96% !important; max-height: 88vh !important; padding: 1.25rem !important; }
+
+        /* Chat */
+        div[style*="height: 500px"],
+        div[style*="height:500px"],
+        div[style*="height: 450px"],
+        div[style*="height:450px"] { height: 350px !important; }
+
+        /* Admin panel */
+        div[style*="max-width:800px"] { max-width: 100% !important; }
+
+        /* Season filter row */
+        div[style*="margin-bottom: 2rem"][style*="display: flex"][style*="gap: 1rem"] { flex-direction: column !important; align-items: stretch !important; }
+        #season-filter { width: 100% !important; }
+
+        /* Products in edit form */
+        div[style*="display:flex;gap:0.6rem;align-items:center"] { flex-wrap: wrap !important; }
+
+        /* Login form inputs */
+        #login-name, #login-pin, #reg-name, #reg-pin, #reg-role, #reg-company { font-size: 16px !important; }
+
+        /* Register category checkboxes */
+        #cat-checkboxes { gap: 0.4rem !important; }
+        #cat-checkboxes label { font-size: 0.8rem !important; padding: 0.35rem 0.6rem !important; }
+
+        /* Pagination / back btns in detail pages */
+        #buyer-bid-detail,
+        #dev-detail-content,
+        #tender-detail { padding: 0 !important; }
+    }
+
+    @media (max-width: 420px) {
+        .login-box h1 { font-size: 1.8rem; }
+        .header h1 { font-size: 1rem; }
+        .tab-btn { font-size: 0.72rem !important; padding: 0.65rem 0.65rem !important; }
+        .metrics-row,
+        div[style*="grid-template-columns:repeat(4,1fr)"],
+        div[style*="grid-template-columns: repeat(4, 1fr)"] { grid-template-columns: 1fr 1fr !important; }
+        .btn-primary { padding: 0.6rem 0.75rem !important; font-size: 0.78rem !important; }
+    }
+
     </style>
 </head>
 <body>
@@ -533,7 +656,6 @@
             <p style="text-align:center;color:#64748b;margin:0;">Already have an account? <span onclick="showLogin()" style="color:#8b5cf6;cursor:pointer;font-weight:600;">Sign in</span></p>
             <div id="reg-error" style="display:none;background:rgba(220,38,38,0.2);border:1px solid rgba(220,38,38,0.4);color:#fca5a5;padding:0.75rem 1rem;border-radius:8px;margin-top:1rem;font-size:0.875rem;text-align:center;"></div>
         </div>
-        <p style="text-align:center;color:#475569;margin:1.5rem 0 0 0;font-size:0.7rem;letter-spacing:0.05em;">v2026.05.27 · per-style-targets</p>
     </div>
 </div>
 
@@ -599,26 +721,14 @@
             <button class="tab-btn" onclick="switchBuyerTab('accepted')">Accepted (<span id="buy-accepted-count">0</span>)</button>
             <button class="tab-btn" onclick="switchBuyerTab('expired')">Expired (<span id="buy-expired-count">0</span>)</button>
         </div>
-        <div style="margin-bottom: 1.5rem; display: inline-flex; gap: 0.6rem; align-items: center; flex-wrap: wrap; background:#f8fafc; border:1px solid #e8ecf1; padding:0.6rem 0.9rem; border-radius:10px;">
-            <label style="font-weight: 600; color: #0f172a; font-size:0.85rem;">Season:</label>
-            <select id="season-filter" onchange="filterBySeason(this.value)" style="padding: 0.4rem 0.6rem; border: 1px solid #d1d5db; border-radius: 6px; font-size:0.85rem;">
+        <div style="margin-bottom: 2rem; display: flex; gap: 1rem; align-items: center;">
+            <label style="font-weight: 600; color: #0f172a;">Filter by Season:</label>
+            <select id="season-filter" onchange="filterBySeason(this.value)" style="padding: 0.5rem; border: 1px solid #d1d5db; border-radius: 6px;">
                 <option value="">All Seasons</option>
                 <option value="SS27">SS27</option>
                 <option value="AW26">AW26</option>
                 <option value="SS26">SS26</option>
                 <option value="AW25">AW25</option>
-            </select>
-            <label style="font-weight: 600; color: #0f172a; font-size:0.85rem; margin-left:0.4rem;">Category:</label>
-            <select id="category-filter" onchange="filterByCategory(this.value)" style="padding: 0.4rem 0.6rem; border: 1px solid #d1d5db; border-radius: 6px; font-size:0.85rem;">
-                <option value="">All Categories</option>
-                <option value="OUTERWEAR">OUTERWEAR</option>
-                <option value="TOPS">TOPS</option>
-                <option value="BOTTOMS">BOTTOMS</option>
-                <option value="UNDERWEAR">UNDERWEAR</option>
-                <option value="NIGHTWEAR">NIGHTWEAR</option>
-                <option value="SWIMWEAR">SWIMWEAR</option>
-                <option value="ACCESSORIES">ACCESSORIES</option>
-                <option value="FOOTWEAR">FOOTWEAR</option>
             </select>
         </div>
         <div id="buyer-tenders" class="tender-grid"></div>
@@ -710,7 +820,7 @@
                 <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;">
                     <div>
                         <label style="display:block;font-size:0.875rem;font-weight:700;color:#0f172a;">Products</label>
-                        <p style="font-size:0.8rem;color:#94a3b8;margin:0.25rem 0 0 0;">Add each style with its quantity and target price — suppliers bid per style</p>
+                        <p style="font-size:0.8rem;color:#94a3b8;margin:0.25rem 0 0 0;">Add each product variant — e.g. Black Tee, Navy Tee, Burgundy Tee</p>
                     </div>
                     <button type="button" onclick="addProductRow()" style="background:linear-gradient(135deg,#8b5cf6,#6d28d9);color:white;border:none;padding:0.6rem 1.2rem;border-radius:8px;cursor:pointer;font-weight:600;font-size:0.85rem;white-space:nowrap;">+ Add Product</button>
                 </div>
@@ -738,12 +848,12 @@
             
             <div class="form-row">
                 <div class="form-group">
-                    <label>Order Qty <span style="font-weight:400;color:#94a3b8;font-size:0.8rem;">(auto-total of products)</span></label>
-                    <input type="number" id="orderQty" placeholder="Add products above" min="1" readonly style="background:#f1f5f9;cursor:not-allowed;">
+                    <label>Price Target £</label>
+                    <input type="number" id="priceTarget" placeholder="e.g., 22.50" step="0.01" min="0">
                 </div>
                 <div class="form-group">
-                    <label>Price Target <span style="font-weight:400;color:#94a3b8;font-size:0.8rem;">(set per style above)</span></label>
-                    <input type="text" id="priceTargetRange" placeholder="Add a target per product" readonly style="background:#f1f5f9;cursor:not-allowed;">
+                    <label>Order Qty</label>
+                    <input type="number" id="orderQty" placeholder="e.g., 500" min="1">
                 </div>
             </div>
             
@@ -833,10 +943,7 @@
 <div id="admin-page" class="dashboard hidden">
     <div class="header">
         <div><h1>Tenderable</h1><p>Admin Panel — Harley Killingsworth</p></div>
-        <div style="display:flex;gap:0.75rem;">
-            <button class="back-btn" onclick="goToDashboard()">← Back to Dashboard</button>
-            <button class="back-btn" onclick="logout()">Logout</button>
-        </div>
+        <button class="back-btn" onclick="logout()">Logout</button>
     </div>
     <div class="content">
         <div class="tabs">
@@ -935,7 +1042,6 @@ async function loadData() {
         if (mRes && mRes.messages) data.messages = mRes.messages;
         if (dRes && dRes.developments) data.developments = dRes.developments;
         if (dRes && dRes.devComments) data.devComments = dRes.devComments;
-        applyDevOrder();
     } catch(e) {
         console.warn('Load error:', e);
     } finally {
@@ -964,7 +1070,6 @@ const data = {
     allSuppliers: [],
     dismissedTenders: [],
     selectedSeason: '',
-    selectedCategory: '',
     editingTenderId: null,
     suppliers: {
         sup1: {
@@ -1188,31 +1293,22 @@ function handlePasteImage(items) {
     }
 }
 
-// Global paste listener - routes the pasted image to whichever page is open
-// (create tender OR edit tender/development). Always on, so it can't get into
-// a broken add/remove state.
+// Global paste listener - works anywhere on page when on create tender
 document.addEventListener('paste', function(e) {
+    const createPage = document.getElementById('create-tender-page');
+    if (!createPage || createPage.classList.contains('hidden')) return;
     const items = e.clipboardData && e.clipboardData.items;
     if (!items) return;
     const hasImage = Array.from(items).some(i => i.type.startsWith('image/'));
-    if (!hasImage) return;
-
-    const createPage = document.getElementById('create-tender-page');
-    const editPage = document.getElementById('edit-tender-page');
-    const onCreate = createPage && !createPage.classList.contains('hidden');
-    const onEdit = editPage && !editPage.classList.contains('hidden');
-
-    if (onCreate) {
+    if (hasImage) {
         e.preventDefault();
+        // Paste into whichever tab is active
         const specsTab = document.getElementById('specs-tab');
         if (specsTab && specsTab.style.display !== 'none') {
             handlePasteSpecsImage(items);
         } else {
             handlePasteImage(items);
         }
-    } else if (onEdit) {
-        e.preventDefault();
-        handleEditPaste(e);
     }
 });
 
@@ -1287,7 +1383,7 @@ function renderSpecsFileList() {
     fl.innerHTML = data.specsFiles.map((file, idx) => {
         if (file.isImage) {
             return `<div style="position:relative;display:inline-block;">
-                <img src="${file.dataUrl}" style="width:100px;height:100px;object-fit:contain;background:#f8fafc;border-radius:8px;border:1px solid #e8ecf1;">
+                <img src="${file.dataUrl}" style="width:100px;height:100px;object-fit:cover;border-radius:8px;border:1px solid #e8ecf1;">
                 <button type="button" onclick="removeSpecsFile(${idx})" style="position:absolute;top:-8px;right:-8px;background:#dc2626;color:white;border:none;width:22px;height:22px;border-radius:50%;cursor:pointer;font-weight:bold;padding:0;font-size:0.8rem;">✕</button>
                 <p style="font-size:0.7rem;color:#64748b;text-align:center;margin-top:0.2rem;">${file.name.substring(0,18)}</p>
             </div>`;
@@ -1350,7 +1446,7 @@ function renderFileList() {
         if (file.isImage) {
             return `
                 <div style="position: relative; display: inline-block;">
-                    <img src="${file.dataUrl}" style="max-width: 120px; max-height: 120px; border-radius: 6px; border: 1px solid #d1d5db; object-fit: contain; background:#f8fafc;">
+                    <img src="${file.dataUrl}" style="max-width: 120px; max-height: 120px; border-radius: 6px; border: 1px solid #d1d5db; object-fit: cover;">
                     <button type="button" onclick="removeFile(${idx})" style="position: absolute; top: -8px; right: -8px; background: #c7121f; color: white; border: none; width: 24px; height: 24px; border-radius: 50%; cursor: pointer; font-weight: bold; font-size: 14px;">✕</button>
                     <div style="font-size: 0.75rem; color: #64748b; margin-top: 0.25rem; text-align: center; word-break: break-word;">${file.name.substring(0, 20)}${file.name.length > 20 ? '...' : ''}</div>
                 </div>
@@ -1401,7 +1497,6 @@ async function doLogin() {
         return;
     }
     data.currentUser = { type: res.role, id: res.id, name: res.name, company: res.company, categories: res.categories || [], isAdmin: res.isAdmin || false };
-    saveSession();
     await loadData();
     goToDashboard();
 }
@@ -1439,7 +1534,6 @@ async function doRegister() {
     }
     // Harley auto-approved
     data.currentUser = { type: res.role, id: res.id, name: res.name, company: res.company, categories: res.categories || [], isAdmin: res.isAdmin || false };
-    saveSession();
     await loadData();
     goToDashboard();
 }
@@ -1466,41 +1560,14 @@ function logout() {
     data.currentUser = null;
     data.tenders = []; data.bids = []; data.messages = [];
     data.developments = []; data.devComments = {};
-    clearSession();
     showPage('login-page');
     showLogin();
 }
 
-// ── SESSION PERSISTENCE ───────────────────────────────────────────────────────
-// Keeps you logged in across page refreshes by saving the current user locally.
-function saveSession() {
-    try {
-        if (data.currentUser) {
-            localStorage.setItem('tenderable_user', JSON.stringify(data.currentUser));
-        }
-    } catch (e) { /* storage unavailable — fail silently */ }
+function logout() {
+    data.currentUser = null;
+    showPage('login-page');
 }
-
-function clearSession() {
-    try { localStorage.removeItem('tenderable_user'); } catch (e) {}
-}
-
-async function restoreSession() {
-    var saved = null;
-    try { saved = localStorage.getItem('tenderable_user'); } catch (e) {}
-    if (!saved) { showPage('login-page'); showLogin(); return; }
-    try {
-        data.currentUser = JSON.parse(saved);
-    } catch (e) {
-        clearSession(); showPage('login-page'); showLogin(); return;
-    }
-    // Restore their dashboard and reload live data from the server
-    await loadData();
-    goToDashboard();
-}
-
-// Boot: if a session is saved, go straight to the dashboard; otherwise show login
-document.addEventListener('DOMContentLoaded', restoreSession);
 
 function showPage(pageId) {
     document.querySelectorAll('div[id$="-page"]').forEach(p => p.classList.add('hidden'));
@@ -1638,38 +1705,33 @@ function submitTender(e) {
         const description = document.getElementById('description').value.trim();
         const seasonCode = document.getElementById('seasonCode').value.trim();
         const fabric = document.getElementById('fabric').value.trim();
+        const priceTarget = document.getElementById('priceTarget').value.trim();
+        const orderQty = document.getElementById('orderQty').value.trim();
         const leadTimeTarget = document.getElementById('leadTimeTarget').value.trim();
         const deadline = document.getElementById('deadline').value.trim();
         const sendLive = document.getElementById('sendToTender') && document.getElementById('sendToTender').checked;
-
-        const productsFromForm = getProductsFromForm();
 
         if (!brand || brand === 'Select Brand') { alert('Please select a brand'); return; }
         if (!category || category === 'Select Category') { alert('Please select a category'); return; }
         if (!description) { alert('Please enter a description'); return; }
         if (!seasonCode || seasonCode === 'Select Season') { alert('Please select a season code'); return; }
         if (!fabric) { alert('Please enter fabric details'); return; }
-        if (productsFromForm.length === 0) { alert('Please add at least one product'); return; }
-        if (productsFromForm.some(function(p){ return !p.priceTarget || p.priceTarget <= 0; })) { alert('Please enter a target price for every product'); return; }
-        if (productsFromForm.some(function(p){ return !p.qty || p.qty <= 0; })) { alert('Please enter a quantity for every product'); return; }
+        if (!priceTarget || isNaN(parseFloat(priceTarget))) { alert('Please enter a valid price target'); return; }
+        if (!orderQty || isNaN(parseInt(orderQty)) || parseInt(orderQty) <= 0) { alert('Please enter a valid order quantity'); return; }
         if (!leadTimeTarget || isNaN(parseInt(leadTimeTarget))) { alert('Please enter a valid lead time'); return; }
         if (sendLive && (!deadline || isNaN(parseInt(deadline)) || parseInt(deadline) <= 0)) {
             alert('Please enter a bid deadline (days) before sending live');
             return;
         }
 
-        // Derived totals from per-style data
-        const orderQtyTotal = productsFromForm.reduce(function(s,p){ return s + (p.qty || 0); }, 0);
-        const minTarget = Math.min.apply(null, productsFromForm.map(function(p){ return p.priceTarget; }));
-
         const itemBase = {
             brand, category, description, seasonCode, fabric,
-            priceTarget: minTarget,
-            orderQty: orderQtyTotal,
+            priceTarget: parseFloat(priceTarget),
+            orderQty: parseInt(orderQty),
             leadTimeTarget: parseInt(leadTimeTarget),
             files: [...data.uploadedFiles],
             specs: [],
-            products: productsFromForm,
+            products: getProductsFromForm(),
             labellingReqs: document.getElementById('labellingReqs') ? document.getElementById('labellingReqs').value.trim() : '',
             specsFiles: [...data.specsFiles],
             invitedSuppliers: [...data.invitedSuppliers],
@@ -1705,7 +1767,6 @@ function submitTender(e) {
         renderSelectedSuppliers();
         document.getElementById('products-list').innerHTML = '';
         document.getElementById('products-empty-hint').style.display = 'block';
-        recomputeCreateTotals();
         const fileList = document.getElementById('fileList');
         if (fileList) fileList.innerHTML = '';
         const specsFileList2 = document.getElementById('specsFileList');
@@ -1761,54 +1822,19 @@ function addProductRow() {
     inp3.min = '1';
     inp3.style.cssText = 'flex:1;padding:0.75rem;border:1px solid #d1d5db;border-radius:8px;font-size:0.9rem;font-family:inherit;min-width:0;';
 
-    var inp4 = document.createElement('input');
-    inp4.type = 'number';
-    inp4.placeholder = 'Target £';
-    inp4.className = 'product-target';
-    inp4.step = '0.01';
-    inp4.min = '0';
-    inp4.style.cssText = 'flex:1;padding:0.75rem;border:1px solid #d1d5db;border-radius:8px;font-size:0.9rem;font-family:inherit;min-width:0;';
-
     var btn = document.createElement('button');
     btn.type = 'button';
     btn.textContent = '✕';
     btn.style.cssText = 'background:#fee2e2;color:#991b1b;border:none;padding:0.75rem 1rem;border-radius:8px;cursor:pointer;font-weight:700;font-size:1rem;flex-shrink:0;';
-    btn.addEventListener('click', function() { row.remove(); updateProductsHint(); recomputeCreateTotals(); });
-
-    inp3.addEventListener('input', recomputeCreateTotals);
-    inp4.addEventListener('input', recomputeCreateTotals);
+    btn.addEventListener('click', function() { row.remove(); updateProductsHint(); });
 
     row.appendChild(inp1);
     row.appendChild(inp2);
     row.appendChild(inp3);
-    row.appendChild(inp4);
     row.appendChild(btn);
 
     document.getElementById('products-list').appendChild(row);
     document.getElementById('products-empty-hint').style.display = 'none';
-    recomputeCreateTotals();
-}
-
-// Order Qty = sum of product qtys; Price Target = min–max range across styles
-function recomputeCreateTotals() {
-    var rows = document.querySelectorAll('#products-list > div');
-    var totalQty = 0;
-    var targets = [];
-    rows.forEach(function(r) {
-        var q = r.querySelector('.product-qty'); if (q) totalQty += parseInt(q.value) || 0;
-        var t = r.querySelector('.product-target'); var tv = t ? parseFloat(t.value) : NaN;
-        if (!isNaN(tv) && tv > 0) targets.push(tv);
-    });
-    var qtyField = document.getElementById('orderQty');
-    if (qtyField) qtyField.value = totalQty > 0 ? totalQty : '';
-    var rangeField = document.getElementById('priceTargetRange');
-    if (rangeField) {
-        if (targets.length === 0) { rangeField.value = ''; }
-        else {
-            var min = Math.min.apply(null, targets), max = Math.max.apply(null, targets);
-            rangeField.value = (min === max) ? ('£' + min.toFixed(2)) : ('£' + min.toFixed(2) + ' – £' + max.toFixed(2));
-        }
-    }
 }
 
 function updateProductsHint() {
@@ -1824,9 +1850,7 @@ function getProductsFromForm() {
         const desc = row.querySelector('.product-desc').value.trim();
         const colour = row.querySelector('.product-colour').value.trim();
         const qty = row.querySelector('.product-qty').value.trim();
-        const targetEl = row.querySelector('.product-target');
-        const target = targetEl ? targetEl.value.trim() : '';
-        if (desc) products.push({ description: desc, colour: colour, qty: parseInt(qty) || 0, priceTarget: parseFloat(target) || 0 });
+        if (desc) products.push({ description: desc, colour: colour, qty: parseInt(qty) || 0 });
     });
     return products;
 }
@@ -1837,19 +1861,6 @@ function removeSpec(specId) {
 }
 
 // ── MULTI-PRODUCT BID HELPERS ─────────────────────────────────────────
-// Format an item's price target. With per-style targets it shows a range
-// (e.g. "£8.00 – £22.00"); older items without per-style targets fall back
-// to the single stored priceTarget.
-function formatTargetRange(item) {
-    var prods = (item.products || []).filter(function(p){ return p.priceTarget && p.priceTarget > 0; });
-    if (prods.length > 0) {
-        var vals = prods.map(function(p){ return p.priceTarget; });
-        var min = Math.min.apply(null, vals), max = Math.max.apply(null, vals);
-        return (min === max) ? ('£' + min.toFixed(2)) : ('£' + min.toFixed(2) + ' – £' + max.toFixed(2));
-    }
-    return '£' + (item.priceTarget || 0).toFixed(2);
-}
-
 function computeOverallBidStatus(bid) {
     if (!bid.isMultiProduct) return bid.status;
     var pbs = bid.productBids || [];
@@ -1893,15 +1904,13 @@ function submitBid(tenderId) {
         for (var i = 0; i < tender.products.length; i++) {
             var p = tender.products[i];
             var label = p.description + (p.colour ? ' (' + p.colour + ')' : '');
-            var targetHint = (p.priceTarget && p.priceTarget > 0) ? ('\nTarget: £' + p.priceTarget.toFixed(2)) : '';
-            var price = parseFloat(prompt('Price for ' + label + ' (FOB £):' + targetHint));
+            var price = parseFloat(prompt('Price for ' + label + ' (FOB £):'));
             if (isNaN(price) || price <= 0) { alert('Please enter a valid price for ' + label); return; }
             productBids.push({
                 productIndex: i,
                 description: p.description,
                 colour: p.colour || '',
                 qty: p.qty || 0,
-                priceTarget: p.priceTarget || 0,
                 price: price,
                 counterPrice: null,
                 status: 'submitted',
@@ -1911,9 +1920,7 @@ function submitBid(tenderId) {
         bid.productBids = productBids;
         alert('✓ Bid submitted on ' + productBids.length + ' products!');
     } else {
-        var p0 = (tender.products && tender.products[0]) ? tender.products[0] : null;
-        var tHint = (p0 && p0.priceTarget && p0.priceTarget > 0) ? ('\nTarget: £' + p0.priceTarget.toFixed(2)) : '';
-        var singlePrice = parseFloat(prompt('Enter your price (FOB £):' + tHint));
+        var singlePrice = parseFloat(prompt('Enter your price (FOB £):'));
         if (isNaN(singlePrice) || singlePrice <= 0) { alert('Please enter a valid price'); return; }
         bid.price = singlePrice;
         bid.counterPrice = null;
@@ -2185,7 +2192,7 @@ function viewSupplierTender(tenderId) {
 
     // Stats bar
     html += '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:#e8ecf1;border-radius:12px;overflow:hidden;margin-bottom:2rem;">';
-    html += '<div style="background:white;padding:1.25rem 1.5rem;"><p style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#94a3b8;margin:0 0 0.35rem 0;">Price Target</p><p style="font-size:1.5rem;font-weight:800;color:#8b5cf6;margin:0;">' + formatTargetRange(tender) + '</p></div>';
+    html += '<div style="background:white;padding:1.25rem 1.5rem;"><p style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#94a3b8;margin:0 0 0.35rem 0;">Price Target</p><p style="font-size:1.5rem;font-weight:800;color:#8b5cf6;margin:0;">&pound;' + tender.priceTarget + '</p></div>';
     html += '<div style="background:white;padding:1.25rem 1.5rem;"><p style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#94a3b8;margin:0 0 0.35rem 0;">Total Units</p><p style="font-size:1.5rem;font-weight:800;color:#06b6d4;margin:0;">' + (tender.orderQty ? tender.orderQty.toLocaleString() : '&mdash;') + '</p></div>';
     html += '<div style="background:white;padding:1.25rem 1.5rem;"><p style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#94a3b8;margin:0 0 0.35rem 0;">Fabric</p><p style="font-size:1.5rem;font-weight:800;color:#0f172a;margin:0;font-size:1.1rem;">' + (tender.fabric || '&mdash;') + '</p></div>';
     html += '<div style="background:white;padding:1.25rem 1.5rem;"><p style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#94a3b8;margin:0 0 0.35rem 0;">Lead Time</p><p style="font-size:1.5rem;font-weight:800;color:#0f172a;margin:0;">' + (tender.leadTimeTarget * 7) + ' days</p></div>';
@@ -2209,7 +2216,6 @@ function viewSupplierTender(tenderId) {
             html += '<span style="font-weight:700;color:#0f172a;">' + p.description + '</span>';
             if (p.colour) html += ' <span style="color:#94a3b8;">&middot;</span> <span style="color:#64748b;">' + p.colour + '</span>';
             if (p.qty) html += ' <span style="color:#94a3b8;">&middot;</span> <span style="font-weight:600;color:' + pc + ';">' + p.qty.toLocaleString() + ' units</span>';
-            if (p.priceTarget && p.priceTarget > 0) html += ' <span style="color:#94a3b8;">&middot;</span> <span style="font-weight:700;color:#8b5cf6;">Target &pound;' + p.priceTarget.toFixed(2) + '</span>';
             html += '</div>';
         }
         html += '</div>';
@@ -2218,9 +2224,9 @@ function viewSupplierTender(tenderId) {
     // Images
     if (window._supTenderImages.length > 0) {
         html += '<p style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#94a3b8;margin:0 0 0.75rem 0;">Reference Images</p>';
-        html += '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:0.75rem;margin-bottom:1.5rem;">';
+        html += '<div style="display:flex;gap:0.75rem;flex-wrap:wrap;margin-bottom:1.5rem;">';
         for (var ii = 0; ii < window._supTenderImages.length; ii++) {
-            html += '<img src="' + window._supTenderImages[ii] + '" data-supimgidx="' + ii + '" class="sup-ref-img" style="width:100%;height:180px;object-fit:contain;background:#f8fafc;border-radius:10px;cursor:pointer;border:1px solid #e8ecf1;">';
+            html += '<img src="' + window._supTenderImages[ii] + '" data-supimgidx="' + ii + '" class="sup-ref-img" style="width:90px;height:90px;object-fit:cover;border-radius:10px;cursor:pointer;border:1px solid #e8ecf1;">';
         }
         html += '</div>';
     }
@@ -2459,7 +2465,7 @@ function renderSupplierTenders() {
                     <!-- Image Thumbnail -->
                     <div style="flex-shrink: 0;">
                         ${imageFile ? `
-                            <img src="${imageFile.dataUrl}" style="width: 140px; height: 140px; object-fit: contain; background:#f8fafc; border-radius: 8px; cursor: pointer; border: 1px solid #e8ecf1;" onclick="openImageModal('${imageFile.dataUrl.replace(/'/g, "\\'")}')" title="Click to view full size">
+                            <img src="${imageFile.dataUrl}" style="width: 140px; height: 140px; object-fit: cover; border-radius: 8px; cursor: pointer; border: 1px solid #e8ecf1;" onclick="openImageModal('${imageFile.dataUrl.replace(/'/g, "\\'")}')" title="Click to view full size">
                         ` : `
                             <div style="width: 140px; height: 140px; background: linear-gradient(135deg, #f1f5f9, #e8ecf1); border-radius: 8px; display: flex; align-items: center; justify-content: center; border: 1px solid #e8ecf1; color: #cbd5e1; font-size: 2.5rem;">📎</div>
                         `}
@@ -2479,7 +2485,7 @@ function renderSupplierTenders() {
                         <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.75rem; margin: 0.75rem 0; padding: 0.75rem 0; border-top: 1px solid #e8ecf1; border-bottom: 1px solid #e8ecf1;">
                             <div>
                                 <p style="font-size: 0.65rem; color: #94a3b8; margin: 0; font-weight: 600; text-transform: uppercase;">Price</p>
-                                <p style="font-size: 1.1rem; font-weight: 700; color: #8b5cf6; margin: 0.2rem 0 0 0;">${formatTargetRange(tender)}</p>
+                                <p style="font-size: 1.1rem; font-weight: 700; color: #8b5cf6; margin: 0.2rem 0 0 0;">£${tender.priceTarget.toFixed(2)}</p>
                             </div>
                             <div>
                                 <p style="font-size: 0.65rem; color: #94a3b8; margin: 0; font-weight: 600; text-transform: uppercase;">Qty</p>
@@ -2604,14 +2610,13 @@ function viewDevelopment(devId) {
         html += '<div style="display:flex;gap:0.5rem;flex-wrap:wrap;">';
         html += '<button onclick="showEditTender(' + "'" + devId + "'" + ')" style="background:#f1f5f9;color:#0f172a;border:1px solid #d1d5db;padding:0.6rem 1.1rem;border-radius:8px;cursor:pointer;font-weight:600;font-size:0.875rem;">&#9999; Edit</button>';
         html += '<button onclick="sendDevToTender(' + "'" + devId + "'" + ')" style="background:linear-gradient(135deg,#06b6d4,#0891b2);color:white;border:none;padding:0.6rem 1.1rem;border-radius:8px;cursor:pointer;font-weight:600;font-size:0.875rem;">Send to Tender</button>';
-        html += '<button onclick="showAgreedOffline(' + "'" + devId + "'" + ')" style="background:linear-gradient(135deg,#10b981,#059669);color:white;border:none;padding:0.6rem 1.1rem;border-radius:8px;cursor:pointer;font-weight:600;font-size:0.875rem;">&#129309; Agreed Offline</button>';
         html += '<button onclick="confirmDeleteDev(' + "'" + devId + "'" + ')" style="background:#fee2e2;color:#991b1b;border:1px solid #fca5a5;padding:0.6rem 1.1rem;border-radius:8px;cursor:pointer;font-weight:600;font-size:0.875rem;">&#128465; Delete</button>';
         html += '</div>';
     }
     html += '</div>';
 
     html += '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:#e8ecf1;border-radius:12px;overflow:hidden;margin-bottom:2rem;">';
-    html += '<div style="background:white;padding:1.25rem 1.5rem;"><p style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#94a3b8;margin:0 0 0.35rem 0;">Price Target</p><p style="font-size:1.5rem;font-weight:800;color:#8b5cf6;margin:0;">' + formatTargetRange(dev) + '</p></div>';
+    html += '<div style="background:white;padding:1.25rem 1.5rem;"><p style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#94a3b8;margin:0 0 0.35rem 0;">Price Target</p><p style="font-size:1.5rem;font-weight:800;color:#8b5cf6;margin:0;">&pound;' + (dev.priceTarget||0).toFixed(2) + '</p></div>';
     html += '<div style="background:white;padding:1.25rem 1.5rem;"><p style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#94a3b8;margin:0 0 0.35rem 0;">Total Units</p><p style="font-size:1.5rem;font-weight:800;color:#06b6d4;margin:0;">' + (dev.orderQty ? dev.orderQty.toLocaleString() : '&mdash;') + '</p></div>';
     html += '<div style="background:white;padding:1.25rem 1.5rem;"><p style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#94a3b8;margin:0 0 0.35rem 0;">Fabric</p><p style="font-size:1.1rem;font-weight:800;color:#0f172a;margin:0;">' + (dev.fabric||'&mdash;') + '</p></div>';
     html += '<div style="background:white;padding:1.25rem 1.5rem;"><p style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#94a3b8;margin:0 0 0.35rem 0;">Lead Time</p><p style="font-size:1.5rem;font-weight:800;color:#0f172a;margin:0;">' + ((dev.leadTimeTarget||0)*7) + ' days</p></div>';
@@ -2623,9 +2628,9 @@ function viewDevelopment(devId) {
     if (window._devDetailImages.length > 0) {
         html += '<div style="background:white;border:1px solid #e8ecf1;border-radius:14px;padding:1.5rem;">';
         html += '<p style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#94a3b8;margin:0 0 1rem 0;">Reference Images</p>';
-        html += '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:0.75rem;">';
+        html += '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:0.75rem;">';
         for (var ii = 0; ii < window._devDetailImages.length; ii++) {
-            html += '<img src="' + window._devDetailImages[ii] + '" data-devimgidx="' + ii + '" class="dev-detail-img" style="width:100%;height:220px;object-fit:contain;background:#f8fafc;border-radius:10px;cursor:pointer;border:1px solid #e8ecf1;">';
+            html += '<img src="' + window._devDetailImages[ii] + '" data-devimgidx="' + ii + '" class="dev-detail-img" style="width:100%;aspect-ratio:1;object-fit:cover;border-radius:10px;cursor:pointer;border:1px solid #e8ecf1;">';
         }
         html += '</div></div>';
     }
@@ -2641,10 +2646,7 @@ function viewDevelopment(devId) {
             html += '<div><p style="font-weight:700;color:#0f172a;margin:0;">' + p.description + '</p>';
             if (p.colour) html += '<p style="font-size:0.8rem;color:#64748b;margin:0.15rem 0 0 0;">' + p.colour + '</p>';
             html += '</div>';
-            html += '<div style="display:flex;align-items:center;gap:0.5rem;">';
-            if (p.priceTarget && p.priceTarget > 0) html += '<span style="background:#f5f3ff;border:1px solid #ddd6fe;color:#8b5cf6;padding:0.3rem 0.8rem;border-radius:20px;font-size:0.8rem;font-weight:700;">Target &pound;' + p.priceTarget.toFixed(2) + '</span>';
             if (p.qty) html += '<span style="background:white;border:1px solid ' + pc + ';color:' + pc + ';padding:0.3rem 0.8rem;border-radius:20px;font-size:0.8rem;font-weight:700;">' + p.qty.toLocaleString() + ' units</span>';
-            html += '</div>';
             html += '</div>';
         }
         html += '</div></div>';
@@ -2662,7 +2664,7 @@ function viewDevelopment(devId) {
         html += '<p style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#94a3b8;margin:0 0 0.75rem 0;">Spec Documents</p>';
         html += '<div style="display:flex;flex-wrap:wrap;gap:0.75rem;">';
         for (var si = 0; si < window._devDetailSpecImages.length; si++) {
-            html += '<img src="' + window._devDetailSpecImages[si] + '" data-devspecidx="' + si + '" class="dev-spec-img" style="width:80px;height:80px;object-fit:contain;background:#f8fafc;border-radius:8px;cursor:pointer;border:1px solid #e8ecf1;">';
+            html += '<img src="' + window._devDetailSpecImages[si] + '" data-devspecidx="' + si + '" class="dev-spec-img" style="width:80px;height:80px;object-fit:cover;border-radius:8px;cursor:pointer;border:1px solid #e8ecf1;">';
         }
         var specDocs = (dev.specsFiles||[]).filter(function(f){return !f.isImage;});
         for (var sd = 0; sd < specDocs.length; sd++) {
@@ -2738,30 +2740,19 @@ function addDevDetailComment(devId) {
 
 function renderDevelopmentTab() {
     var container = document.getElementById('buyer-tenders');
-    var devs = (data.developments || []).slice();
+    var devs = data.developments || [];
     var isStakeholder = data.currentUser && data.currentUser.type === 'stakeholder';
 
-    // Apply category filter (developments respect the dashboard category filter too)
-    var categoryFilterVal = data.selectedCategory;
-    if (categoryFilterVal) {
-        devs = devs.filter(function(d) { return d.category === categoryFilterVal; });
-    }
-
-    document.getElementById('buy-dev-count').textContent = (data.developments || []).length;
+    document.getElementById('buy-dev-count').textContent = devs.length;
 
     if (devs.length === 0) {
-        container.innerHTML = '<div class="empty-state" style="grid-column:1/-1;"><p>' + (categoryFilterVal ? 'No developments in this category.' : 'No developments yet. Click "+ New Development" to start.') + '</p></div>';
+        container.innerHTML = '<div class="empty-state" style="grid-column:1/-1;"><p>No developments yet. Click "+ New Development" to start.</p></div>';
         return;
     }
 
     container.innerHTML = devs.map(function(dev) {
         var comments = data.devComments[dev.id] || [];
-        var devImages = (dev.files || []).filter(function(f) { return f.isImage && f.dataUrl; });
-        // Dynamic qty = sum of product quantities (falls back to stored orderQty if no products)
-        var dynQty = (dev.products && dev.products.length > 0)
-            ? dev.products.reduce(function(s, p) { return s + (parseInt(p.qty) || 0); }, 0)
-            : (dev.orderQty || 0);
-        var styleCount = (dev.products && dev.products.length > 0) ? dev.products.length : 1;
+        var imageFile = dev.files && dev.files.length > 0 ? dev.files.find(function(f) { return f.isImage; }) : null;
 
         var commentsHTML = '<div style="margin-top:1rem;padding-top:1rem;border-top:1px solid #e8ecf1;">';
         commentsHTML += '<p style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:#94a3b8;margin:0 0 0.75rem 0;">Team Comments (' + comments.length + ')</p>';
@@ -2780,7 +2771,7 @@ function renderDevelopmentTab() {
             commentsHTML += '</div>';
         }
         commentsHTML += '<div style="display:flex;gap:0.5rem;">';
-        commentsHTML += '<input type="text" id="comment-' + dev.id + '" placeholder="Add a comment..." onclick="event.stopPropagation();" style="flex:1;padding:0.6rem 0.9rem;border:1px solid #d1d5db;border-radius:8px;font-size:0.875rem;">';
+        commentsHTML += '<input type="text" id="comment-' + dev.id + '" placeholder="Add a comment..." style="flex:1;padding:0.6rem 0.9rem;border:1px solid #d1d5db;border-radius:8px;font-size:0.875rem;">';
         commentsHTML += '<button onclick="event.stopPropagation();addDevComment(\'' + dev.id + '\')" style="background:linear-gradient(135deg,#8b5cf6,#6d28d9);color:white;border:none;padding:0.6rem 1rem;border-radius:8px;cursor:pointer;font-weight:600;font-size:0.875rem;">Post</button>';
         commentsHTML += '</div>';
         commentsHTML += '</div>';
@@ -2788,144 +2779,32 @@ function renderDevelopmentTab() {
         var actionBtns = '';
         if (!isStakeholder) {
             actionBtns += '<button onclick="event.stopPropagation();sendDevToTender(\'' + dev.id + '\')" style="background:linear-gradient(135deg,#06b6d4,#0891b2);color:white;border:none;padding:0.5rem 1rem;border-radius:8px;cursor:pointer;font-weight:600;font-size:0.9rem;">Send to Tender</button>';
-            actionBtns += '<button onclick="event.stopPropagation();showAgreedOffline(\'' + dev.id + '\')" style="background:linear-gradient(135deg,#10b981,#059669);color:white;border:none;padding:0.5rem 1rem;border-radius:8px;cursor:pointer;font-weight:600;font-size:0.9rem;">&#129309; Agreed Offline</button>';
             actionBtns += '<button onclick="event.stopPropagation();showEditDevelopment(\'' + dev.id + '\')" style="background:#f1f5f9;color:#0f172a;border:1px solid #d1d5db;padding:0.5rem 1rem;border-radius:8px;cursor:pointer;font-weight:600;font-size:0.9rem;">&#9999;&#65039; Edit</button>';
             actionBtns += '<button onclick="event.stopPropagation();deleteDevelopment(\'' + dev.id + '\')" style="background:#fee2e2;color:#991b1b;border:1px solid #fca5a5;padding:0.5rem 1rem;border-radius:8px;cursor:pointer;font-weight:600;">&#x1F5D1;</button>';
         }
 
-        // Drag handle is only enabled when no category filter is active (reordering the full list)
-        var draggable = (!isStakeholder && !categoryFilterVal) ? ' draggable="true"' : '';
-        var dragHandle = (!isStakeholder && !categoryFilterVal)
-            ? '<span class="dev-drag-handle" title="Drag to reorder" style="cursor:grab;color:#cbd5e1;font-size:1.2rem;padding:0 0.5rem 0 0;user-select:none;">&#8942;&#8942;</span>'
-            : '';
-
-        return '<div class="tender-card dev-card" data-devid="' + dev.id + '"' + draggable + ' style="border:2px solid #e0e7ff;background:#fafaff;cursor:pointer;" onclick="viewDevelopment(\'' + dev.id + '\')">' +
+        return '<div class="tender-card" style="border:2px solid #e0e7ff;background:#fafaff;cursor:pointer;" onclick="viewDevelopment(\'' + dev.id + '\')">' +
             '<div style="display:flex;gap:1.25rem;">' +
-            renderDevCardCarousel(dev.id, devImages) +
+            (imageFile ? '<img src="' + imageFile.dataUrl + '" style="width:120px;height:120px;object-fit:cover;border-radius:8px;flex-shrink:0;">' :
+                '<div style="width:120px;height:120px;background:linear-gradient(135deg,#ede9fe,#ddd6fe);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:2rem;flex-shrink:0;">🎨</div>') +
             '<div style="flex:1;">' +
             '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:0.5rem;">' +
-            '<div style="display:flex;align-items:flex-start;">' + dragHandle + '<div>' +
+            '<div>' +
             '<span style="background:#e0e7ff;color:#4f46e5;font-size:0.7rem;font-weight:700;padding:0.2rem 0.6rem;border-radius:20px;text-transform:uppercase;letter-spacing:0.05em;">Development</span>' +
             '<h3 style="margin:0.4rem 0 0.25rem 0;font-size:1.05rem;">' + dev.description + '</h3>' +
             '<p style="font-size:0.8rem;color:#64748b;margin:0;">' + dev.brand + ' &bull; ' + dev.category + ' &bull; <strong>' + dev.seasonCode + '</strong></p>' +
-            '</div></div>' +
+            '</div>' +
             (actionBtns ? '<div style="display:flex;gap:0.5rem;flex-wrap:wrap;">' + actionBtns + '</div>' : '') +
             '</div>' +
-            '<div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr 1fr;gap:0.75rem;margin:0.75rem 0;padding:0.75rem 0;border-top:1px solid #e8ecf1;border-bottom:1px solid #e8ecf1;">' +
-            '<div><p style="font-size:0.65rem;color:#94a3b8;margin:0;font-weight:600;text-transform:uppercase;">Price</p><p style="font-size:1.1rem;font-weight:700;color:#8b5cf6;margin:0.2rem 0 0 0;">' + formatTargetRange(dev) + '</p></div>' +
-            '<div><p style="font-size:0.65rem;color:#94a3b8;margin:0;font-weight:600;text-transform:uppercase;">Qty</p><p style="font-size:1.1rem;font-weight:700;color:#06b6d4;margin:0.2rem 0 0 0;">' + dynQty.toLocaleString() + '</p></div>' +
-            '<div><p style="font-size:0.65rem;color:#94a3b8;margin:0;font-weight:600;text-transform:uppercase;">Styles</p><p style="font-size:1.1rem;font-weight:700;color:#0f172a;margin:0.2rem 0 0 0;">' + styleCount + '</p></div>' +
+            '<div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:0.75rem;margin:0.75rem 0;padding:0.75rem 0;border-top:1px solid #e8ecf1;border-bottom:1px solid #e8ecf1;">' +
+            '<div><p style="font-size:0.65rem;color:#94a3b8;margin:0;font-weight:600;text-transform:uppercase;">Price</p><p style="font-size:1.1rem;font-weight:700;color:#8b5cf6;margin:0.2rem 0 0 0;">&pound;' + dev.priceTarget.toFixed(2) + '</p></div>' +
+            '<div><p style="font-size:0.65rem;color:#94a3b8;margin:0;font-weight:600;text-transform:uppercase;">Qty</p><p style="font-size:1.1rem;font-weight:700;color:#06b6d4;margin:0.2rem 0 0 0;">' + (dev.orderQty||0).toLocaleString() + '</p></div>' +
             '<div><p style="font-size:0.65rem;color:#94a3b8;margin:0;font-weight:600;text-transform:uppercase;">Fabric</p><p style="font-size:1.1rem;font-weight:700;color:#0f172a;margin:0.2rem 0 0 0;">' + (dev.fabric||'&mdash;') + '</p></div>' +
             '<div><p style="font-size:0.65rem;color:#94a3b8;margin:0;font-weight:600;text-transform:uppercase;">Lead Time</p><p style="font-size:1.1rem;font-weight:700;color:#0f172a;margin:0.2rem 0 0 0;">' + (dev.leadTimeTarget * 7) + ' days</p></div>' +
             '</div>' +
             commentsHTML +
             '</div></div></div>';
     }).join('');
-
-    // Wire up drag-and-drop reordering (only when not filtered / not stakeholder)
-    if (!isStakeholder && !categoryFilterVal) {
-        enableDevDragAndDrop();
-    }
-}
-
-// ── DEV CARD IMAGE CAROUSEL ───────────────────────────────────────────────────
-var _devCarouselIdx = {};   // devId -> current image index
-function renderDevCardCarousel(devId, images) {
-    if (!images || images.length === 0) {
-        return '<div style="width:120px;height:120px;background:linear-gradient(135deg,#ede9fe,#ddd6fe);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:2rem;flex-shrink:0;">🎨</div>';
-    }
-    if (_devCarouselIdx[devId] === undefined) _devCarouselIdx[devId] = 0;
-    var idx = _devCarouselIdx[devId];
-    if (idx >= images.length) idx = _devCarouselIdx[devId] = 0;
-
-    var html = '<div style="position:relative;width:120px;height:120px;flex-shrink:0;padding:0 20px;" onclick="event.stopPropagation();">';
-    html += '<img id="devcar-img-' + devId + '" src="' + images[idx].dataUrl + '" style="width:120px;height:120px;object-fit:contain;background:#f8fafc;border-radius:8px;border:1px solid #e8ecf1;">';
-    if (images.length > 1) {
-        // Left arrow
-        html += '<button onclick="event.stopPropagation();devCarouselNav(\'' + devId + '\',-1)" style="position:absolute;left:1px;top:50%;transform:translateY(-50%);background:rgba(15,23,42,0.45);color:white;border:none;width:16px;height:16px;border-radius:50%;cursor:pointer;font-size:0.6rem;line-height:1;display:flex;align-items:center;justify-content:center;padding:0;z-index:2;">&#8249;</button>';
-        // Right arrow
-        html += '<button onclick="event.stopPropagation();devCarouselNav(\'' + devId + '\',1)" style="position:absolute;right:1px;top:50%;transform:translateY(-50%);background:rgba(15,23,42,0.45);color:white;border:none;width:16px;height:16px;border-radius:50%;cursor:pointer;font-size:0.6rem;line-height:1;display:flex;align-items:center;justify-content:center;padding:0;z-index:2;">&#8250;</button>';
-        // Counter
-        html += '<div id="devcar-count-' + devId + '" style="position:absolute;bottom:3px;left:50%;transform:translateX(-50%);background:rgba(15,23,42,0.65);color:white;font-size:0.65rem;font-weight:700;padding:0.1rem 0.4rem;border-radius:10px;">' + (idx+1) + '/' + images.length + '</div>';
-    }
-    html += '</div>';
-    return html;
-}
-
-function devCarouselNav(devId, dir) {
-    var dev = (data.developments || []).find(function(d){ return d.id === devId; });
-    if (!dev) return;
-    var images = (dev.files || []).filter(function(f) { return f.isImage && f.dataUrl; });
-    if (images.length < 2) return;
-    var idx = _devCarouselIdx[devId] || 0;
-    idx = (idx + dir + images.length) % images.length;
-    _devCarouselIdx[devId] = idx;
-    var img = document.getElementById('devcar-img-' + devId);
-    if (img) img.src = images[idx].dataUrl;
-    var counter = document.getElementById('devcar-count-' + devId);
-    if (counter) counter.textContent = (idx+1) + '/' + images.length;
-}
-
-// ── DRAG & DROP REORDERING OF DEVELOPMENTS ────────────────────────────────────
-var _dragDevId = null;
-function enableDevDragAndDrop() {
-    var cards = document.querySelectorAll('#buyer-tenders .dev-card');
-    cards.forEach(function(card) {
-        card.addEventListener('dragstart', function(e) {
-            _dragDevId = card.getAttribute('data-devid');
-            card.style.opacity = '0.4';
-            e.dataTransfer.effectAllowed = 'move';
-        });
-        card.addEventListener('dragend', function() {
-            card.style.opacity = '';
-            document.querySelectorAll('#buyer-tenders .dev-card').forEach(function(c){ c.style.borderColor = '#e0e7ff'; });
-        });
-        card.addEventListener('dragover', function(e) {
-            e.preventDefault();
-            e.dataTransfer.dropEffect = 'move';
-            if (card.getAttribute('data-devid') !== _dragDevId) card.style.borderColor = '#8b5cf6';
-        });
-        card.addEventListener('dragleave', function() {
-            card.style.borderColor = '#e0e7ff';
-        });
-        card.addEventListener('drop', function(e) {
-            e.preventDefault();
-            var targetId = card.getAttribute('data-devid');
-            if (!_dragDevId || _dragDevId === targetId) return;
-            var list = data.developments;
-            var fromIdx = list.findIndex(function(d){ return d.id === _dragDevId; });
-            var toIdx = list.findIndex(function(d){ return d.id === targetId; });
-            if (fromIdx === -1 || toIdx === -1) return;
-            var moved = list.splice(fromIdx, 1)[0];
-            list.splice(toIdx, 0, moved);
-            _dragDevId = null;
-            saveDevOrder();
-            renderDevelopmentTab();
-        });
-    });
-}
-
-// Persist the new order locally so it survives refresh
-function saveDevOrder() {
-    try {
-        var order = (data.developments || []).map(function(d){ return d.id; });
-        localStorage.setItem('tenderable_dev_order', JSON.stringify(order));
-    } catch (e) {}
-}
-
-// Re-apply a saved order to the loaded developments (called after data loads)
-function applyDevOrder() {
-    var saved = null;
-    try { saved = localStorage.getItem('tenderable_dev_order'); } catch (e) {}
-    if (!saved) return;
-    var order;
-    try { order = JSON.parse(saved); } catch (e) { return; }
-    if (!Array.isArray(order) || !data.developments) return;
-    data.developments.sort(function(a, b) {
-        var ia = order.indexOf(a.id); var ib = order.indexOf(b.id);
-        if (ia === -1) ia = 9999; if (ib === -1) ib = 9999;
-        return ia - ib;
-    });
 }
 
 function addDevComment(devId) {
@@ -2963,162 +2842,12 @@ function sendDevToTender(devId) {
     backToBuyerDashboard();
 }
 
-// ── AGREED OFFLINE ────────────────────────────────────────────────────────────
-// Record a deal already agreed with a supplier outside the platform.
-// Converts the development into a closed tender with an accepted bid, so it
-// lands straight in the Accepted tab.
-async function showAgreedOffline(devId) {
-    var dev = data.developments.find(function(d) { return d.id === devId; });
-    if (!dev) return;
-
-    // Load suppliers if not already cached
-    if (!data.allSuppliers || data.allSuppliers.length === 0) {
-        var res = await api('GET', '/suppliers');
-        data.allSuppliers = (res && res.suppliers) ? res.suppliers : [];
-    }
-
-    var products = (dev.products && dev.products.length > 0) ? dev.products : [{ description: dev.description || 'Item', colour: '', qty: dev.orderQty || 0 }];
-
-    // Build supplier <option> list
-    var supplierOptions = '<option value="">Select a supplier…</option>';
-    (data.allSuppliers || []).forEach(function(s) {
-        var label = s.company + (s.name ? ' — ' + s.name : '');
-        supplierOptions += '<option value="' + String(s.company).replace(/"/g, '&quot;') + '">' + label + '</option>';
-    });
-    // Allow any invited suppliers that may not be in the registered list
-    (dev.invitedSuppliers || []).forEach(function(c) {
-        if (!(data.allSuppliers || []).some(function(s){ return s.company === c; })) {
-            supplierOptions += '<option value="' + String(c).replace(/"/g, '&quot;') + '">' + c + '</option>';
-        }
-    });
-
-    // Price inputs (one per product)
-    var priceRows = products.map(function(p, i) {
-        var label = p.description + (p.colour ? ' (' + p.colour + ')' : '');
-        return '<div style="display:flex;align-items:center;gap:0.75rem;margin-bottom:0.6rem;">'
-            + '<div style="flex:1;"><p style="margin:0;font-weight:600;font-size:0.9rem;color:#0f172a;">' + label + '</p>'
-            + '<p style="margin:0;font-size:0.78rem;color:#94a3b8;">Qty: ' + (p.qty || 0) + ((p.priceTarget && p.priceTarget > 0) ? ' &middot; Target £' + p.priceTarget.toFixed(2) : '') + '</p></div>'
-            + '<div style="display:flex;align-items:center;gap:0.35rem;"><span style="color:#64748b;font-weight:600;">£</span>'
-            + '<input type="number" step="0.01" min="0" class="agreed-price" data-pidx="' + i + '" placeholder="0.00" style="width:110px;padding:0.6rem;border:1px solid #d1d5db;border-radius:8px;font-family:inherit;font-size:0.9rem;"></div>'
-            + '</div>';
-    }).join('');
-
-    var modal = document.createElement('div');
-    modal.id = 'agreed-offline-modal';
-    modal.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:10000;display:flex;align-items:center;justify-content:center;';
-    modal.innerHTML =
-        '<div style="background:white;border-radius:16px;padding:1.75rem;width:90%;max-width:520px;max-height:85vh;overflow-y:auto;">'
-        + '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.25rem;">'
-        + '<h3 style="margin:0;font-size:1.15rem;font-weight:700;">&#129309; Agreed Offline</h3>'
-        + '<button onclick="closeAgreedOffline()" style="background:none;border:none;font-size:1.5rem;cursor:pointer;color:#64748b;">&times;</button></div>'
-        + '<p style="font-size:0.85rem;color:#64748b;margin:0 0 1.25rem 0;">Record a deal already agreed with a supplier. This moves the development straight to Accepted.</p>'
-        + '<label style="display:block;font-size:0.8rem;font-weight:700;color:#0f172a;margin-bottom:0.4rem;">Agreed with supplier</label>'
-        + '<select id="agreed-supplier" style="width:100%;padding:0.7rem;border:1px solid #d1d5db;border-radius:8px;font-family:inherit;font-size:0.9rem;margin-bottom:1.25rem;">' + supplierOptions + '</select>'
-        + '<label style="display:block;font-size:0.8rem;font-weight:700;color:#0f172a;margin-bottom:0.6rem;">Agreed price' + (products.length > 1 ? 's (per product, FOB £)' : ' (FOB £)') + '</label>'
-        + priceRows
-        + '<div style="display:flex;gap:0.6rem;margin-top:1.5rem;">'
-        + '<button onclick="closeAgreedOffline()" style="flex:1;background:#f1f5f9;color:#0f172a;border:1px solid #d1d5db;padding:0.85rem;border-radius:10px;cursor:pointer;font-weight:700;">Cancel</button>'
-        + '<button onclick="confirmAgreedOffline(' + "'" + devId + "'" + ')" style="flex:2;background:linear-gradient(135deg,#10b981,#059669);color:white;border:none;padding:0.85rem;border-radius:10px;cursor:pointer;font-weight:700;">Confirm &amp; Move to Accepted</button>'
-        + '</div></div>';
-    document.body.appendChild(modal);
-}
-
-function closeAgreedOffline() {
-    var m = document.getElementById('agreed-offline-modal');
-    if (m) m.remove();
-}
-
-function confirmAgreedOffline(devId) {
-    var dev = data.developments.find(function(d) { return d.id === devId; });
-    if (!dev) { closeAgreedOffline(); return; }
-
-    var supplier = document.getElementById('agreed-supplier').value;
-    if (!supplier) { alert('Please select the supplier you agreed with.'); return; }
-
-    var products = (dev.products && dev.products.length > 0) ? dev.products : [{ description: dev.description || 'Item', colour: '', qty: dev.orderQty || 0 }];
-    var priceInputs = document.querySelectorAll('#agreed-offline-modal .agreed-price');
-    var prices = [];
-    for (var i = 0; i < priceInputs.length; i++) {
-        var v = parseFloat(priceInputs[i].value);
-        if (isNaN(v) || v <= 0) { alert('Please enter a valid agreed price for every product.'); return; }
-        prices.push(v);
-    }
-
-    var now = Date.now();
-    // 1. Convert development into a closed tender
-    var tender = Object.assign({}, dev, {
-        id: 'tender-' + now,
-        deadline: 0,
-        deadlineDate: new Date(now),   // closed immediately — it's already done
-        sentFromDev: devId,
-        agreedOffline: true
-    });
-    data.tenders.push(tender);
-    api('POST', '/tenders', tender);
-
-    // 2. Create an accepted bid from the chosen supplier
-    var isMulti = tender.products && tender.products.length > 1;
-    var bid = {
-        id: 'bid-' + now,
-        tenderId: tender.id,
-        supplierId: 'offline-' + now,
-        supplierName: supplier,
-        leadTime: dev.leadTimeTarget || 0,
-        status: 'accepted',
-        isMultiProduct: isMulti,
-        negotiationHistory: [],
-        agreedOffline: true
-    };
-    if (isMulti) {
-        bid.productBids = products.map(function(p, i) {
-            return {
-                productIndex: i,
-                description: p.description,
-                colour: p.colour || '',
-                qty: p.qty || 0,
-                price: prices[i],
-                counterPrice: null,
-                status: 'accepted',
-                negotiationHistory: []
-            };
-        });
-    } else {
-        bid.price = prices[0];
-        bid.counterPrice = null;
-    }
-    data.bids.push(bid);
-    api('POST', '/bids', bid);
-
-    // 3. Remove the development
-    api('DELETE', '/developments/' + devId);
-    data.developments = data.developments.filter(function(d) { return d.id !== devId; });
-    if (data.devComments) delete data.devComments[devId];
-
-    closeAgreedOffline();
-    data.currentBuyerTab = 'accepted';
-    alert('✓ Deal recorded with ' + supplier + '. Moved to Accepted.');
-    backToBuyerDashboard();
-}
-
 function deleteDevelopment(devId) {
     if (!confirm('Delete this development? This cannot be undone.')) return;
-    // Tell the server to delete it (this also cascades the comments)
-    api('DELETE', '/developments/' + devId);
-    // Update local state
     data.developments = data.developments.filter(function(d) { return d.id !== devId; });
-    if (data.devComments) delete data.devComments[devId];
+    delete data.devComments[devId];
+    api('POST', '/developments/' + devId + '/comments', { id: data.devComments[devId][data.devComments[devId].length-1].id, author: data.currentUser.name, authorType: data.currentUser.type, text: data.devComments[devId][data.devComments[devId].length-1].text, timestamp: new Date() });
     renderDevelopmentTab();
-}
-
-function confirmDeleteDev(devId) {
-    if (!confirm('Delete this development? This cannot be undone.')) return;
-    // Tell the server to delete it (this also cascades the comments)
-    api('DELETE', '/developments/' + devId);
-    // Update local state
-    data.developments = data.developments.filter(function(d) { return d.id !== devId; });
-    if (data.devComments) delete data.devComments[devId];
-    // We're on the detail page, so return to the dashboard
-    backToBuyerDashboard();
 }
 
 function showEditDevelopment(devId) {
@@ -3188,7 +2917,7 @@ function renderDevelopmentTabInto(container) {
 
         return '<div class="tender-card" style="border:2px solid #e0e7ff;background:#fafaff;cursor:pointer;" onclick="viewDevelopment(\'' + dev.id + '\')">' +
             '<div style="display:flex;gap:1.25rem;">' +
-            (imageFile ? '<img src="' + imageFile.dataUrl + '" style="width:120px;height:120px;object-fit:contain;background:#f8fafc;border-radius:8px;flex-shrink:0;">' :
+            (imageFile ? '<img src="' + imageFile.dataUrl + '" style="width:120px;height:120px;object-fit:cover;border-radius:8px;flex-shrink:0;">' :
                 '<div style="width:120px;height:120px;background:linear-gradient(135deg,#ede9fe,#ddd6fe);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:2rem;flex-shrink:0;">🎨</div>') +
             '<div style="flex:1;">' +
             '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:0.5rem;flex-wrap:wrap;gap:0.5rem;">' +
@@ -3198,7 +2927,7 @@ function renderDevelopmentTabInto(container) {
             actionBtns +
             '</div>' +
             '<div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:0.75rem;margin:0.75rem 0;padding:0.75rem 0;border-top:1px solid #e8ecf1;border-bottom:1px solid #e8ecf1;">' +
-            '<div><p style="font-size:0.65rem;color:#94a3b8;margin:0;font-weight:600;text-transform:uppercase;">Price</p><p style="font-size:1.1rem;font-weight:700;color:#8b5cf6;margin:0.2rem 0 0 0;">' + formatTargetRange(dev) + '</p></div>' +
+            '<div><p style="font-size:0.65rem;color:#94a3b8;margin:0;font-weight:600;text-transform:uppercase;">Price</p><p style="font-size:1.1rem;font-weight:700;color:#8b5cf6;margin:0.2rem 0 0 0;">&pound;' + dev.priceTarget.toFixed(2) + '</p></div>' +
             '<div><p style="font-size:0.65rem;color:#94a3b8;margin:0;font-weight:600;text-transform:uppercase;">Qty</p><p style="font-size:1.1rem;font-weight:700;color:#06b6d4;margin:0.2rem 0 0 0;">' + (dev.orderQty||0).toLocaleString() + '</p></div>' +
             '<div><p style="font-size:0.65rem;color:#94a3b8;margin:0;font-weight:600;text-transform:uppercase;">Fabric</p><p style="font-size:1.1rem;font-weight:700;color:#0f172a;margin:0.2rem 0 0 0;">' + (dev.fabric||'&mdash;') + '</p></div>' +
             '<div><p style="font-size:0.65rem;color:#94a3b8;margin:0;font-weight:600;text-transform:uppercase;">Lead Time</p><p style="font-size:1.1rem;font-weight:700;color:#0f172a;margin:0.2rem 0 0 0;">' + (dev.leadTimeTarget * 7) + ' days</p></div>' +
@@ -3356,29 +3085,25 @@ function renderBuyerDashboard() {
     
     const container = document.getElementById('buyer-tenders');
     var seasonFilterVal = data.selectedSeason;
-    var categoryFilterVal = data.selectedCategory;
-
+    
     let tenders = [];
     if (tab === 'open') {
         tenders = data.tenders.filter(t => {
             const tenderBids = data.bids.filter(b => b.tenderId === t.id);
-            const matchesSeason = !seasonFilterVal || t.seasonCode === seasonFilterVal;
-            const matchesCategory = !categoryFilterVal || t.category === categoryFilterVal;
-            return !isExpired(t.deadlineDate) && !tenderBids.some(b => b.status === 'accepted') && matchesSeason && matchesCategory;
+            const matchesSeason = !seasonFilter || t.seasonCode === seasonFilter;
+            return !isExpired(t.deadlineDate) && !tenderBids.some(b => b.status === 'accepted') && matchesSeason;
         });
     } else if (tab === 'accepted') {
         tenders = data.tenders.filter(t => {
             const tenderBids = data.bids.filter(b => b.tenderId === t.id);
-            const matchesSeason = !seasonFilterVal || t.seasonCode === seasonFilterVal;
-            const matchesCategory = !categoryFilterVal || t.category === categoryFilterVal;
-            return tenderBids.some(b => b.status === 'accepted') && matchesSeason && matchesCategory;
+            const matchesSeason = !seasonFilter || t.seasonCode === seasonFilter;
+            return tenderBids.some(b => b.status === 'accepted') && matchesSeason;
         });
     } else if (tab === 'expired') {
         tenders = data.tenders.filter(t => {
             const tenderBids = data.bids.filter(b => b.tenderId === t.id);
-            const matchesSeason = !seasonFilterVal || t.seasonCode === seasonFilterVal;
-            const matchesCategory = !categoryFilterVal || t.category === categoryFilterVal;
-            return isExpired(t.deadlineDate) && !tenderBids.some(b => b.status === 'accepted') && matchesSeason && matchesCategory;
+            const matchesSeason = !seasonFilter || t.seasonCode === seasonFilter;
+            return isExpired(t.deadlineDate) && !tenderBids.some(b => b.status === 'accepted') && matchesSeason;
         });
     }
     
@@ -3405,7 +3130,7 @@ function renderBuyerDashboard() {
                     <!-- Image Thumbnail -->
                     <div style="flex-shrink: 0;">
                         ${imageFile ? `
-                            <img src="${imageFile.dataUrl}" style="width: 140px; height: 140px; object-fit: contain; background:#f8fafc; border-radius: 8px; cursor: pointer; border: 1px solid #e8ecf1;" onclick="openImageModal('${imageFile.dataUrl.replace(/'/g, "\\'")}')" title="Click to view full size">
+                            <img src="${imageFile.dataUrl}" style="width: 140px; height: 140px; object-fit: cover; border-radius: 8px; cursor: pointer; border: 1px solid #e8ecf1;" onclick="openImageModal('${imageFile.dataUrl.replace(/'/g, "\\'")}')" title="Click to view full size">
                         ` : `
                             <div style="width: 140px; height: 140px; background: linear-gradient(135deg, #f1f5f9, #e8ecf1); border-radius: 8px; display: flex; align-items: center; justify-content: center; border: 1px solid #e8ecf1; color: #cbd5e1; font-size: 2.5rem;">📎</div>
                         `}
@@ -3425,18 +3150,14 @@ function renderBuyerDashboard() {
                         </div>
                         
                         <!-- Metrics Row -->
-                        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr 1fr; gap: 0.75rem; margin: 0.75rem 0; padding: 0.75rem 0; border-top: 1px solid #e8ecf1; border-bottom: 1px solid #e8ecf1;">
+                        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 0.75rem; margin: 0.75rem 0; padding: 0.75rem 0; border-top: 1px solid #e8ecf1; border-bottom: 1px solid #e8ecf1;">
                             <div>
                                 <p style="font-size: 0.65rem; color: #94a3b8; margin: 0; font-weight: 600; text-transform: uppercase;">Price</p>
-                                <p style="font-size: 1.1rem; font-weight: 700; color: #8b5cf6; margin: 0.2rem 0 0 0;">${formatTargetRange(tender)}</p>
+                                <p style="font-size: 1.1rem; font-weight: 700; color: #8b5cf6; margin: 0.2rem 0 0 0;">£${tender.priceTarget.toFixed(2)}</p>
                             </div>
                             <div>
                                 <p style="font-size: 0.65rem; color: #94a3b8; margin: 0; font-weight: 600; text-transform: uppercase;">Qty</p>
                                 <p style="font-size: 1.1rem; font-weight: 700; color: #06b6d4; margin: 0.2rem 0 0 0;">${tender.orderQty.toLocaleString()}</p>
-                            </div>
-                            <div>
-                                <p style="font-size: 0.65rem; color: #94a3b8; margin: 0; font-weight: 600; text-transform: uppercase;">Styles</p>
-                                <p style="font-size: 1.1rem; font-weight: 700; color: #0f172a; margin: 0.2rem 0 0 0;">${(tender.products && tender.products.length > 0) ? tender.products.length : 1}</p>
                             </div>
                             <div>
                                 <p style="font-size: 0.65rem; color: #94a3b8; margin: 0; font-weight: 600; text-transform: uppercase;">Fabric</p>
@@ -3484,16 +3205,6 @@ function filterBySeason(season) {
     renderBuyerDashboard();
 }
 
-function filterByCategory(category) {
-    data.selectedCategory = category;
-    // Re-render whichever view is active (developments respect the filter too)
-    if ((data.currentBuyerTab || 'development') === 'development') {
-        renderDevelopmentTab();
-    } else {
-        renderBuyerDashboard();
-    }
-}
-
 function getBidActionsHTML(bid) {
     if (bid.status === 'submitted' || bid.status === 'countered') {
         return '<div style="display: flex; gap: 0.5rem; justify-content: flex-end;">' +
@@ -3536,7 +3247,7 @@ function renderViewBids(tender, tenderBids) {
 
     // ── STATS BAR ────────────────────────────────────────
     html += '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:#e8ecf1;border-radius:12px;overflow:hidden;margin-bottom:2rem;">';
-    html += '<div style="background:white;padding:1.25rem 1.5rem;"><p style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#94a3b8;margin:0 0 0.35rem 0;">Price Target</p><p style="font-size:1.5rem;font-weight:800;color:#8b5cf6;margin:0;">' + formatTargetRange(tender) + '</p></div>';
+    html += '<div style="background:white;padding:1.25rem 1.5rem;"><p style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#94a3b8;margin:0 0 0.35rem 0;">Price Target</p><p style="font-size:1.5rem;font-weight:800;color:#8b5cf6;margin:0;">&pound;' + tender.priceTarget + '</p></div>';
     html += '<div style="background:white;padding:1.25rem 1.5rem;"><p style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#94a3b8;margin:0 0 0.35rem 0;">Total Units</p><p style="font-size:1.5rem;font-weight:800;color:#06b6d4;margin:0;">' + (tender.orderQty ? tender.orderQty.toLocaleString() : '&mdash;') + '</p></div>';
     html += '<div style="background:white;padding:1.25rem 1.5rem;"><p style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#94a3b8;margin:0 0 0.35rem 0;">Time To Complete</p><p style="font-size:1.5rem;font-weight:800;color:#0f172a;margin:0;">' + (tender.leadTimeTarget * 7) + ' days</p></div>';
     html += '<div style="background:white;padding:1.25rem 1.5rem;"><p style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#94a3b8;margin:0 0 0.35rem 0;">Bids Received</p><p style="font-size:1.5rem;font-weight:800;color:#0f172a;margin:0;">' + tenderBids.length + '</p></div>';
@@ -3560,7 +3271,6 @@ function renderViewBids(tender, tenderBids) {
             html += '<span style="font-weight:700;color:#0f172a;">' + p.description + '</span>';
             if (p.colour) html += ' <span style="color:#94a3b8;">&middot;</span> <span style="color:#64748b;">' + p.colour + '</span>';
             if (p.qty) html += ' <span style="color:#94a3b8;">&middot;</span> <span style="font-weight:600;color:' + pc + ';">' + p.qty.toLocaleString() + ' units</span>';
-            if (p.priceTarget && p.priceTarget > 0) html += ' <span style="color:#94a3b8;">&middot;</span> <span style="font-weight:700;color:#8b5cf6;">Target &pound;' + p.priceTarget.toFixed(2) + '</span>';
             html += '</div>';
         }
         html += '</div>';
@@ -3569,9 +3279,9 @@ function renderViewBids(tender, tenderBids) {
     // Reference images — use data-imgindex to avoid escaping issues
     if (window._tenderImages.length > 0) {
         html += '<p style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#94a3b8;margin:0 0 0.75rem 0;">Reference Images</p>';
-        html += '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:0.75rem;margin-bottom:1.5rem;">';
+        html += '<div style="display:flex;gap:0.75rem;flex-wrap:wrap;margin-bottom:1.5rem;">';
         for (var ii = 0; ii < window._tenderImages.length; ii++) {
-            html += '<img src="' + window._tenderImages[ii] + '" data-imgindex="' + ii + '" class="tender-ref-img" style="width:100%;height:180px;object-fit:contain;background:#f8fafc;border-radius:10px;cursor:pointer;border:1px solid #e8ecf1;">';
+            html += '<img src="' + window._tenderImages[ii] + '" data-imgindex="' + ii + '" class="tender-ref-img" style="width:90px;height:90px;object-fit:cover;border-radius:10px;cursor:pointer;border:1px solid #e8ecf1;">';
         }
         var docFiles = (tender.files || []).filter(function(f){ return !f.isImage; });
         for (var di = 0; di < docFiles.length; di++) {
@@ -3598,7 +3308,7 @@ function renderViewBids(tender, tenderBids) {
         html += '<p style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#94a3b8;margin:0 0 0.5rem 0;">Spec Documents</p>';
         html += '<div style="display:flex;flex-wrap:wrap;gap:0.5rem;">';
         for (var si = 0; si < window._specsImages.length; si++) {
-            html += '<img src="' + window._specsImages[si] + '" data-specindex="' + si + '" class="spec-ref-img" style="width:60px;height:60px;object-fit:contain;background:#f8fafc;border-radius:6px;border:1px solid #e8ecf1;cursor:pointer;">';
+            html += '<img src="' + window._specsImages[si] + '" data-specindex="' + si + '" class="spec-ref-img" style="width:60px;height:60px;object-fit:cover;border-radius:6px;border:1px solid #e8ecf1;cursor:pointer;">';
         }
         var specDocs = (tender.specsFiles || []).filter(function(f){ return !f.isImage; });
         for (var sd = 0; sd < specDocs.length; sd++) {
@@ -3770,27 +3480,29 @@ function showEditTender(tenderId) {
     html += '<div class="form-group"><label>' + (isTender ? 'Tender Name' : 'Development Name') + '</label><input type="text" id="edit-description" value="' + (item.description||'').replace(/"/g,'&quot;') + '"></div>';
     html += '<div class="form-row"><div class="form-group"><label>Season</label><select id="edit-season"><option>SS27</option><option>AW26</option><option>SS26</option><option>AW25</option><option>SS25</option></select></div>';
     html += '<div class="form-group"><label>Fabric</label><input type="text" id="edit-fabric" value="' + (item.fabric||'').replace(/"/g,'&quot;') + '"></div></div>';
-    html += '<div class="form-row"><div class="form-group"><label>Price Target <span style="font-weight:400;color:#94a3b8;font-size:0.8rem;">(set per style above)</span></label><input type="text" id="edit-price-range" readonly style="background:#f1f5f9;cursor:not-allowed;" value=""></div>';
-    html += '<div class="form-group"><label>Order Qty <span style="font-weight:400;color:#94a3b8;font-size:0.8rem;">(auto-total of products)</span></label><input type="number" id="edit-qty" value="' + (item.orderQty||'') + '" readonly style="background:#f1f5f9;cursor:not-allowed;"></div></div>';
+    html += '<div class="form-row"><div class="form-group"><label>Price Target £</label><input type="number" id="edit-price" step="0.01" value="' + (item.priceTarget||'') + '"></div>';
+    html += '<div class="form-group"><label>Order Qty</label><input type="number" id="edit-qty" value="' + (item.orderQty||'') + '"></div></div>';
     html += '<div class="form-group"><label>Expected Time To Complete Order (weeks)</label><input type="number" id="edit-lead" value="' + (item.leadTimeTarget||'') + '"></div>';
 
 
-    // Supplier list section (tenders AND developments)
-    html += '<div style="margin-bottom:1.5rem;background:#f9fafb;padding:1.25rem;border-radius:10px;">';
-    html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.75rem;">';
-    html += '<div><p style="font-weight:700;color:#0f172a;margin:0 0 0.2rem 0;">Supplier List</p><p style="font-size:0.85rem;color:#94a3b8;margin:0;">Select specific suppliers to invite. Leave empty for all category suppliers.</p></div>';
-    html += '<button type="button" onclick="openEditSupplierPicker()" style="background:linear-gradient(135deg,#8b5cf6,#6d28d9);color:white;border:none;padding:0.6rem 1.1rem;border-radius:8px;cursor:pointer;font-weight:600;font-size:0.875rem;white-space:nowrap;">+ Add Supplier</button>';
-    html += '</div>';
-    html += '<div id="edit-selected-suppliers" style="display:flex;flex-wrap:wrap;gap:0.5rem;"></div>';
-    html += '</div>';
-    // Supplier picker modal
-    html += '<div id="edit-supplier-picker" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:9999;align-items:center;justify-content:center;">';
-    html += '<div style="background:white;border-radius:16px;padding:1.5rem;width:90%;max-width:500px;max-height:80vh;overflow-y:auto;">';
-    html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;"><h3 style="margin:0;font-size:1.1rem;font-weight:700;">Select Suppliers</h3><button onclick="closeEditSupplierPicker()" style="background:none;border:none;font-size:1.5rem;cursor:pointer;color:#64748b;">&times;</button></div>';
-    html += '<input type="text" id="edit-supplier-search" placeholder="Search..." oninput="filterEditSupplierList()" style="width:100%;padding:0.75rem;border:1px solid #d1d5db;border-radius:8px;margin-bottom:1rem;font-family:inherit;">';
-    html += '<div id="edit-supplier-picker-list" style="display:flex;flex-direction:column;gap:0.4rem;"></div>';
-    html += '<button onclick="closeEditSupplierPicker()" style="margin-top:1rem;width:100%;background:linear-gradient(135deg,#8b5cf6,#6d28d9);color:white;border:none;padding:0.85rem;border-radius:10px;cursor:pointer;font-weight:700;">Done</button>';
-    html += '</div></div>';
+    // Supplier list section (tenders only)
+    if (isTender) {
+        html += '<div style="margin-bottom:1.5rem;background:#f9fafb;padding:1.25rem;border-radius:10px;">';
+        html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.75rem;">';
+        html += '<div><p style="font-weight:700;color:#0f172a;margin:0 0 0.2rem 0;">Supplier List</p><p style="font-size:0.85rem;color:#94a3b8;margin:0;">Select specific suppliers to invite. Leave empty for all category suppliers.</p></div>';
+        html += '<button type="button" onclick="openEditSupplierPicker()" style="background:linear-gradient(135deg,#8b5cf6,#6d28d9);color:white;border:none;padding:0.6rem 1.1rem;border-radius:8px;cursor:pointer;font-weight:600;font-size:0.875rem;white-space:nowrap;">+ Add Supplier</button>';
+        html += '</div>';
+        html += '<div id="edit-selected-suppliers" style="display:flex;flex-wrap:wrap;gap:0.5rem;"></div>';
+        html += '</div>';
+        // Supplier picker modal
+        html += '<div id="edit-supplier-picker" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:9999;align-items:center;justify-content:center;">';
+        html += '<div style="background:white;border-radius:16px;padding:1.5rem;width:90%;max-width:500px;max-height:80vh;overflow-y:auto;">';
+        html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;"><h3 style="margin:0;font-size:1.1rem;font-weight:700;">Select Suppliers</h3><button onclick="closeEditSupplierPicker()" style="background:none;border:none;font-size:1.5rem;cursor:pointer;color:#64748b;">&times;</button></div>';
+        html += '<input type="text" id="edit-supplier-search" placeholder="Search..." oninput="filterEditSupplierList()" style="width:100%;padding:0.75rem;border:1px solid #d1d5db;border-radius:8px;margin-bottom:1rem;font-family:inherit;">';
+        html += '<div id="edit-supplier-picker-list" style="display:flex;flex-direction:column;gap:0.4rem;"></div>';
+        html += '<button onclick="closeEditSupplierPicker()" style="margin-top:1rem;width:100%;background:linear-gradient(135deg,#8b5cf6,#6d28d9);color:white;border:none;padding:0.85rem;border-radius:10px;cursor:pointer;font-weight:700;">Done</button>';
+        html += '</div></div>';
+    }
 
     document.getElementById('edit-tender-content').innerHTML = html;
 
@@ -3804,15 +3516,16 @@ function showEditTender(tenderId) {
 
     renderEditFileList();
     renderEditSpecsFileList();
-    (item.products || []).forEach(function(p) { addEditProductRowWithData(p.description, p.colour, p.qty, p.priceTarget); });
+    (item.products || []).forEach(function(p) { addEditProductRowWithData(p.description, p.colour, p.qty); });
 
-    // Init edit suppliers (tenders and developments)
-    data.editInvitedSuppliers = (item.invitedSuppliers || []).slice();
-    renderEditSelectedSuppliers();
+    // Init edit suppliers
+    if (isTender) {
+        data.editInvitedSuppliers = (item.invitedSuppliers || []).slice();
+        renderEditSelectedSuppliers();
+    }
 
 
-    // Paste handling is now done by the always-on global paste listener,
-    // which routes to handleEditPaste whenever this page is visible.
+    document.addEventListener('paste', handleEditPaste);
     showPage('edit-tender-page');
 }
 
@@ -3842,15 +3555,8 @@ function handleEditPaste(e) {
     for (var i=0;i<items.length;i++) {
         if (items[i].type.startsWith('image/')) {
             e.preventDefault();
-            (function(it){ var f=it.getAsFile(); if(!f) return; var sz=f.size>1048576?(f.size/1048576).toFixed(2)+' MB':(f.size/1024).toFixed(1)+' KB';
-            var r=new FileReader(); r.onload=function(ev){
-                if(!data.editUploadedFiles) data.editUploadedFiles=[];
-                data.editUploadedFiles.push({name:'pasted-'+Date.now()+'.png',size:sz,isImage:true,dataUrl:ev.target.result});
-                renderEditFileList();
-                // Flash the edit upload zone green to confirm the paste landed
-                var zone=document.getElementById('edit-uploadZone');
-                if(zone){ zone.style.borderColor='#22c55e'; zone.style.background='#f0fdf4'; setTimeout(function(){ zone.style.borderColor=''; zone.style.background=''; },800); }
-            }; r.readAsDataURL(f); })(items[i]);
+            (function(it){ var f=it.getAsFile(); var sz=f.size>1048576?(f.size/1048576).toFixed(2)+' MB':(f.size/1024).toFixed(1)+' KB';
+            var r=new FileReader(); r.onload=function(ev){ data.editUploadedFiles.push({name:'pasted-'+Date.now()+'.png',size:sz,isImage:true,dataUrl:ev.target.result}); renderEditFileList(); }; r.readAsDataURL(f); })(items[i]);
         }
     }
 }
@@ -3858,108 +3564,36 @@ function removeEditFile(idx) { data.editUploadedFiles.splice(idx,1); renderEditF
 function removeEditSpecsFile(idx) { data.editSpecsFiles.splice(idx,1); renderEditSpecsFileList(); }
 function renderEditFileList() {
     var fl = document.getElementById('edit-fileList'); if (!fl) return;
-    var files = data.editUploadedFiles || [];
-    var imageCount = files.filter(function(f){ return f.isImage; }).length;
-    var hintHTML = imageCount > 1
-        ? '<p style="width:100%;font-size:0.75rem;color:#94a3b8;margin:0 0 0.5rem 0;">&#8597; Drag images to reorder &mdash; the first image is the cover shown on the card.</p>'
-        : '';
-    fl.innerHTML = hintHTML + files.map(function(f,i) {
-        if (f.isImage) {
-            return '<div class="edit-img-thumb" draggable="true" data-imgidx="'+i+'" style="position:relative;display:inline-block;cursor:grab;border-radius:8px;" title="Drag to reorder">'
-                + '<img src="'+f.dataUrl+'" style="width:90px;height:90px;object-fit:contain;background:#f8fafc;border-radius:8px;border:1px solid #e8ecf1;pointer-events:none;">'
-                + (i===0 ? '<span style="position:absolute;bottom:3px;left:3px;background:rgba(139,92,246,0.9);color:white;font-size:0.6rem;font-weight:700;padding:0.1rem 0.4rem;border-radius:6px;pointer-events:none;">COVER</span>' : '')
-                + '<button type="button" onclick="removeEditFile('+i+')" style="position:absolute;top:-6px;right:-6px;background:#dc2626;color:white;border:none;width:20px;height:20px;border-radius:50%;cursor:pointer;font-size:0.7rem;font-weight:bold;padding:0;z-index:3;">&#10005;</button>'
-                + '</div>';
-        }
-        return '<div style="background:#ede9fe;color:#5b21b6;padding:0.5rem 0.9rem;border-radius:8px;font-size:0.85rem;display:flex;align-items:center;gap:0.5rem;">&#x1F4C4; '+f.name+'<button onclick="removeEditFile('+i+')" style="background:none;border:none;color:#7c3aed;cursor:pointer;font-size:1rem;padding:0;">&#10005;</button></div>';
+    fl.innerHTML = (data.editUploadedFiles||[]).map(function(f,i) {
+        return f.isImage
+            ? '<div style="position:relative;display:inline-block;"><img src="'+f.dataUrl+'" style="width:90px;height:90px;object-fit:cover;border-radius:8px;border:1px solid #e8ecf1;"><button type="button" onclick="removeEditFile('+i+')" style="position:absolute;top:-6px;right:-6px;background:#dc2626;color:white;border:none;width:20px;height:20px;border-radius:50%;cursor:pointer;font-size:0.7rem;font-weight:bold;padding:0;">&#10005;</button></div>'
+            : '<div style="background:#ede9fe;color:#5b21b6;padding:0.5rem 0.9rem;border-radius:8px;font-size:0.85rem;display:flex;align-items:center;gap:0.5rem;">&#x1F4C4; '+f.name+'<button onclick="removeEditFile('+i+')" style="background:none;border:none;color:#7c3aed;cursor:pointer;font-size:1rem;padding:0;">&#10005;</button></div>';
     }).join('');
-    enableEditImageReorder();
-}
-
-// Drag-and-drop reordering of the edit image thumbnails
-var _dragImgIdx = null;
-function enableEditImageReorder() {
-    var thumbs = document.querySelectorAll('#edit-fileList .edit-img-thumb');
-    thumbs.forEach(function(thumb) {
-        thumb.addEventListener('dragstart', function(e) {
-            _dragImgIdx = parseInt(thumb.getAttribute('data-imgidx'));
-            thumb.style.opacity = '0.4';
-            e.dataTransfer.effectAllowed = 'move';
-        });
-        thumb.addEventListener('dragend', function() {
-            thumb.style.opacity = '';
-            document.querySelectorAll('#edit-fileList .edit-img-thumb img').forEach(function(im){ im.style.borderColor = '#e8ecf1'; });
-        });
-        thumb.addEventListener('dragover', function(e) {
-            e.preventDefault();
-            e.dataTransfer.dropEffect = 'move';
-            var img = thumb.querySelector('img');
-            if (img && parseInt(thumb.getAttribute('data-imgidx')) !== _dragImgIdx) img.style.borderColor = '#8b5cf6';
-        });
-        thumb.addEventListener('dragleave', function() {
-            var img = thumb.querySelector('img');
-            if (img) img.style.borderColor = '#e8ecf1';
-        });
-        thumb.addEventListener('drop', function(e) {
-            e.preventDefault();
-            var toIdx = parseInt(thumb.getAttribute('data-imgidx'));
-            if (_dragImgIdx === null || _dragImgIdx === toIdx) return;
-            var arr = data.editUploadedFiles;
-            var moved = arr.splice(_dragImgIdx, 1)[0];
-            arr.splice(toIdx, 0, moved);
-            _dragImgIdx = null;
-            renderEditFileList();
-        });
-    });
 }
 function renderEditSpecsFileList() {
     var fl = document.getElementById('edit-specsFileList'); if (!fl) return;
     fl.innerHTML = (data.editSpecsFiles||[]).map(function(f,i) {
         return f.isImage
-            ? '<div style="position:relative;display:inline-block;"><img src="'+f.dataUrl+'" style="width:70px;height:70px;object-fit:contain;background:#f8fafc;border-radius:6px;border:1px solid #e8ecf1;"><button type="button" onclick="removeEditSpecsFile('+i+')" style="position:absolute;top:-6px;right:-6px;background:#dc2626;color:white;border:none;width:18px;height:18px;border-radius:50%;cursor:pointer;font-size:0.65rem;padding:0;">&#10005;</button></div>'
+            ? '<div style="position:relative;display:inline-block;"><img src="'+f.dataUrl+'" style="width:70px;height:70px;object-fit:cover;border-radius:6px;border:1px solid #e8ecf1;"><button type="button" onclick="removeEditSpecsFile('+i+')" style="position:absolute;top:-6px;right:-6px;background:#dc2626;color:white;border:none;width:18px;height:18px;border-radius:50%;cursor:pointer;font-size:0.65rem;padding:0;">&#10005;</button></div>'
             : '<div style="background:#ede9fe;color:#5b21b6;padding:0.4rem 0.8rem;border-radius:8px;font-size:0.8rem;display:flex;align-items:center;gap:0.4rem;">&#x1F4C4; '+f.name+'<button onclick="removeEditSpecsFile('+i+')" style="background:none;border:none;color:#7c3aed;cursor:pointer;padding:0;">&#10005;</button></div>';
     }).join('');
 }
 var editProductCount = 0;
-function addEditProductRow() { addEditProductRowWithData('','','',''); }
-function addEditProductRowWithData(desc,colour,qty,target) {
+function addEditProductRow() { addEditProductRowWithData('','',''); }
+function addEditProductRowWithData(desc,colour,qty) {
     editProductCount++;
     var row=document.createElement('div'); row.style.cssText='display:flex;gap:0.6rem;align-items:center;background:white;padding:0.75rem;border-radius:8px;border:1px solid #e8ecf1;';
     var i1=document.createElement('input'); i1.type='text'; i1.placeholder='Product e.g. Plain Black Tee'; i1.className='edit-product-desc'; i1.value=desc||''; i1.style.cssText='flex:2;padding:0.65rem;border:1px solid #d1d5db;border-radius:6px;font-size:0.875rem;font-family:inherit;min-width:0;';
     var i2=document.createElement('input'); i2.type='text'; i2.placeholder='Colourway'; i2.className='edit-product-colour'; i2.value=colour||''; i2.style.cssText='flex:1.5;padding:0.65rem;border:1px solid #d1d5db;border-radius:6px;font-size:0.875rem;font-family:inherit;min-width:0;';
     var i3=document.createElement('input'); i3.type='number'; i3.placeholder='Qty'; i3.className='edit-product-qty'; i3.value=qty||''; i3.min='1'; i3.style.cssText='flex:1;padding:0.65rem;border:1px solid #d1d5db;border-radius:6px;font-size:0.875rem;font-family:inherit;min-width:0;';
-    i3.addEventListener('input', recomputeEditQty);
-    var i4=document.createElement('input'); i4.type='number'; i4.placeholder='Target £'; i4.className='edit-product-target'; i4.value=(target||'')===0?'':(target||''); i4.step='0.01'; i4.min='0'; i4.style.cssText='flex:1;padding:0.65rem;border:1px solid #d1d5db;border-radius:6px;font-size:0.875rem;font-family:inherit;min-width:0;';
-    i4.addEventListener('input', recomputeEditQty);
     var btn=document.createElement('button'); btn.type='button'; btn.textContent='✕'; btn.style.cssText='background:#fee2e2;color:#991b1b;border:none;padding:0.65rem 0.85rem;border-radius:6px;cursor:pointer;font-weight:700;flex-shrink:0;';
-    btn.onclick=function(){ row.remove(); recomputeEditQty(); };
-    row.appendChild(i1); row.appendChild(i2); row.appendChild(i3); row.appendChild(i4); row.appendChild(btn);
+    btn.onclick=function(){ row.remove(); };
+    row.appendChild(i1); row.appendChild(i2); row.appendChild(i3); row.appendChild(btn);
     document.getElementById('edit-products-list').appendChild(row);
-    recomputeEditQty();
-}
-// Order Qty = sum of product qtys; Price Target = min–max range across styles
-function recomputeEditQty() {
-    var rows = document.querySelectorAll('#edit-products-list > div');
-    var total = 0; var targets = [];
-    rows.forEach(function(r){
-        var q = r.querySelector('.edit-product-qty'); if (q) total += parseInt(q.value) || 0;
-        var t = r.querySelector('.edit-product-target'); var tv = t ? parseFloat(t.value) : NaN;
-        if (!isNaN(tv) && tv > 0) targets.push(tv);
-    });
-    var qtyField = document.getElementById('edit-qty');
-    if (qtyField) qtyField.value = total > 0 ? total : '';
-    var rangeField = document.getElementById('edit-price-range');
-    if (rangeField) {
-        if (targets.length === 0) { rangeField.value = ''; }
-        else {
-            var min = Math.min.apply(null, targets), max = Math.max.apply(null, targets);
-            rangeField.value = (min === max) ? ('£' + min.toFixed(2)) : ('£' + min.toFixed(2) + ' – £' + max.toFixed(2));
-        }
-    }
 }
 function getEditProducts() {
     var rows=document.querySelectorAll('#edit-products-list > div'); var products=[];
-    rows.forEach(function(r){ var d=r.querySelector('.edit-product-desc').value.trim(); var c=r.querySelector('.edit-product-colour').value.trim(); var q=r.querySelector('.edit-product-qty').value.trim(); var tEl=r.querySelector('.edit-product-target'); var t=tEl?tEl.value.trim():''; if(d) products.push({description:d,colour:c,qty:parseInt(q)||0,priceTarget:parseFloat(t)||0}); });
+    rows.forEach(function(r){ var d=r.querySelector('.edit-product-desc').value.trim(); var c=r.querySelector('.edit-product-colour').value.trim(); var q=r.querySelector('.edit-product-qty').value.trim(); if(d) products.push({description:d,colour:c,qty:parseInt(q)||0}); });
     return products;
 }
 
@@ -4042,6 +3676,7 @@ function updateTender(e) {
     var newCat = document.getElementById('edit-category').value;
     var newSeason = document.getElementById('edit-season').value;
     var newFabric = document.getElementById('edit-fabric').value.trim();
+    var newPrice = parseFloat(document.getElementById('edit-price').value);
     var newQty = parseInt(document.getElementById('edit-qty').value);
     var newLead = parseInt(document.getElementById('edit-lead').value);
     var newNotes = document.getElementById('edit-labellingReqs') ? document.getElementById('edit-labellingReqs').value.trim() : '';
@@ -4050,25 +3685,14 @@ function updateTender(e) {
     var newProducts = getEditProducts();
     var newInvitedSuppliers = (data.editInvitedSuppliers || []).slice();
 
-    // Order Qty and Price Target are derived from the per-style products
-    var newPrice = NaN;
-    if (newProducts.length > 0) {
-        newQty = newProducts.reduce(function(s, p){ return s + (parseInt(p.qty) || 0); }, 0);
-        var tgts = newProducts.map(function(p){ return p.priceTarget; }).filter(function(v){ return v && v > 0; });
-        if (tgts.length > 0) newPrice = Math.min.apply(null, tgts);
-    }
+    if (!newDesc || isNaN(newPrice) || isNaN(newQty) || isNaN(newLead)) { alert('Please fill in all fields'); return; }
 
-    if (!newDesc || isNaN(newQty) || isNaN(newLead)) { alert('Please fill in all fields'); return; }
-    if (newProducts.length === 0) { alert('Please add at least one product'); return; }
-    if (newProducts.some(function(p){ return !p.priceTarget || p.priceTarget <= 0; })) { alert('Please enter a target price for every product'); return; }
-    if (isNaN(newPrice)) { alert('Please enter a target price for every product'); return; }
+    document.removeEventListener('paste', handleEditPaste);
 
     if (data.editingType === 'development') {
         var dev = data.developments.find(function(d){ return d.id === data.editingTenderId; });
-        if (dev) { dev.description=newDesc; dev.brand=newBrand; dev.category=newCat; dev.seasonCode=newSeason; dev.fabric=newFabric; dev.priceTarget=newPrice; dev.orderQty=newQty; dev.leadTimeTarget=newLead; dev.labellingReqs=newNotes; dev.files=newFiles; dev.specsFiles=newSpecsFiles; dev.products=newProducts; dev.invitedSuppliers=newInvitedSuppliers;
-            api('PUT', '/developments/' + dev.id, dev);
-        }
-        data.editingTenderId=null; data.editingType=null; data.currentBuyerTab='development';
+        if (dev) { dev.description=newDesc; dev.brand=newBrand; dev.category=newCat; dev.seasonCode=newSeason; dev.fabric=newFabric; dev.priceTarget=newPrice; dev.orderQty=newQty; dev.leadTimeTarget=newLead; dev.labellingReqs=newNotes; dev.files=newFiles; dev.specsFiles=newSpecsFiles; dev.products=newProducts; dev.invitedSuppliers=newInvitedSuppliers; }
+        saveData(); data.editingTenderId=null; data.editingType=null; data.currentBuyerTab='development';
         alert('✓ Development updated.'); backToBuyerDashboard(); return;
     }
 
@@ -4076,8 +3700,7 @@ function updateTender(e) {
     if (!tender) return;
     tender.description=newDesc; tender.brand=newBrand; tender.category=newCat; tender.seasonCode=newSeason; tender.fabric=newFabric; tender.priceTarget=newPrice; tender.orderQty=newQty; tender.leadTimeTarget=newLead; tender.labellingReqs=newNotes; tender.files=newFiles; tender.specsFiles=newSpecsFiles; tender.products=newProducts; tender.invitedSuppliers=newInvitedSuppliers; tender.editedAt=new Date();
     data.bids.forEach(function(b){ if(b.tenderId===tender.id && b.status!=='accepted') b.status='archived'; });
-    api('PUT', '/tenders/' + tender.id, tender);
-    data.editingTenderId=null; data.editingType=null;
+    saveData(); data.editingTenderId=null; data.editingType=null;
     alert('✓ Tender updated. Suppliers will need to re-bid.'); backToBuyerDashboard();
 }
 </script>
