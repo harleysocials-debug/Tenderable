@@ -2847,114 +2847,122 @@ function addDevDetailComment(devId) {
 
 function renderViewAll() {
     var container = document.getElementById('buyer-tenders');
-    var cats = ['OUTERWEAR','TOPS','BOTTOMS','UNDERWEAR','NIGHTWEAR','SWIMWEAR','ACCESSORIES','FOOTWEAR'];
+    var ALL_CATS = ['OUTERWEAR','TOPS','BOTTOMS','UNDERWEAR','NIGHTWEAR','SWIMWEAR','ACCESSORIES','FOOTWEAR'];
     var seasons = ['All Seasons'];
-    var allItems = [];
+    var allProducts = [];
 
-    // Combine devs and tenders
     (data.developments || []).forEach(function(d) {
-        allItems.push(Object.assign({}, d, {_type:'development'}));
         if (d.seasonCode && seasons.indexOf(d.seasonCode) === -1) seasons.push(d.seasonCode);
+        var imgFile = (d.files || []).find(function(f) { return f.isImage && f.dataUrl; });
+        if (d.products && d.products.length > 0) {
+            d.products.forEach(function(p) {
+                allProducts.push({ name: p.description, colour: p.colour||'', qty: p.qty, price: p.price || d.priceTarget,
+                    parentName: d.description, brand: d.brand, category: d.category,
+                    seasonCode: d.seasonCode, img: imgFile ? imgFile.dataUrl : null,
+                    parentId: d.id, parentType: 'development' });
+            });
+        } else {
+            allProducts.push({ name: d.description, colour: '', qty: d.orderQty, price: d.priceTarget,
+                parentName: d.description, brand: d.brand, category: d.category,
+                seasonCode: d.seasonCode, img: imgFile ? imgFile.dataUrl : null,
+                parentId: d.id, parentType: 'development' });
+        }
     });
     (data.tenders || []).forEach(function(t) {
-        allItems.push(Object.assign({}, t, {_type:'tender'}));
         if (t.seasonCode && seasons.indexOf(t.seasonCode) === -1) seasons.push(t.seasonCode);
+        var imgFile = (t.files || []).find(function(f) { return f.isImage && f.dataUrl; });
+        if (t.products && t.products.length > 0) {
+            t.products.forEach(function(p) {
+                allProducts.push({ name: p.description, colour: p.colour||'', qty: p.qty, price: p.price || t.priceTarget,
+                    parentName: t.description, brand: t.brand, category: t.category,
+                    seasonCode: t.seasonCode, img: imgFile ? imgFile.dataUrl : null,
+                    parentId: t.id, parentType: 'tender' });
+            });
+        } else {
+            allProducts.push({ name: t.description, colour: '', qty: t.orderQty, price: t.priceTarget,
+                parentName: t.description, brand: t.brand, category: t.category,
+                seasonCode: t.seasonCode, img: imgFile ? imgFile.dataUrl : null,
+                parentId: t.id, parentType: 'tender' });
+        }
     });
 
-    // Get current filter values
     var selSeason = document.getElementById('va-season') ? document.getElementById('va-season').value : 'All Seasons';
     var selCat = document.getElementById('va-cat') ? document.getElementById('va-cat').value : 'All Categories';
 
-    // Filter
-    var filtered = allItems.filter(function(item) {
-        var matchSeason = selSeason === 'All Seasons' || item.seasonCode === selSeason;
-        var matchCat = selCat === 'All Categories' || item.category === selCat;
-        return matchSeason && matchCat;
+    var filtered = allProducts.filter(function(p) {
+        return (selSeason === 'All Seasons' || p.seasonCode === selSeason)
+            && (selCat === 'All Categories' || p.category === selCat);
     });
 
-    // Filters UI
-    var html = '<div style="display:flex;gap:0.75rem;margin-bottom:1.5rem;flex-wrap:wrap;">';
-    html += '<select id="va-season" onchange="renderViewAll()" style="padding:0.65rem 1rem;border:1px solid #d1d5db;border-radius:8px;font-size:0.875rem;font-family:inherit;background:white;">';
-    seasons.forEach(function(s) { html += '<option' + (s === selSeason ? ' selected' : '') + '>' + s + '</option>'; });
-    html += '</select>';
-    html += '<select id="va-cat" onchange="renderViewAll()" style="padding:0.65rem 1rem;border:1px solid #d1d5db;border-radius:8px;font-size:0.875rem;font-family:inherit;background:white;">';
+    // Filter bar
+    var html = '<div style="display:flex;align-items:center;gap:0.75rem;margin-bottom:2rem;flex-wrap:wrap;padding:0.9rem 1.25rem;background:white;border:1px solid #e8ecf1;border-radius:12px;">';
+    html += '<span style="font-size:0.8rem;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:0.05em;white-space:nowrap;">Filter</span>';
+    html += '<div style="display:flex;align-items:center;gap:0.35rem;background:#f8fafc;border:1px solid #e8ecf1;border-radius:8px;padding:0.25rem 0.6rem;">';
+    html += '<span style="font-size:0.72rem;color:#94a3b8;white-space:nowrap;">Season</span>';
+    html += '<select id="va-season" onchange="renderViewAll()" style="border:none;background:transparent;font-size:0.875rem;font-weight:600;color:#0f172a;padding:0.2rem 0;cursor:pointer;font-family:inherit;">';
+    seasons.sort().forEach(function(s) { html += '<option' + (s===selSeason?' selected':'') + '>' + s + '</option>'; });
+    html += '</select></div>';
+    html += '<div style="display:flex;align-items:center;gap:0.35rem;background:#f8fafc;border:1px solid #e8ecf1;border-radius:8px;padding:0.25rem 0.6rem;">';
+    html += '<span style="font-size:0.72rem;color:#94a3b8;white-space:nowrap;">Category</span>';
+    html += '<select id="va-cat" onchange="renderViewAll()" style="border:none;background:transparent;font-size:0.875rem;font-weight:600;color:#0f172a;padding:0.2rem 0;cursor:pointer;font-family:inherit;">';
     html += '<option>All Categories</option>';
-    cats.forEach(function(c) { html += '<option' + (c === selCat ? ' selected' : '') + '>' + c + '</option>'; });
-    html += '</select>';
-    html += '<span style="display:flex;align-items:center;font-size:0.85rem;color:#64748b;">' + filtered.length + ' item' + (filtered.length !== 1 ? 's' : '') + '</span>';
+    ALL_CATS.forEach(function(c) { html += '<option' + (c===selCat?' selected':'') + '>' + c + '</option>'; });
+    html += '</select></div>';
+    html += '<span style="margin-left:auto;background:#f1f5f9;color:#64748b;padding:0.25rem 0.7rem;border-radius:20px;font-size:0.78rem;font-weight:600;">' + filtered.length + ' style' + (filtered.length!==1?'s':'') + '</span>';
     html += '</div>';
 
     if (filtered.length === 0) {
-        html += '<div class="empty-state"><p>No items match your filters.</p></div>';
+        html += '<div class="empty-state"><p>No styles match your filters.</p></div>';
         container.innerHTML = html;
         return;
     }
 
-    // Group by category
     var grouped = {};
-    filtered.forEach(function(item) {
-        var cat = item.category || 'Uncategorised';
+    filtered.forEach(function(p) {
+        var cat = p.category || 'Uncategorised';
         if (!grouped[cat]) grouped[cat] = [];
-        grouped[cat].push(item);
+        grouped[cat].push(p);
     });
 
-    // Render each category group
-    cats.forEach(function(cat) {
-        if (!grouped[cat] || (selCat !== 'All Categories' && selCat !== cat)) return;
+    var catsToShow = selCat === 'All Categories' ? ALL_CATS.concat(['Uncategorised']) : [selCat];
+
+    catsToShow.forEach(function(cat) {
+        if (!grouped[cat] || grouped[cat].length === 0) return;
         var items = grouped[cat];
         html += '<div style="margin-bottom:2.5rem;">';
-        html += '<div style="display:flex;align-items:center;gap:0.75rem;margin-bottom:1rem;">';
+        html += '<div style="display:flex;align-items:center;gap:0.75rem;margin-bottom:1rem;padding-bottom:0.75rem;border-bottom:2px solid #e8ecf1;">';
         html += '<h2 style="font-size:1.1rem;font-weight:800;color:#0f172a;margin:0;">' + cat + '</h2>';
-        html += '<span style="background:#f1f5f9;color:#64748b;padding:0.2rem 0.65rem;border-radius:20px;font-size:0.75rem;font-weight:600;">' + items.length + ' style' + (items.length !== 1 ? 's' : '') + '</span>';
+        html += '<span style="background:#f1f5f9;color:#64748b;padding:0.2rem 0.65rem;border-radius:20px;font-size:0.75rem;font-weight:600;">' + items.length + '</span>';
         html += '</div>';
-        html += '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:1rem;" class="rangeboard-grid">';
+        html += '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(155px,1fr));gap:1rem;" class="rangeboard-grid">';
 
-        items.forEach(function(item) {
-            var imgFile = (item.files || []).find(function(f) { return f.isImage && f.dataUrl; });
-            var typePill = item._type === 'development'
-                ? '<span style="background:#e0e7ff;color:#4f46e5;font-size:0.65rem;font-weight:700;padding:0.2rem 0.55rem;border-radius:20px;text-transform:uppercase;">DEV</span>'
-                : '<span style="background:#dcfce7;color:#166534;font-size:0.65rem;font-weight:700;padding:0.2rem 0.55rem;border-radius:20px;text-transform:uppercase;">TENDER</span>';
-            var clickFn = item._type === 'development'
-                ? 'viewDevelopment(\'' + item.id + '\')'
-                : 'viewBids(\'' + item.id + '\')'  ;
+        items.forEach(function(p) {
+            var tBg = p.parentType==='development' ? '#e0e7ff' : '#dcfce7';
+            var tCol = p.parentType==='development' ? '#4f46e5' : '#166534';
+            var tLbl = p.parentType==='development' ? 'DEV' : 'TENDER';
+            var fn = p.parentType==='development'
+                ? "viewDevelopment(\'" + p.parentId + "\')"
+                : "viewBids(\'" + p.parentId + "\')";
 
-            html += '<div onclick="' + clickFn + '" style="background:white;border:1px solid #e8ecf1;border-radius:12px;overflow:hidden;cursor:pointer;transition:box-shadow 0.2s;">';
-
-            // Image
-            if (imgFile) {
-                html += '<div class="img-square" style="overflow:hidden;"><img src="' + imgFile.dataUrl + '" style="width:100%;height:100%;display:block;object-fit:cover;"></div>';
+            html += '<div onclick="' + fn + '" style="background:white;border:1px solid #e8ecf1;border-radius:12px;overflow:hidden;cursor:pointer;">';
+            if (p.img) {
+                html += '<div class="img-square"><img src="' + p.img + '" style="width:100%;height:100%;display:block;object-fit:cover;"></div>';
             } else {
-                html += '<div class="img-square" style="background:linear-gradient(135deg,#ede9fe,#ddd6fe);display:flex;align-items:center;justify-content:center;font-size:2.5rem;">🎨</div>';
+                html += '<div class="img-square" style="background:linear-gradient(135deg,#ede9fe,#ddd6fe);display:flex;align-items:center;justify-content:center;font-size:2rem;">&#127912;</div>';
             }
-
-            // Info
-            html += '<div style="padding:0.75rem;">';
-            html += '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.35rem;">' + typePill;
-            html += '<span style="font-size:0.7rem;color:#94a3b8;font-weight:600;">' + (item.seasonCode || '') + '</span>';
+            html += '<div style="padding:0.7rem 0.75rem;">';
+            html += '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.3rem;">';
+            html += '<span style="background:' + tBg + ';color:' + tCol + ';font-size:0.6rem;font-weight:700;padding:0.15rem 0.5rem;border-radius:20px;text-transform:uppercase;">' + tLbl + '</span>';
+            html += '<span style="font-size:0.7rem;color:#94a3b8;font-weight:600;">' + (p.seasonCode||'') + '</span>';
             html += '</div>';
-            html += '<p style="font-weight:700;color:#0f172a;font-size:0.875rem;margin:0 0 0.2rem 0;line-height:1.3;">' + item.description + '</p>';
-            html += '<p style="font-size:0.75rem;color:#64748b;margin:0;">' + (item.brand || '') + '</p>';
-            if (item.priceTarget) html += '<p style="font-size:0.8rem;font-weight:700;color:#8b5cf6;margin:0.3rem 0 0 0;">&pound;' + parseFloat(item.priceTarget).toFixed(2) + '</p>';
-            html += '</div>';
-            html += '</div>';
+            html += '<p style="font-weight:700;color:#0f172a;font-size:0.85rem;margin:0 0 0.1rem 0;line-height:1.3;">' + p.name + '</p>';
+            if (p.colour) html += '<p style="font-size:0.75rem;color:#64748b;margin:0 0 0.1rem 0;">' + p.colour + '</p>';
+            html += '<p style="font-size:0.72rem;color:#94a3b8;margin:0;">' + (p.brand||'') + '</p>';
+            if (p.price) html += '<p style="font-size:0.8rem;font-weight:700;color:#8b5cf6;margin:0.3rem 0 0 0;">&pound;' + parseFloat(p.price).toFixed(2) + '</p>';
+            html += '</div></div>';
         });
-
         html += '</div></div>';
     });
-
-    // Handle uncategorised
-    if (grouped['Uncategorised'] && (selCat === 'All Categories' || selCat === 'Uncategorised')) {
-        var items = grouped['Uncategorised'];
-        html += '<div style="margin-bottom:2.5rem;">';
-        html += '<h2 style="font-size:1.1rem;font-weight:800;color:#94a3b8;margin:0 0 1rem 0;">Uncategorised</h2>';
-        html += '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:1rem;" class="rangeboard-grid">';
-        items.forEach(function(item) {
-            html += '<div style="background:#f9fafb;border:1px solid #e8ecf1;border-radius:12px;padding:1rem;cursor:pointer;" onclick="' + (item._type==='development' ? 'viewDevelopment' : 'viewBids') + '(\'' + item.id + '\')">';
-            html += '<p style="font-weight:700;margin:0;">' + item.description + '</p>';
-            html += '</div>';
-        });
-        html += '</div></div>';
-    }
 
     container.innerHTML = html;
 }
