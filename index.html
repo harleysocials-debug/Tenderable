@@ -635,6 +635,9 @@
         }
     }
 
+    @media (max-width: 768px) {
+        .rangeboard-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 0.75rem !important; }
+    }
     @media (max-width: 420px) {
         .login-box h1 { font-size: 1.8rem; }
         .header h1 { font-size: 1rem; }
@@ -761,6 +764,7 @@
             <button class="tab-btn" onclick="switchBuyerTab('open')">Open Tenders (<span id="buy-open-count">0</span>)</button>
             <button class="tab-btn" onclick="switchBuyerTab('accepted')">Accepted (<span id="buy-accepted-count">0</span>)</button>
             <button class="tab-btn" onclick="switchBuyerTab('expired')">Expired (<span id="buy-expired-count">0</span>)</button>
+            <button class="tab-btn" onclick="switchBuyerTab('viewall')">&#127748; View All</button>
         </div>
         <div style="margin-bottom: 2rem; display: flex; gap: 1rem; align-items: center;">
             <label style="font-weight: 600; color: #0f172a;">Filter by Season:</label>
@@ -1636,22 +1640,63 @@ function backToSupplierDashboard() {
     renderSupplierTenders();
 }
 
-function openImageModal(dataUrl) {
-    const modal = document.createElement('div');
-    modal.style.cssText = `
-        position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8);
-        display: flex; align-items: center; justify-content: center; z-index: 1000;
-    `;
-    modal.innerHTML = `
-        <div style="position: relative; max-width: 90vw; max-height: 90vh;">
-            <img src="${dataUrl}" style="max-width: 90vw; max-height: 90vh; border-radius: 8px;">
-            <button onclick="this.parentElement.parentElement.remove()" style="position: absolute; top: 1rem; right: 1rem; background: white; color: #0f172a; border: none; width: 40px; height: 40px; border-radius: 50%; cursor: pointer; font-size: 1.5rem; font-weight: bold;">✕</button>
-        </div>
-    `;
+var _modalImages = [];
+var _modalIndex = 0;
+
+function openImageModal(dataUrl, images, index) {
+    // If called with an array use it, otherwise single image
+    _modalImages = images || [dataUrl];
+    _modalIndex = (index !== undefined) ? index : 0;
+    renderImageModal();
+}
+
+function renderImageModal() {
+    var existing = document.getElementById('img-modal');
+    if (existing) existing.remove();
+
+    var modal = document.createElement('div');
+    modal.id = 'img-modal';
+    modal.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.92);display:flex;align-items:center;justify-content:center;z-index:9998;';
+
+    var hasMultiple = _modalImages.length > 1;
+    var counter = hasMultiple ? '<div style="position:absolute;top:1rem;left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.6);color:white;padding:0.3rem 0.9rem;border-radius:20px;font-size:0.85rem;font-weight:600;">'+(_modalIndex+1)+' / '+_modalImages.length+'</div>' : '';
+    var leftBtn = hasMultiple ? '<button onclick="modalNav(-1)" style="position:absolute;left:1rem;top:50%;transform:translateY(-50%);background:rgba(255,255,255,0.15);color:white;border:none;width:48px;height:48px;border-radius:50%;cursor:pointer;font-size:1.5rem;backdrop-filter:blur(4px);">&#8249;</button>' : '';
+    var rightBtn = hasMultiple ? '<button onclick="modalNav(1)" style="position:absolute;right:1rem;top:50%;transform:translateY(-50%);background:rgba(255,255,255,0.15);color:white;border:none;width:48px;height:48px;border-radius:50%;cursor:pointer;font-size:1.5rem;backdrop-filter:blur(4px);">&#8250;</button>' : '';
+
+    modal.innerHTML = '<div style="position:relative;display:flex;align-items:center;justify-content:center;width:100%;height:100%;">'
+        + '<img id="modal-img" src="'+_modalImages[_modalIndex]+'" style="max-width:92vw;max-height:88vh;border-radius:8px;object-fit:contain;user-select:none;" draggable="false">'
+        + '<button onclick="var m=document.getElementById(\'img-modal\');if(m)m.remove();" style="position:absolute;top:1rem;right:1rem;background:rgba(255,255,255,0.15);color:white;border:none;width:44px;height:44px;border-radius:50%;cursor:pointer;font-size:1.4rem;font-weight:700;backdrop-filter:blur(4px);">&#10005;</button>'
+        + counter + leftBtn + rightBtn
+        + '</div>';
+
     document.body.appendChild(modal);
-    modal.onclick = function(e) {
+
+    // Close on backdrop click
+    modal.addEventListener('click', function(e) {
+        if (e.target === modal || e.target.id === 'modal-img') { /* don't close on img click */ }
         if (e.target === modal) modal.remove();
+    });
+
+    // Keyboard nav
+    document.onkeydown = function(e) {
+        if (!document.getElementById('img-modal')) return;
+        if (e.key === 'ArrowLeft') modalNav(-1);
+        if (e.key === 'ArrowRight') modalNav(1);
+        if (e.key === 'Escape') { var m = document.getElementById('img-modal'); if(m) m.remove(); }
     };
+
+    // Swipe support for mobile
+    var touchStartX = 0;
+    modal.addEventListener('touchstart', function(e) { touchStartX = e.touches[0].clientX; }, {passive:true});
+    modal.addEventListener('touchend', function(e) {
+        var diff = touchStartX - e.changedTouches[0].clientX;
+        if (Math.abs(diff) > 50) modalNav(diff > 0 ? 1 : -1);
+    }, {passive:true});
+}
+
+function modalNav(dir) {
+    _modalIndex = (_modalIndex + dir + _modalImages.length) % _modalImages.length;
+    renderImageModal();
 }
 
 
@@ -2273,9 +2318,9 @@ function viewSupplierTender(tenderId) {
     // Images
     if (window._supTenderImages.length > 0) {
         html += '<p style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#94a3b8;margin:0 0 0.75rem 0;">Reference Images</p>';
-        html += '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:0.75rem;margin-bottom:1.5rem;">'; 
+        html += '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:0.75rem;margin-bottom:1.5rem;">'; 
         for (var ii = 0; ii < window._supTenderImages.length; ii++) {
-            html += '<div style="position:relative;width:100%;padding-bottom:100%;border-radius:10px;overflow:hidden;cursor:pointer;border:1px solid #e8ecf1;" class="sup-ref-img" data-supimgidx="' + ii + '"><img src="' + window._supTenderImages[ii] + '" style="position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;"></div>';
+            html += '<div style="position:relative;padding-bottom:100%;border-radius:10px;overflow:hidden;cursor:pointer;border:1px solid #e8ecf1;" class="sup-ref-img" data-supimgidx="' + ii + '"><img src="' + window._supTenderImages[ii] + '" style="position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;"></div>';
         }
         html += '</div>';
     }
@@ -2388,9 +2433,9 @@ function viewSupplierTender(tenderId) {
     container.innerHTML = html;
 
     // Attach image click handlers
-    container.querySelectorAll('.sup-ref-img').forEach(function(img) {
-        img.addEventListener('click', function() {
-            openImageModal(window._supTenderImages[parseInt(this.dataset.supimgidx)]);
+    container.querySelectorAll('.sup-ref-img').forEach(function(el) {
+        el.addEventListener('click', function() {
+            openImageModal(window._supTenderImages[0], window._supTenderImages, parseInt(this.dataset.supimgidx));
         });
     });
 
@@ -2677,7 +2722,7 @@ function viewDevelopment(devId) {
     if (window._devDetailImages.length > 0) {
         html += '<div style="background:white;border:1px solid #e8ecf1;border-radius:14px;padding:1.5rem;">';
         html += '<p style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#94a3b8;margin:0 0 1rem 0;">Reference Images</p>';
-        html += '<div class="dev-img-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:0.75rem;">';
+        html += '<div class="dev-img-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:0.75rem;">';
         for (var ii = 0; ii < window._devDetailImages.length; ii++) {
             html += '<div style="position:relative;width:100%;padding-bottom:100%;border-radius:10px;overflow:hidden;cursor:pointer;border:1px solid #e8ecf1;" class="dev-detail-img-wrap" data-devimgidx="' + ii + '"><img src="' + window._devDetailImages[ii] + '" data-devimgidx="' + ii + '" class="dev-detail-img" style="position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;"></div>';
         }
@@ -2756,10 +2801,10 @@ function viewDevelopment(devId) {
 
     var container = document.getElementById('dev-detail-content');
     container.querySelectorAll('.dev-detail-img-wrap').forEach(function(wrap) {
-        wrap.addEventListener('click', function() { openImageModal(window._devDetailImages[parseInt(this.dataset.devimgidx)]); });
+        wrap.addEventListener('click', function() { openImageModal(window._devDetailImages[0], window._devDetailImages, parseInt(this.dataset.devimgidx)); });
     });
     container.querySelectorAll('.dev-detail-img').forEach(function(img) {
-        img.addEventListener('click', function() { openImageModal(window._devDetailImages[parseInt(this.dataset.devimgidx)]); });
+        img.addEventListener('click', function() { openImageModal(window._devDetailImages[0], window._devDetailImages, parseInt(this.dataset.devimgidx)); });
     });
     container.querySelectorAll('.dev-spec-img').forEach(function(img) {
         img.addEventListener('click', function() { openImageModal(window._devDetailSpecImages[parseInt(this.dataset.devspecidx)]); });
@@ -2788,6 +2833,124 @@ function addDevDetailComment(devId) {
         var cl = document.querySelector('#dev-detail-content [style*="max-height:400px"]');
         if (cl) cl.scrollTop = cl.scrollHeight;
     }, 50);
+}
+
+function renderViewAll() {
+    var container = document.getElementById('buyer-tenders');
+    var cats = ['OUTERWEAR','TOPS','BOTTOMS','UNDERWEAR','NIGHTWEAR','SWIMWEAR','ACCESSORIES','FOOTWEAR'];
+    var seasons = ['All Seasons'];
+    var allItems = [];
+
+    // Combine devs and tenders
+    (data.developments || []).forEach(function(d) {
+        allItems.push(Object.assign({}, d, {_type:'development'}));
+        if (d.seasonCode && seasons.indexOf(d.seasonCode) === -1) seasons.push(d.seasonCode);
+    });
+    (data.tenders || []).forEach(function(t) {
+        allItems.push(Object.assign({}, t, {_type:'tender'}));
+        if (t.seasonCode && seasons.indexOf(t.seasonCode) === -1) seasons.push(t.seasonCode);
+    });
+
+    // Get current filter values
+    var selSeason = document.getElementById('va-season') ? document.getElementById('va-season').value : 'All Seasons';
+    var selCat = document.getElementById('va-cat') ? document.getElementById('va-cat').value : 'All Categories';
+
+    // Filter
+    var filtered = allItems.filter(function(item) {
+        var matchSeason = selSeason === 'All Seasons' || item.seasonCode === selSeason;
+        var matchCat = selCat === 'All Categories' || item.category === selCat;
+        return matchSeason && matchCat;
+    });
+
+    // Filters UI
+    var html = '<div style="display:flex;gap:0.75rem;margin-bottom:1.5rem;flex-wrap:wrap;">';
+    html += '<select id="va-season" onchange="renderViewAll()" style="padding:0.65rem 1rem;border:1px solid #d1d5db;border-radius:8px;font-size:0.875rem;font-family:inherit;background:white;">';
+    seasons.forEach(function(s) { html += '<option' + (s === selSeason ? ' selected' : '') + '>' + s + '</option>'; });
+    html += '</select>';
+    html += '<select id="va-cat" onchange="renderViewAll()" style="padding:0.65rem 1rem;border:1px solid #d1d5db;border-radius:8px;font-size:0.875rem;font-family:inherit;background:white;">';
+    html += '<option>All Categories</option>';
+    cats.forEach(function(c) { html += '<option' + (c === selCat ? ' selected' : '') + '>' + c + '</option>'; });
+    html += '</select>';
+    html += '<span style="display:flex;align-items:center;font-size:0.85rem;color:#64748b;">' + filtered.length + ' item' + (filtered.length !== 1 ? 's' : '') + '</span>';
+    html += '</div>';
+
+    if (filtered.length === 0) {
+        html += '<div class="empty-state"><p>No items match your filters.</p></div>';
+        container.innerHTML = html;
+        return;
+    }
+
+    // Group by category
+    var grouped = {};
+    filtered.forEach(function(item) {
+        var cat = item.category || 'Uncategorised';
+        if (!grouped[cat]) grouped[cat] = [];
+        grouped[cat].push(item);
+    });
+
+    // Render each category group
+    cats.forEach(function(cat) {
+        if (!grouped[cat] || (selCat !== 'All Categories' && selCat !== cat)) return;
+        var items = grouped[cat];
+        html += '<div style="margin-bottom:2.5rem;">';
+        html += '<div style="display:flex;align-items:center;gap:0.75rem;margin-bottom:1rem;">';
+        html += '<h2 style="font-size:1.1rem;font-weight:800;color:#0f172a;margin:0;">' + cat + '</h2>';
+        html += '<span style="background:#f1f5f9;color:#64748b;padding:0.2rem 0.65rem;border-radius:20px;font-size:0.75rem;font-weight:600;">' + items.length + ' style' + (items.length !== 1 ? 's' : '') + '</span>';
+        html += '</div>';
+        html += '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:1rem;" class="rangeboard-grid">';
+
+        items.forEach(function(item) {
+            var imgFile = (item.files || []).find(function(f) { return f.isImage && f.dataUrl; });
+            var typePill = item._type === 'development'
+                ? '<span style="background:#e0e7ff;color:#4f46e5;font-size:0.65rem;font-weight:700;padding:0.2rem 0.55rem;border-radius:20px;text-transform:uppercase;">DEV</span>'
+                : '<span style="background:#dcfce7;color:#166534;font-size:0.65rem;font-weight:700;padding:0.2rem 0.55rem;border-radius:20px;text-transform:uppercase;">TENDER</span>';
+            var clickFn = item._type === 'development'
+                ? 'viewDevelopment(\'' + item.id + '\')'
+                : 'viewBids(\'' + item.id + '\')'  ;
+
+            html += '<div onclick="' + clickFn + '" style="background:white;border:1px solid #e8ecf1;border-radius:12px;overflow:hidden;cursor:pointer;transition:box-shadow 0.2s;">';
+
+            // Image
+            if (imgFile) {
+                html += '<div style="position:relative;padding-bottom:100%;overflow:hidden;">';
+                html += '<img src="' + imgFile.dataUrl + '" style="position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;">';
+                html += '</div>';
+            } else {
+                html += '<div style="padding-bottom:100%;position:relative;background:linear-gradient(135deg,#ede9fe,#ddd6fe);">';
+                html += '<div style="position:absolute;top:0;left:0;width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:2.5rem;">🎨</div>';
+                html += '</div>';
+            }
+
+            // Info
+            html += '<div style="padding:0.75rem;">';
+            html += '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.35rem;">' + typePill;
+            html += '<span style="font-size:0.7rem;color:#94a3b8;font-weight:600;">' + (item.seasonCode || '') + '</span>';
+            html += '</div>';
+            html += '<p style="font-weight:700;color:#0f172a;font-size:0.875rem;margin:0 0 0.2rem 0;line-height:1.3;">' + item.description + '</p>';
+            html += '<p style="font-size:0.75rem;color:#64748b;margin:0;">' + (item.brand || '') + '</p>';
+            if (item.priceTarget) html += '<p style="font-size:0.8rem;font-weight:700;color:#8b5cf6;margin:0.3rem 0 0 0;">&pound;' + parseFloat(item.priceTarget).toFixed(2) + '</p>';
+            html += '</div>';
+            html += '</div>';
+        });
+
+        html += '</div></div>';
+    });
+
+    // Handle uncategorised
+    if (grouped['Uncategorised'] && (selCat === 'All Categories' || selCat === 'Uncategorised')) {
+        var items = grouped['Uncategorised'];
+        html += '<div style="margin-bottom:2.5rem;">';
+        html += '<h2 style="font-size:1.1rem;font-weight:800;color:#94a3b8;margin:0 0 1rem 0;">Uncategorised</h2>';
+        html += '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:1rem;" class="rangeboard-grid">';
+        items.forEach(function(item) {
+            html += '<div style="background:#f9fafb;border:1px solid #e8ecf1;border-radius:12px;padding:1rem;cursor:pointer;" onclick="' + (item._type==='development' ? 'viewDevelopment' : 'viewBids') + '(\'' + item.id + '\')">';
+            html += '<p style="font-weight:700;margin:0;">' + item.description + '</p>';
+            html += '</div>';
+        });
+        html += '</div></div>';
+    }
+
+    container.innerHTML = html;
 }
 
 function renderDevelopmentTab() {
@@ -3134,6 +3297,10 @@ function renderBuyerDashboard() {
         renderDevelopmentTab();
         return;
     }
+    if (tab === 'viewall') {
+        renderViewAll();
+        return;
+    }
     
     const container = document.getElementById('buyer-tenders');
     var seasonFilterVal = data.selectedSeason;
@@ -3328,16 +3495,18 @@ function renderViewBids(tender, tenderBids) {
         html += '</div>';
     }
 
-    // Reference images — use data-imgindex to avoid escaping issues
+    // Reference images — proper grid, pass full array for modal arrows
     if (window._tenderImages.length > 0) {
         html += '<p style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#94a3b8;margin:0 0 0.75rem 0;">Reference Images</p>';
-        html += '<div style="display:flex;gap:0.75rem;flex-wrap:wrap;margin-bottom:1.5rem;">';
+        html += '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:0.75rem;margin-bottom:1.5rem;">';
         for (var ii = 0; ii < window._tenderImages.length; ii++) {
-            html += '<div style="position:relative;width:100%;padding-bottom:100%;border-radius:10px;overflow:hidden;cursor:pointer;border:1px solid #e8ecf1;" class="tender-ref-img" data-imgindex="' + ii + '"><img src="' + window._tenderImages[ii] + '" style="position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;"></div>';
+            html += '<div style="position:relative;padding-bottom:100%;border-radius:10px;overflow:hidden;cursor:pointer;border:1px solid #e8ecf1;" class="tender-ref-img" data-imgindex="' + ii + '">'
+                + '<img src="' + window._tenderImages[ii] + '" style="position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;">'
+                + '</div>';
         }
         var docFiles = (tender.files || []).filter(function(f){ return !f.isImage; });
         for (var di = 0; di < docFiles.length; di++) {
-            html += '<div style="width:90px;height:90px;background:#f1f5f9;border-radius:10px;display:flex;flex-direction:column;align-items:center;justify-content:center;border:1px solid #e8ecf1;font-size:1.5rem;">&#x1F4C4;<p style="font-size:0.65rem;color:#64748b;margin:0.25rem 0 0;text-align:center;padding:0 4px;">' + docFiles[di].name.substring(0,14) + '</p></div>';
+            html += '<div style="aspect-ratio:1;background:#f1f5f9;border-radius:10px;display:flex;flex-direction:column;align-items:center;justify-content:center;border:1px solid #e8ecf1;font-size:1.5rem;">&#x1F4C4;<p style="font-size:0.65rem;color:#64748b;margin:0.25rem 0 0;text-align:center;padding:0 4px;">' + docFiles[di].name.substring(0,14) + '</p></div>';
         }
         html += '</div>';
     }
