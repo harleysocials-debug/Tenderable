@@ -648,6 +648,14 @@
         .btn-primary { padding: 0.6rem 0.75rem !important; font-size: 0.78rem !important; }
     }
 
+    /* Square image containers */
+    .img-square { aspect-ratio: 1 / 1; overflow: hidden; }
+    .img-square img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    /* Fallback for older Safari that doesn't support aspect-ratio */
+    @supports not (aspect-ratio: 1) {
+        .img-square { position: relative; padding-bottom: 100%; height: 0; }
+        .img-square img { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
+    }
     </style>
 </head>
 <body>
@@ -2320,7 +2328,7 @@ function viewSupplierTender(tenderId) {
         html += '<p style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#94a3b8;margin:0 0 0.75rem 0;">Reference Images</p>';
         html += '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:0.75rem;margin-bottom:1.5rem;">'; 
         for (var ii = 0; ii < window._supTenderImages.length; ii++) {
-            html += '<div style="position:relative;padding-bottom:100%;border-radius:10px;overflow:hidden;cursor:pointer;border:1px solid #e8ecf1;" class="sup-ref-img" data-supimgidx="' + ii + '"><img src="' + window._supTenderImages[ii] + '" style="position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;"></div>';
+            html += '<div class="img-square sup-ref-img" data-supimgidx="' + ii + '" style="border-radius:10px;overflow:hidden;cursor:pointer;border:1px solid #e8ecf1;"><img src="' + window._supTenderImages[ii] + '" style="width:100%;height:100%;display:block;object-fit:cover;"></div>';
         }
         html += '</div>';
     }
@@ -2722,9 +2730,11 @@ function viewDevelopment(devId) {
     if (window._devDetailImages.length > 0) {
         html += '<div style="background:white;border:1px solid #e8ecf1;border-radius:14px;padding:1.5rem;">';
         html += '<p style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#94a3b8;margin:0 0 1rem 0;">Reference Images</p>';
-        html += '<div class="dev-img-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:0.75rem;">';
+        html += '<div class="dev-img-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:0.75rem;">';
         for (var ii = 0; ii < window._devDetailImages.length; ii++) {
-            html += '<div style="position:relative;width:100%;padding-bottom:100%;border-radius:10px;overflow:hidden;cursor:pointer;border:1px solid #e8ecf1;" class="dev-detail-img-wrap" data-devimgidx="' + ii + '"><img src="' + window._devDetailImages[ii] + '" data-devimgidx="' + ii + '" class="dev-detail-img" style="position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;"></div>';
+            html += '<div class="dev-detail-img-wrap img-square" data-devimgidx="' + ii + '" style="border-radius:10px;overflow:hidden;cursor:pointer;border:1px solid #e8ecf1;">'
+                  + '<img src="' + window._devDetailImages[ii] + '" data-devimgidx="' + ii + '" class="dev-detail-img" style="width:100%;height:100%;display:block;object-fit:cover;">'
+                  + '</div>';
         }
         html += '</div></div>';
     }
@@ -2912,13 +2922,9 @@ function renderViewAll() {
 
             // Image
             if (imgFile) {
-                html += '<div style="position:relative;padding-bottom:100%;overflow:hidden;">';
-                html += '<img src="' + imgFile.dataUrl + '" style="position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;">';
-                html += '</div>';
+                html += '<div class="img-square" style="overflow:hidden;"><img src="' + imgFile.dataUrl + '" style="width:100%;height:100%;display:block;object-fit:cover;"></div>';
             } else {
-                html += '<div style="padding-bottom:100%;position:relative;background:linear-gradient(135deg,#ede9fe,#ddd6fe);">';
-                html += '<div style="position:absolute;top:0;left:0;width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:2.5rem;">🎨</div>';
-                html += '</div>';
+                html += '<div class="img-square" style="background:linear-gradient(135deg,#ede9fe,#ddd6fe);display:flex;align-items:center;justify-content:center;font-size:2.5rem;">🎨</div>';
             }
 
             // Info
@@ -3498,10 +3504,10 @@ function renderViewBids(tender, tenderBids) {
     // Reference images — proper grid, pass full array for modal arrows
     if (window._tenderImages.length > 0) {
         html += '<p style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#94a3b8;margin:0 0 0.75rem 0;">Reference Images</p>';
-        html += '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:0.75rem;margin-bottom:1.5rem;">';
+        html += '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:0.75rem;margin-bottom:1.5rem;">';
         for (var ii = 0; ii < window._tenderImages.length; ii++) {
-            html += '<div style="position:relative;padding-bottom:100%;border-radius:10px;overflow:hidden;cursor:pointer;border:1px solid #e8ecf1;" class="tender-ref-img" data-imgindex="' + ii + '">'
-                + '<img src="' + window._tenderImages[ii] + '" style="position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;">'
+            html += '<div class="img-square tender-ref-img" data-imgindex="' + ii + '" style="border-radius:10px;overflow:hidden;cursor:pointer;border:1px solid #e8ecf1;">'
+                + '<img src="' + window._tenderImages[ii] + '" style="width:100%;height:100%;display:block;object-fit:cover;">'
                 + '</div>';
         }
         var docFiles = (tender.files || []).filter(function(f){ return !f.isImage; });
