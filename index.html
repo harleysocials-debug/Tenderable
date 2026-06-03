@@ -3111,7 +3111,7 @@ function renderDevelopmentTab() {
         }
 
         return '<div class="tender-card" style="border:2px solid #e0e7ff;background:#fafaff;cursor:pointer;" onclick="viewDevelopment(\'' + dev.id + '\')">' +
-            '<div style="display:flex;gap:1.25rem;">' +
+            '<div style="display:flex;gap:1.25rem;align-items:flex-start;">' +
             buildCardCarousel(dev.files, dev.id, dev.products) +
             '<div style="flex:1;">' +
             '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:0.5rem;">' +
@@ -3252,7 +3252,7 @@ function renderDevelopmentTabInto(container) {
         }
 
         return '<div class="tender-card" style="border:2px solid #e0e7ff;background:#fafaff;cursor:pointer;" onclick="viewDevelopment(\'' + dev.id + '\')">' +
-            '<div style="display:flex;gap:1.25rem;">' +
+            '<div style="display:flex;gap:1.25rem;align-items:flex-start;">' +
             buildCardCarousel(dev.files, dev.id, dev.products) +
             '<div style="flex:1;">' +
             '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:0.5rem;flex-wrap:wrap;gap:0.5rem;">' +
