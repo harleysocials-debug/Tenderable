@@ -3073,11 +3073,21 @@ function sendDevToTender(devId) {
 
 function deleteDevelopment(devId) {
     if (!confirm('Delete this development? This cannot be undone.')) return;
+    api('DELETE', '/developments/' + devId);
     data.developments = data.developments.filter(function(d) { return d.id !== devId; });
     delete data.devComments[devId];
-    api('POST', '/developments/' + devId + '/comments', { id: data.devComments[devId][data.devComments[devId].length-1].id, author: data.currentUser.name, authorType: data.currentUser.type, text: data.devComments[devId][data.devComments[devId].length-1].text, timestamp: new Date() });
     renderDevelopmentTab();
 }
+
+function confirmDeleteDev(devId) {
+    if (!confirm('Delete this development? This cannot be undone.')) return;
+    api('DELETE', '/developments/' + devId);
+    data.developments = data.developments.filter(function(d) { return d.id !== devId; });
+    delete data.devComments[devId];
+    data.currentBuyerTab = 'development';
+    backToBuyerDashboard();
+}
+
 
 function showEditDevelopment(devId) {
     // Delegate to showEditTender which handles both tenders and developments
