@@ -1901,42 +1901,68 @@ function switchTenderTab(tab) {
 var productCount = 0;
 function addProductRow() {
     productCount++;
+    var pid = 'prod-' + productCount;
     var row = document.createElement('div');
-    row.style.cssText = 'display:grid;grid-template-columns:2fr 1.5fr 1fr 1fr auto;gap:0.6rem;align-items:center;background:#f9fafb;padding:1rem;border-radius:10px;border:1px solid #e8ecf1;';
     row.className = 'product-row';
+    row.style.cssText = 'background:#f9fafb;padding:1rem;border-radius:10px;border:1px solid #e8ecf1;margin-bottom:0.5rem;';
 
-    var inp1 = document.createElement('input');
-    inp1.type = 'text'; inp1.placeholder = 'Product e.g. Plain Black Tee';
-    inp1.className = 'product-desc';
-    inp1.style.cssText = 'padding:0.75rem;border:1px solid #d1d5db;border-radius:8px;font-size:0.9rem;font-family:inherit;min-width:0;';
+    // Top row: image + fields
+    var top = document.createElement('div');
+    top.style.cssText = 'display:flex;gap:0.75rem;align-items:flex-start;';
 
-    var inp2 = document.createElement('input');
-    inp2.type = 'text'; inp2.placeholder = 'Colourway';
-    inp2.className = 'product-colour';
-    inp2.style.cssText = 'padding:0.75rem;border:1px solid #d1d5db;border-radius:8px;font-size:0.9rem;font-family:inherit;min-width:0;';
+    // Image drop zone
+    var imgWrap = document.createElement('div');
+    imgWrap.style.cssText = 'width:72px;height:72px;flex-shrink:0;border-radius:8px;border:2px dashed #d1d5db;background:white;display:flex;align-items:center;justify-content:center;cursor:pointer;overflow:hidden;position:relative;';
+    imgWrap.title = 'Click or drop image';
+    imgWrap.innerHTML = '<span style="font-size:1.4rem;color:#d1d5db;">&#128247;</span>';
+    var fileIn = document.createElement('input');
+    fileIn.type = 'file'; fileIn.accept = 'image/*'; fileIn.style.display = 'none';
+    fileIn.className = 'product-img-input';
+    fileIn.addEventListener('change', function() {
+        if (!this.files[0]) return;
+        var r = new FileReader();
+        var wrap = imgWrap;
+        r.onload = function(e) {
+            var dataUrl = e.target.result;
+            wrap.innerHTML = '<img src="' + dataUrl + '" style="width:100%;height:100%;object-fit:cover;">';
+            wrap.style.border = '2px solid #8b5cf6';
+            wrap.appendChild(fileIn);
+            wrap.style.border = '2px solid #8b5cf6';
+            wrap.appendChild(fileIn);
+        };
+        r.readAsDataURL(this.files[0]);
+    });
+    imgWrap.appendChild(fileIn);
+    imgWrap.addEventListener('click', function() { fileIn.click(); });
+    imgWrap.addEventListener('dragover', function(e) { e.preventDefault(); this.style.borderColor='#8b5cf6'; });
+    imgWrap.addEventListener('dragleave', function() { this.style.borderColor='#d1d5db'; });
+    imgWrap.addEventListener('drop', function(e) {
+        e.preventDefault(); this.style.borderColor='#d1d5db';
+        if (e.dataTransfer.files[0]) { fileIn.files = e.dataTransfer.files; fileIn.dispatchEvent(new Event('change')); }
+    });
 
-    var inp3 = document.createElement('input');
-    inp3.type = 'number'; inp3.placeholder = 'Qty'; inp3.min = '1';
-    inp3.className = 'product-qty';
-    inp3.style.cssText = 'padding:0.75rem;border:1px solid #d1d5db;border-radius:8px;font-size:0.9rem;font-family:inherit;min-width:0;';
+    // Fields grid
+    var fields = document.createElement('div');
+    fields.style.cssText = 'flex:1;display:grid;grid-template-columns:2fr 1.5fr 1fr 1fr;gap:0.5rem;';
 
-    var inp4 = document.createElement('input');
-    inp4.type = 'number'; inp4.placeholder = '£ Price'; inp4.min = '0'; inp4.step = '0.01';
-    inp4.className = 'product-price';
-    inp4.style.cssText = 'padding:0.75rem;border:1px solid #d1d5db;border-radius:8px;font-size:0.9rem;font-family:inherit;min-width:0;';
+    var inp1 = document.createElement('input'); inp1.type='text'; inp1.placeholder='Product e.g. Plain Black Tee'; inp1.className='product-desc'; inp1.style.cssText='padding:0.65rem;border:1px solid #d1d5db;border-radius:7px;font-size:0.875rem;font-family:inherit;';
+    var inp2 = document.createElement('input'); inp2.type='text'; inp2.placeholder='Colourway'; inp2.className='product-colour'; inp2.style.cssText='padding:0.65rem;border:1px solid #d1d5db;border-radius:7px;font-size:0.875rem;font-family:inherit;';
+    var inp3 = document.createElement('input'); inp3.type='number'; inp3.placeholder='Qty'; inp3.min='1'; inp3.className='product-qty'; inp3.style.cssText='padding:0.65rem;border:1px solid #d1d5db;border-radius:7px;font-size:0.875rem;font-family:inherit;';
+    var inp4 = document.createElement('input'); inp4.type='number'; inp4.placeholder='£ Price'; inp4.min='0'; inp4.step='0.01'; inp4.className='product-price'; inp4.style.cssText='padding:0.65rem;border:1px solid #d1d5db;border-radius:7px;font-size:0.875rem;font-family:inherit;';
 
-    var btn = document.createElement('button');
-    btn.type = 'button'; btn.textContent = '✕';
-    btn.style.cssText = 'background:#fee2e2;color:#991b1b;border:none;padding:0.75rem 1rem;border-radius:8px;cursor:pointer;font-weight:700;font-size:1rem;flex-shrink:0;';
+    fields.appendChild(inp1); fields.appendChild(inp2); fields.appendChild(inp3); fields.appendChild(inp4);
+
+    // Delete button
+    var btn = document.createElement('button'); btn.type='button'; btn.textContent='✕';
+    btn.style.cssText='background:#fee2e2;color:#991b1b;border:none;padding:0.5rem 0.75rem;border-radius:7px;cursor:pointer;font-weight:700;flex-shrink:0;align-self:flex-start;margin-top:0;';
     btn.addEventListener('click', function() { row.remove(); updateProductsHint(); });
 
-    row.appendChild(inp1); row.appendChild(inp2);
-    row.appendChild(inp3); row.appendChild(inp4);
-    row.appendChild(btn);
-
+    top.appendChild(imgWrap); top.appendChild(fields); top.appendChild(btn);
+    row.appendChild(top);
     document.getElementById('products-list').appendChild(row);
     document.getElementById('products-empty-hint').style.display = 'none';
 }
+
 
 function updateProductsHint() {
     const list = document.getElementById('products-list');
@@ -1945,14 +1971,17 @@ function updateProductsHint() {
 }
 
 function getProductsFromForm() {
-    const products = [];
-    const rows = document.querySelectorAll('#products-list > div');
-    rows.forEach(row => {
-        const desc = row.querySelector('.product-desc').value.trim();
-        const colour = row.querySelector('.product-colour').value.trim();
-        const qty = row.querySelector('.product-qty') ? row.querySelector('.product-qty').value.trim() : '';
-        const price = row.querySelector('.product-price') ? row.querySelector('.product-price').value.trim() : '';
-        if (desc) products.push({ description: desc, colour: colour, qty: parseInt(qty) || 0, price: parseFloat(price) || 0 });
+    var products = [];
+    var rows = document.querySelectorAll('#products-list > div.product-row');
+    rows.forEach(function(row) {
+        var desc = row.querySelector('.product-desc') ? row.querySelector('.product-desc').value.trim() : '';
+        var colour = row.querySelector('.product-colour') ? row.querySelector('.product-colour').value.trim() : '';
+        var qty = row.querySelector('.product-qty') ? row.querySelector('.product-qty').value.trim() : '';
+        var price = row.querySelector('.product-price') ? row.querySelector('.product-price').value.trim() : '';
+        // Get product image — check for img tag inside the image wrap
+        var imgEl = row.querySelector('div img');
+        var img = imgEl ? imgEl.src : null;
+        if (desc) products.push({ description: desc, colour: colour, qty: parseInt(qty)||0, price: parseFloat(price)||0, image: img });
     });
     return products;
 }
@@ -2861,7 +2890,7 @@ function renderViewAll() {
                 var img = allImgs.length > 0 ? allImgs[pIdx % allImgs.length].dataUrl : null;
                 allProducts.push({ name: p.description, colour: p.colour||'', qty: p.qty, price: p.price || d.priceTarget,
                     parentName: d.description, brand: d.brand, category: d.category,
-                    seasonCode: d.seasonCode, img: img,
+                    seasonCode: d.seasonCode, img: p.image || img,
                     parentId: d.id, parentType: 'development' });
             });
         } else {
@@ -2880,7 +2909,7 @@ function renderViewAll() {
                 var img = allImgs.length > 0 ? allImgs[pIdx % allImgs.length].dataUrl : null;
                 allProducts.push({ name: p.description, colour: p.colour||'', qty: p.qty, price: p.price || t.priceTarget,
                     parentName: t.description, brand: t.brand, category: t.category,
-                    seasonCode: t.seasonCode, img: img,
+                    seasonCode: t.seasonCode, img: p.image || img,
                     parentId: t.id, parentType: 'tender' });
             });
         } else {
@@ -2973,8 +3002,10 @@ function renderViewAll() {
     container.innerHTML = html;
 }
 
-function buildCardCarousel(files, devId) {
+function buildCardCarousel(files, devId, products) {
     var imgs = (files || []).filter(function(f) { return f.isImage && f.dataUrl; });
+    // Also pull product images
+    (products || []).forEach(function(p) { if (p.image && p.image.startsWith('data:')) imgs.push({ dataUrl: p.image }); });
     if (imgs.length === 0) {
         return '<div class="card-carousel" style="display:flex;align-items:center;justify-content:center;font-size:2rem;">&#127912;</div>';
     }
@@ -3081,7 +3112,7 @@ function renderDevelopmentTab() {
 
         return '<div class="tender-card" style="border:2px solid #e0e7ff;background:#fafaff;cursor:pointer;" onclick="viewDevelopment(\'' + dev.id + '\')">' +
             '<div style="display:flex;gap:1.25rem;">' +
-            buildCardCarousel(dev.files, dev.id) +
+            buildCardCarousel(dev.files, dev.id, dev.products) +
             '<div style="flex:1;">' +
             '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:0.5rem;">' +
             '<div>' +
@@ -3222,7 +3253,7 @@ function renderDevelopmentTabInto(container) {
 
         return '<div class="tender-card" style="border:2px solid #e0e7ff;background:#fafaff;cursor:pointer;" onclick="viewDevelopment(\'' + dev.id + '\')">' +
             '<div style="display:flex;gap:1.25rem;">' +
-            buildCardCarousel(dev.files, dev.id) +
+            buildCardCarousel(dev.files, dev.id, dev.products) +
             '<div style="flex:1;">' +
             '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:0.5rem;flex-wrap:wrap;gap:0.5rem;">' +
             '<div><span style="background:#e0e7ff;color:#4f46e5;font-size:0.7rem;font-weight:700;padding:0.2rem 0.6rem;border-radius:20px;text-transform:uppercase;letter-spacing:0.05em;">Development</span>' +
@@ -3826,7 +3857,7 @@ function showEditTender(tenderId) {
 
     renderEditFileList();
     renderEditSpecsFileList();
-    (item.products || []).forEach(function(p) { addEditProductRowWithData(p.description, p.colour, p.qty, p.price||0); });
+    (item.products || []).forEach(function(p) { addEditProductRowWithData(p.description, p.colour, p.qty, p.price||0, p.image||null); });
 
     // Init edit suppliers
     if (isTender) {
@@ -3889,44 +3920,66 @@ function renderEditSpecsFileList() {
     }).join('');
 }
 var editProductCount = 0;
-function addEditProductRow() { addEditProductRowWithData('','','',0); }
-function addEditProductRowWithData(desc,colour,qty,price) {
+function addEditProductRow() { addEditProductRowWithData('','','',0,null); }
+function addEditProductRowWithData(desc,colour,qty,price,imgSrc) {
     editProductCount++;
     var row=document.createElement('div');
-    row.style.cssText='display:grid;grid-template-columns:2fr 1.5fr 1fr 1fr auto;gap:0.6rem;align-items:center;background:white;padding:0.75rem;border-radius:8px;border:1px solid #e8ecf1;';
     row.className='edit-product-row';
+    row.style.cssText='background:white;padding:0.75rem;border-radius:8px;border:1px solid #e8ecf1;margin-bottom:0.5rem;';
 
-    var i1=document.createElement('input'); i1.type='text'; i1.placeholder='Product e.g. Plain Black Tee';
-    i1.className='edit-product-desc'; i1.value=desc||'';
-    i1.style.cssText='padding:0.65rem;border:1px solid #d1d5db;border-radius:6px;font-size:0.875rem;font-family:inherit;min-width:0;';
+    var top=document.createElement('div');
+    top.style.cssText='display:flex;gap:0.65rem;align-items:flex-start;';
 
-    var i2=document.createElement('input'); i2.type='text'; i2.placeholder='Colourway';
-    i2.className='edit-product-colour'; i2.value=colour||'';
-    i2.style.cssText='padding:0.65rem;border:1px solid #d1d5db;border-radius:6px;font-size:0.875rem;font-family:inherit;min-width:0;';
+    // Image drop zone
+    var imgWrap=document.createElement('div');
+    imgWrap.style.cssText='width:64px;height:64px;flex-shrink:0;border-radius:7px;border:2px dashed #d1d5db;background:#f9fafb;display:flex;align-items:center;justify-content:center;cursor:pointer;overflow:hidden;position:relative;';
+    if (imgSrc) {
+        imgWrap.innerHTML='<img src="'+imgSrc+'" style="width:100%;height:100%;object-fit:cover;">';
+        imgWrap.style.border='2px solid #8b5cf6';
+    } else {
+        imgWrap.innerHTML='<span style="font-size:1.3rem;color:#d1d5db;">&#128247;</span>';
+    }
+    var fileIn=document.createElement('input'); fileIn.type='file'; fileIn.accept='image/*'; fileIn.style.display='none'; fileIn.className='edit-product-img-input';
+    fileIn.addEventListener('change', function() {
+        if (!this.files[0]) return;
+        var r=new FileReader(); var wrap=imgWrap;
+        r.onload=function(e){ wrap.innerHTML='<img src="'+e.target.result+'" style="width:100%;height:100%;object-fit:cover;">'; wrap.style.border='2px solid #8b5cf6'; wrap.appendChild(fileIn); };
+        r.readAsDataURL(this.files[0]);
+    });
+    imgWrap.appendChild(fileIn);
+    imgWrap.addEventListener('click', function(){ fileIn.click(); });
+    imgWrap.addEventListener('dragover', function(e){ e.preventDefault(); this.style.borderColor='#8b5cf6'; });
+    imgWrap.addEventListener('dragleave', function(){ this.style.borderColor=imgSrc?'#8b5cf6':'#d1d5db'; });
+    imgWrap.addEventListener('drop', function(e){ e.preventDefault(); if(e.dataTransfer.files[0]){ fileIn.files=e.dataTransfer.files; fileIn.dispatchEvent(new Event('change')); } });
 
-    var i3=document.createElement('input'); i3.type='number'; i3.placeholder='Qty'; i3.min='1';
-    i3.className='edit-product-qty'; i3.value=qty||'';
-    i3.style.cssText='padding:0.65rem;border:1px solid #d1d5db;border-radius:6px;font-size:0.875rem;font-family:inherit;min-width:0;';
+    var fields=document.createElement('div');
+    fields.style.cssText='flex:1;display:grid;grid-template-columns:2fr 1.5fr 1fr 1fr;gap:0.5rem;';
 
-    var i4=document.createElement('input'); i4.type='number'; i4.placeholder='£ Price'; i4.min='0'; i4.step='0.01';
-    i4.className='edit-product-price'; i4.value=price||'';
-    i4.style.cssText='padding:0.65rem;border:1px solid #d1d5db;border-radius:6px;font-size:0.875rem;font-family:inherit;min-width:0;';
+    var i1=document.createElement('input'); i1.type='text'; i1.placeholder='Product e.g. Plain Black Tee'; i1.className='edit-product-desc'; i1.value=desc||''; i1.style.cssText='padding:0.6rem;border:1px solid #d1d5db;border-radius:6px;font-size:0.875rem;font-family:inherit;';
+    var i2=document.createElement('input'); i2.type='text'; i2.placeholder='Colourway'; i2.className='edit-product-colour'; i2.value=colour||''; i2.style.cssText='padding:0.6rem;border:1px solid #d1d5db;border-radius:6px;font-size:0.875rem;font-family:inherit;';
+    var i3=document.createElement('input'); i3.type='number'; i3.placeholder='Qty'; i3.min='1'; i3.className='edit-product-qty'; i3.value=qty||''; i3.style.cssText='padding:0.6rem;border:1px solid #d1d5db;border-radius:6px;font-size:0.875rem;font-family:inherit;';
+    var i4=document.createElement('input'); i4.type='number'; i4.placeholder='£ Price'; i4.min='0'; i4.step='0.01'; i4.className='edit-product-price'; i4.value=price||''; i4.style.cssText='padding:0.6rem;border:1px solid #d1d5db;border-radius:6px;font-size:0.875rem;font-family:inherit;';
+
+    fields.appendChild(i1); fields.appendChild(i2); fields.appendChild(i3); fields.appendChild(i4);
 
     var btn=document.createElement('button'); btn.type='button'; btn.textContent='✕';
-    btn.style.cssText='background:#fee2e2;color:#991b1b;border:none;padding:0.65rem 0.85rem;border-radius:6px;cursor:pointer;font-weight:700;flex-shrink:0;';
+    btn.style.cssText='background:#fee2e2;color:#991b1b;border:none;padding:0.6rem 0.8rem;border-radius:6px;cursor:pointer;font-weight:700;flex-shrink:0;align-self:flex-start;';
     btn.onclick=function(){ row.remove(); };
 
-    row.appendChild(i1); row.appendChild(i2); row.appendChild(i3); row.appendChild(i4); row.appendChild(btn);
+    top.appendChild(imgWrap); top.appendChild(fields); top.appendChild(btn);
+    row.appendChild(top);
     document.getElementById('edit-products-list').appendChild(row);
 }
 function getEditProducts() {
-    var rows=document.querySelectorAll('#edit-products-list > div'); var products=[];
+    var rows=document.querySelectorAll('#edit-products-list > div.edit-product-row'); var products=[];
     rows.forEach(function(r){
-        var d=r.querySelector('.edit-product-desc').value.trim();
-        var c=r.querySelector('.edit-product-colour').value.trim();
-        var q=r.querySelector('.edit-product-qty').value.trim();
+        var d=r.querySelector('.edit-product-desc') ? r.querySelector('.edit-product-desc').value.trim() : '';
+        var c=r.querySelector('.edit-product-colour') ? r.querySelector('.edit-product-colour').value.trim() : '';
+        var q=r.querySelector('.edit-product-qty') ? r.querySelector('.edit-product-qty').value.trim() : '';
         var p=r.querySelector('.edit-product-price') ? r.querySelector('.edit-product-price').value.trim() : '';
-        if(d) products.push({description:d,colour:c,qty:parseInt(q)||0,price:parseFloat(p)||0});
+        var imgEl=r.querySelector('div img');
+        var img=imgEl ? imgEl.src : null;
+        if(d) products.push({description:d,colour:c,qty:parseInt(q)||0,price:parseFloat(p)||0,image:img});
     });
     return products;
 }
