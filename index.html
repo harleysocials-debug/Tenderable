@@ -2853,35 +2853,41 @@ function renderViewAll() {
 
     (data.developments || []).forEach(function(d) {
         if (d.seasonCode && seasons.indexOf(d.seasonCode) === -1) seasons.push(d.seasonCode);
-        var imgFile = (d.files || []).find(function(f) { return f.isImage && f.dataUrl; });
+        // Get ALL images for this development
+        var allImgs = (d.files || []).filter(function(f) { return f.isImage && f.dataUrl; });
         if (d.products && d.products.length > 0) {
-            d.products.forEach(function(p) {
+            d.products.forEach(function(p, pIdx) {
+                // Assign a different image per product — cycle if fewer images than products
+                var img = allImgs.length > 0 ? allImgs[pIdx % allImgs.length].dataUrl : null;
                 allProducts.push({ name: p.description, colour: p.colour||'', qty: p.qty, price: p.price || d.priceTarget,
                     parentName: d.description, brand: d.brand, category: d.category,
-                    seasonCode: d.seasonCode, img: imgFile ? imgFile.dataUrl : null,
+                    seasonCode: d.seasonCode, img: img,
                     parentId: d.id, parentType: 'development' });
             });
         } else {
+            var img = allImgs.length > 0 ? allImgs[0].dataUrl : null;
             allProducts.push({ name: d.description, colour: '', qty: d.orderQty, price: d.priceTarget,
                 parentName: d.description, brand: d.brand, category: d.category,
-                seasonCode: d.seasonCode, img: imgFile ? imgFile.dataUrl : null,
+                seasonCode: d.seasonCode, img: img,
                 parentId: d.id, parentType: 'development' });
         }
     });
     (data.tenders || []).forEach(function(t) {
         if (t.seasonCode && seasons.indexOf(t.seasonCode) === -1) seasons.push(t.seasonCode);
-        var imgFile = (t.files || []).find(function(f) { return f.isImage && f.dataUrl; });
+        var allImgs = (t.files || []).filter(function(f) { return f.isImage && f.dataUrl; });
         if (t.products && t.products.length > 0) {
-            t.products.forEach(function(p) {
+            t.products.forEach(function(p, pIdx) {
+                var img = allImgs.length > 0 ? allImgs[pIdx % allImgs.length].dataUrl : null;
                 allProducts.push({ name: p.description, colour: p.colour||'', qty: p.qty, price: p.price || t.priceTarget,
                     parentName: t.description, brand: t.brand, category: t.category,
-                    seasonCode: t.seasonCode, img: imgFile ? imgFile.dataUrl : null,
+                    seasonCode: t.seasonCode, img: img,
                     parentId: t.id, parentType: 'tender' });
             });
         } else {
+            var img = allImgs.length > 0 ? allImgs[0].dataUrl : null;
             allProducts.push({ name: t.description, colour: '', qty: t.orderQty, price: t.priceTarget,
                 parentName: t.description, brand: t.brand, category: t.category,
-                seasonCode: t.seasonCode, img: imgFile ? imgFile.dataUrl : null,
+                seasonCode: t.seasonCode, img: img,
                 parentId: t.id, parentType: 'tender' });
         }
     });
