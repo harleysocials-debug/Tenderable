@@ -3007,12 +3007,12 @@ function buildCardCarousel(files, devId, products) {
     // Also pull product images
     (products || []).forEach(function(p) { if (p.image && p.image.startsWith('data:')) imgs.push({ dataUrl: p.image }); });
     if (imgs.length === 0) {
-        return '<div class="card-carousel" style="display:flex;align-items:center;justify-content:center;font-size:2rem;">&#127912;</div>';
+        return '<div class="card-carousel" style="display:flex;align-items:center;justify-content:center;font-size:2rem;width:120px;height:120px;flex-shrink:0;align-self:flex-start;border-radius:8px;overflow:hidden;">&#127912;</div>';
     }
     var carId = 'car-' + devId;
-    var html = '<div class="card-carousel" id="' + carId + '" onclick="event.stopPropagation();" style="position:relative;">';
+    var html = '<div class="card-carousel" id="' + carId + '" onclick="event.stopPropagation();" style="position:relative;width:120px;height:120px;flex-shrink:0;align-self:flex-start;border-radius:8px;overflow:hidden;">';
     for (var i = 0; i < imgs.length; i++) {
-        html += '<img data-carid="' + carId + '" data-caridx="' + i + '" data-cartotal="' + imgs.length + '" src="' + imgs[i].dataUrl + '" class="carr-img" style="width:100%;height:100%;object-fit:cover;display:' + (i===0?'block':'none') + ';position:absolute;top:0;left:0;cursor:pointer;">';
+        html += '<img data-carid="' + carId + '" data-caridx="' + i + '" data-cartotal="' + imgs.length + '" src="' + imgs[i].dataUrl + '" class="carr-img" style="position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;display:' + (i===0?'block':'none') + ';cursor:pointer;">';
     }
     if (imgs.length > 1) {
         html += '<button class="carr-btn carr-left" data-carid="' + carId + '" data-cardir="-1" data-cartotal="' + imgs.length + '" onclick="event.stopPropagation();cardCarouselNav(this)">&#8249;</button>';
