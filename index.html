@@ -462,14 +462,21 @@ input, select, textarea { font-family: inherit; }
 
   <!-- Filter bar (buyer only) -->
   <div class="filter-bar hidden" id="filter-bar">
-    <span class="filter-label">Filter</span>
     <div id="filter-season" style="display:contents;"></div>
     <div class="filter-sep"></div>
     <div id="filter-stage" style="display:contents;"></div>
     <div class="filter-sep"></div>
     <div id="filter-cat" style="display:contents;"></div>
     <div class="filter-sep"></div>
-    <div id="filter-grade" style="display:contents;"></div>
+    <div id="filter-dept" style="display:contents;"></div>
+    <div class="filter-sep"></div>
+    <div id="filter-colour" style="display:contents;"></div>
+    <div class="filter-sep"></div>
+    <div id="filter-intake" style="display:contents;"></div>
+    <div class="filter-sep"></div>
+    <div id="filter-retail" style="display:contents;"></div>
+    <div class="filter-sep"></div>
+    <div id="filter-stylegrade" style="display:contents;"></div>
     <div class="filter-sep"></div>
     <div id="filter-supplier" style="display:contents;"></div>
     <button class="filter-clear" onclick="clearFilters()" id="filter-clear-btn" style="display:none;">&#10005; Clear</button>
@@ -527,7 +534,7 @@ const GRADES = ['A','B','C','D'];
 var G = {
   user: null, devs: [], tenders: [], bids: [], messages: [],
   devComments: {}, allSuppliers: [],
-  filters: { season:'', stage:'', cat:'', grade:'', supplier:'' },
+  filters: { season:'', stage:'', cat:'', dept:'', colour:'', intake:'', retail:'', stylegrade:'', supplier:'' },
   view: 'board', editId: null, editType: null,
   uploadedFiles: [], editUploadedFiles: [],
   invitedSuppliers: [], formProducts: [],
@@ -690,13 +697,41 @@ function setView(v){ G.view=v; $('view-board').classList.toggle('active',v==='bo
 
 // ── FILTERS ─────────────────────────────────────────────────────────────────
 function buildFilters(){
-  // Seasons from devs
+  var MONTHS=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  var RETAIL_BANDS=[{val:'0-10',label:'Under £10'},{val:'10-20',label:'£10-20'},{val:'20-30',label:'£20-30'},{val:'30-50',label:'£30-50'},{val:'50-999',label:'£50+'}];
+
+  // Season - from devs
   var seasons=['All']; G.devs.forEach(function(d){ if(d.seasonCode&&!seasons.includes(d.seasonCode)) seasons.push(d.seasonCode); });
   buildChips('filter-season', seasons, 'season', 'Season');
+
+  // Stage - fixed
   buildChips('filter-stage', ['All'].concat(STAGES.map(function(s){return {val:s,label:STAGE_LABELS[s]};})), 'stage', 'Stage');
-  buildChips('filter-cat', ['All'].concat(CATS), 'cat', 'Cat');
-  buildChips('filter-grade', ['All','A','B','C','D'], 'grade', 'Grade');
-  // Suppliers
+
+  // Category - fixed
+  buildChips('filter-cat', ['All'].concat(CATS), 'cat', 'Category');
+
+  // Department - from devs
+  var depts=['All']; G.devs.forEach(function(d){ if(d.department&&!depts.includes(d.department)) depts.push(d.department); });
+  buildChips('filter-dept', depts, 'dept', 'Dept');
+
+  // Colour - from style-level products
+  var colours=['All']; G.devs.forEach(function(d){ (d.products||[]).forEach(function(p){ if(p.colour&&!colours.includes(p.colour)) colours.push(p.colour); }); });
+  buildChips('filter-colour', colours, 'colour', 'Colour');
+
+  // Intake month - from style-level products
+  var intakes=['All'];
+  MONTHS.forEach(function(m){ G.devs.forEach(function(d){ (d.products||[]).forEach(function(p){ if(p.intakeMonth===m&&!intakes.includes(m)) intakes.push(m); }); }); });
+  buildChips('filter-intake', intakes, 'intake', 'Intake');
+
+  // Retail price band - from style-level products
+  buildChips('filter-retail', ['All'].concat(RETAIL_BANDS), 'retail', 'Retail');
+
+  // Store grade - from style-level products
+  var sgrades=['All']; G.devs.forEach(function(d){ (d.products||[]).forEach(function(p){ if(p.storeGrade&&!sgrades.includes(p.storeGrade)) sgrades.push(p.storeGrade); }); });
+  if(sgrades.length===1) sgrades=['All','A','B','C','D'];
+  buildChips('filter-stylegrade', sgrades, 'stylegrade', 'Grade');
+
+  // Supplier - from devs
   var sups=['All']; G.devs.forEach(function(d){ if(d.supplierAllocation&&!sups.includes(d.supplierAllocation)) sups.push(d.supplierAllocation); });
   buildChips('filter-supplier', sups, 'supplier', 'Supplier');
 }
@@ -722,15 +757,26 @@ function updateClearBtn(){
   var any=Object.values(G.filters).some(function(v){return v!=='';});
   $('filter-clear-btn').style.display=any?'':'none';
 }
-function clearFilters(){ G.filters={season:'',stage:'',cat:'',grade:'',supplier:''}; buildFilters(); renderMainContent(); $('filter-clear-btn').style.display='none'; }
+function clearFilters(){ G.filters={season:'',stage:'',cat:'',dept:'',colour:'',intake:'',retail:'',stylegrade:'',supplier:''}; buildFilters(); renderMainContent(); $('filter-clear-btn').style.display='none'; }
 
 function filteredDevs(){
   return G.devs.filter(function(d){
+    // Dev-level filters
     if(G.filters.season&&d.seasonCode!==G.filters.season) return false;
     if(G.filters.stage&&(d.stage||'concept')!==G.filters.stage) return false;
     if(G.filters.cat&&d.category!==G.filters.cat) return false;
-    if(G.filters.grade&&(d.storeGrade||'')!==G.filters.grade) return false;
+    if(G.filters.dept&&(d.department||'')!==G.filters.dept) return false;
     if(G.filters.supplier&&(d.supplierAllocation||'').toLowerCase()!==G.filters.supplier.toLowerCase()) return false;
+    // Style-level filters — dev passes if ANY style matches
+    var prods=d.products||[];
+    if(G.filters.colour&&!prods.some(function(p){return p.colour===G.filters.colour;})) return false;
+    if(G.filters.intake&&!prods.some(function(p){return p.intakeMonth===G.filters.intake;})) return false;
+    if(G.filters.stylegrade&&!prods.some(function(p){return p.storeGrade===G.filters.stylegrade;})) return false;
+    if(G.filters.retail){
+      var band=G.filters.retail.split('-');
+      var lo=parseFloat(band[0]),hi=parseFloat(band[1]);
+      if(!prods.some(function(p){var r=parseFloat(p.retailPrice||0);return r>=lo&&r<hi;})) return false;
+    }
     return true;
   });
 }
