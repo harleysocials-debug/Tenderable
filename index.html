@@ -478,6 +478,8 @@ input, select, textarea { font-family: inherit; }
     <div class="filter-sep"></div>
     <div id="filter-stylegrade" style="display:contents;"></div>
     <div class="filter-sep"></div>
+    <div id="filter-theme" style="display:contents;"></div>
+    <div class="filter-sep"></div>
     <div id="filter-supplier" style="display:contents;"></div>
     <button class="filter-clear" onclick="clearFilters()" id="filter-clear-btn" style="display:none;">&#10005; Clear</button>
     <div class="view-toggle">
@@ -534,7 +536,7 @@ const GRADES = ['A','B','C','D'];
 var G = {
   user: null, devs: [], tenders: [], bids: [], messages: [],
   devComments: {}, allSuppliers: [],
-  filters: { season:'', stage:'', cat:'', dept:'', colour:'', intake:'', retail:'', stylegrade:'', supplier:'' },
+  filters: { season:'', stage:'', cat:'', dept:'', colour:'', intake:'', retail:'', stylegrade:'', theme:'', supplier:'' },
   view: 'board', editId: null, editType: null,
   uploadedFiles: [], editUploadedFiles: [],
   invitedSuppliers: [], formProducts: [],
@@ -731,6 +733,10 @@ function buildFilters(){
   if(sgrades.length===1) sgrades=['All','A','B','C','D'];
   buildChips('filter-stylegrade', sgrades, 'stylegrade', 'Grade');
 
+  // Theme - from devs
+  var themes=['All']; G.devs.forEach(function(d){ if(d.theme&&!themes.includes(d.theme)) themes.push(d.theme); });
+  buildChips('filter-theme', themes, 'theme', 'Theme');
+
   // Supplier - from devs
   var sups=['All']; G.devs.forEach(function(d){ if(d.supplierAllocation&&!sups.includes(d.supplierAllocation)) sups.push(d.supplierAllocation); });
   buildChips('filter-supplier', sups, 'supplier', 'Supplier');
@@ -757,7 +763,7 @@ function updateClearBtn(){
   var any=Object.values(G.filters).some(function(v){return v!=='';});
   $('filter-clear-btn').style.display=any?'':'none';
 }
-function clearFilters(){ G.filters={season:'',stage:'',cat:'',dept:'',colour:'',intake:'',retail:'',stylegrade:'',supplier:''}; buildFilters(); renderMainContent(); $('filter-clear-btn').style.display='none'; }
+function clearFilters(){ G.filters={season:'',stage:'',cat:'',dept:'',colour:'',intake:'',retail:'',stylegrade:'',theme:'',supplier:''}; buildFilters(); renderMainContent(); $('filter-clear-btn').style.display='none'; }
 
 function filteredDevs(){
   return G.devs.filter(function(d){
@@ -768,6 +774,7 @@ function filteredDevs(){
     if(G.filters.cat&&d.category!==G.filters.cat) return false;
     if(G.filters.dept&&(d.department||'')!==G.filters.dept) return false;
     if(G.filters.supplier&&(d.supplierAllocation||'').toLowerCase()!==G.filters.supplier.toLowerCase()) return false;
+    if(G.filters.theme&&(d.theme||'').toLowerCase()!==G.filters.theme.toLowerCase()) return false;
     // Style-level filters — dev passes if ANY style matches
     var prods=d.products||[];
     if(G.filters.colour&&!prods.some(function(p){return p.colour===G.filters.colour;})) return false;
@@ -866,7 +873,7 @@ function styleCard(s){
     '</div>'+
     '<div class="card-body">'+
     '<div class="card-name">'+s.description+'</div>'+
-    '<div class="card-sub">'+( s.colour||'')+( dev.brand?' &bull; '+dev.brand:'')+( dev.seasonCode?' &bull; '+dev.seasonCode:'')+( s.intakeMonth?' &bull; '+s.intakeMonth:'')+'</div>'+
+    '<div class="card-sub">'+( s.colour||'')+( dev.brand?' &bull; '+dev.brand:'')+( dev.seasonCode?' &bull; '+dev.seasonCode:'')+( s.intakeMonth?' &bull; '+s.intakeMonth:'')+( dev.theme?' &bull; '+dev.theme:'')+'</div>'+
     '<div class="card-meta" style="display:flex;flex-wrap:wrap;gap:0.3rem 0.6rem;align-items:center;margin-top:0.35rem;">'+costHtml+retailHtml+qtyHtml+gradeBodyHtml+'</div>'+
     '</div></div>';
 }
@@ -1024,7 +1031,7 @@ function openDetail(devId){
 
   panel.innerHTML=
     '<div class="detail-head"><div class="detail-head-top"><div class="detail-title">'+d.description+'</div><button class="detail-close" onclick="closeDetail()">&#10005;</button></div>'+
-    '<div class="detail-pills">'+detailPill(d.stage||'concept')+(d.storeGrade?'<span class="detail-pill" style="background:var(--line2);color:var(--ink2);">Grade '+d.storeGrade+'</span>':'')+(d.department?'<span class="detail-pill" style="background:var(--line2);color:var(--ink2);">'+d.department+'</span>':'')+(d.brand?'<span class="detail-pill" style="background:var(--line2);color:var(--ink2);">'+d.brand+'</span>':'')+(d.seasonCode?'<span class="detail-pill" style="background:var(--line2);color:var(--ink2);">'+d.seasonCode+'</span>':'')+'</div></div>'+
+    '<div class="detail-pills">'+detailPill(d.stage||'concept')+(d.storeGrade?'<span class="detail-pill" style="background:var(--line2);color:var(--ink2);">Grade '+d.storeGrade+'</span>':'')+(d.department?'<span class="detail-pill" style="background:var(--line2);color:var(--ink2);">'+d.department+'</span>':'')+(d.brand?'<span class="detail-pill" style="background:var(--line2);color:var(--ink2);">'+d.brand+'</span>':'')+(d.seasonCode?'<span class="detail-pill" style="background:var(--line2);color:var(--ink2);">'+d.seasonCode+'</span>':'')+(d.theme?'<span class="detail-pill" style="background:#fef3c7;color:#92400e;">'+d.theme+'</span>':'')+'</div></div>'+
     '<div class="detail-body">'+stageBar+agreedSection+imgGrid+
     '<div class="detail-stats"><div class="detail-stat"><div class="detail-stat-label">Price Target</div><div class="detail-stat-val" style="color:#6366f1;">&pound;'+parseFloat(d.priceTarget||0).toFixed(2)+'</div></div>'+
     '<div class="detail-stat"><div class="detail-stat-label">Total Qty</div><div class="detail-stat-val">'+devStats(d).totalQty.toLocaleString()+'</div></div>'+
@@ -1143,6 +1150,7 @@ function renderFormBody(d){
 
   var html = '<div class="form-grid">';
   html += '<div class="form-group"><label class="form-label">Description</label>'+inp('f-desc',d?esc(d.description):'','e.g. License Tee Package')+'</div>';
+  html += '<div class="form-group"><label class="form-label">Theme</label><input class="form-input" id="f-theme" value="'+(d?esc(d.theme||''):'')+'" placeholder="e.g. Japanese, Vintage Sport, Floral"></div>';
   html += '<div class="form-group"><label class="form-label">Brand</label>'+sel('f-brand',BRANDS,d?d.brand:'',false)+'</div>';
   html += '<div class="form-group"><label class="form-label">Category</label>'+sel('f-cat',CATS,d?d.category:'',true)+'</div>';
   var gradeOptions = [''].concat(GRADES);
@@ -1339,7 +1347,7 @@ async function submitDev(){
     products.push({description:name,colour:co?co.value:'',qty:parseInt(q?q.value:0)||0,targetCost:parseFloat(tc?tc.value:0)||0,retailPrice:parseFloat(rp?rp.value:0)||0,storeGrade:gr?gr.value:'',intakeMonth:im?im.value:'',image:imgWrap?imgWrap.getAttribute('data-imgurl')||null:null});
   });
   var body={
-    description:desc,brand:$('f-brand').value,category:$('f-cat').value,seasonCode:$('f-season').value,
+    description:desc,brand:$('f-brand').value,category:$('f-cat').value,seasonCode:$('f-season').value,theme:$('f-theme')?$('f-theme').value.trim():'',
     stage:$('f-stage').value||'concept',storeGrade:null,department:$('f-dept').value||null,
     supplierAllocation:$('f-supplier').value.trim()||null,fabric:$('f-fabric').value.trim(),
     priceTarget: products.length>0 ? products.reduce(function(s,p){return s+parseFloat(p.targetCost||0);},0)/products.length : 0, orderQty:0,
