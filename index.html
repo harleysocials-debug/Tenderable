@@ -913,22 +913,55 @@ function carNav(btn){
 // ── PIPELINE ─────────────────────────────────────────────────────────────────
 function renderPipeline(mc){
   var devs=filteredDevs();
+
+  // Build flat list of styles — one card per style, same as board
+  var allStyles=[];
+  devs.forEach(function(dev){
+    var prods=(dev.products||[]).filter(function(p){return p.description;});
+    if(G.filters.colour) prods=prods.filter(function(p){return p.colour===G.filters.colour;});
+    if(G.filters.intake) prods=prods.filter(function(p){return p.intakeMonth===G.filters.intake;});
+    if(G.filters.stylegrade) prods=prods.filter(function(p){return p.storeGrade===G.filters.stylegrade;});
+    if(G.filters.retail){
+      var band=G.filters.retail.split('-'); var lo=parseFloat(band[0]),hi=parseFloat(band[1]);
+      prods=prods.filter(function(p){var r=parseFloat(p.retailPrice||0);return r>=lo&&r<hi;});
+    }
+    if(prods.length===0 && !G.filters.colour && !G.filters.intake && !G.filters.stylegrade && !G.filters.retail){
+      allStyles.push({_dev:dev,_isPlaceholder:true,stage:dev.stage||'concept'});
+    } else {
+      prods.forEach(function(p){
+        allStyles.push(Object.assign({},p,{_dev:dev,stage:dev.stage||'concept'}));
+      });
+    }
+  });
+
+  // Group styles by stage
   var grouped={}; STAGES.forEach(function(s){grouped[s]=[];});
-  devs.forEach(function(d){var s=d.stage||'concept'; if(!grouped[s]) grouped[s]=[]; grouped[s].push(d);});
-  var PIPE_COLORS={concept:'var(--concept)',development:'var(--dev)',sampling:'var(--sampling)',approved:'var(--approved)',production:'var(--production)',dropped:'var(--dropped)'};
+  allStyles.forEach(function(s){ var st=s.stage||'concept'; if(!grouped[st]) grouped[st]=[]; grouped[st].push(s); });
+
   var html='<div class="pipeline-wrap">';
   STAGES.forEach(function(s){
     var items=grouped[s]||[];
     html+='<div class="pipeline-col"><div class="pipeline-header stage-'+s+'"><span>'+STAGE_LABELS[s]+'</span><span style="opacity:0.6;">'+items.length+'</span></div><div class="pipeline-cards">';
     if(items.length===0) html+='<div style="padding:1rem;text-align:center;font-size:0.78rem;color:var(--ink4);">Empty</div>';
-    items.forEach(function(d){
-      var img=(d.files||[]).find(function(f){return f.isImage&&f.dataUrl;});
-      if(!img) (d.products||[]).forEach(function(p){if(!img&&p.image) img={dataUrl:p.image};});
-      html+='<div class="pipeline-card" onclick="openDetail(\''+d.id+'\')">';
-      if(img) html+='<img class="pipeline-card-img" src="'+img.dataUrl+'">';
+    items.forEach(function(item){
+      var dev=item._dev;
+      var imgSrc=item.image||(dev.files||[]).reduce(function(a,f){return a||(f.isImage&&f.dataUrl?f.dataUrl:null);},null);
+      html+='<div class="pipeline-card" onclick="openDetail(\''+dev.id+'\')">';
+      if(imgSrc) html+='<img class="pipeline-card-img" src="'+imgSrc+'">';
       else html+='<div class="pipeline-card-img-ph">&#127912;</div>';
-      html+='<div class="pipeline-card-name">'+d.description+'</div>';
-      html+='<div class="pipeline-card-sub">'+( d.brand||'')+' &bull; '+( d.seasonCode||'')+( d.supplierAllocation?' &bull; '+d.supplierAllocation:'')+'</div>';
+      if(item._isPlaceholder){
+        html+='<div class="pipeline-card-name">'+dev.description+'</div>';
+        html+='<div class="pipeline-card-sub">'+( dev.brand||'')+' &bull; '+( dev.seasonCode||'')+'</div>';
+      } else {
+        html+='<div class="pipeline-card-name">'+item.description+'</div>';
+        html+='<div class="pipeline-card-sub">'+( item.colour||'')+' &bull; '+( dev.brand||'')+' &bull; '+( dev.seasonCode||'')+'</div>';
+        html+='<div style="display:flex;gap:0.4rem;flex-wrap:wrap;margin-top:0.4rem;">';
+        if(item.targetCost) html+='<span style="font-size:0.72rem;font-weight:700;color:#6366f1;">Cost &pound;'+parseFloat(item.targetCost).toFixed(2)+'</span>';
+        if(item.retailPrice) html+='<span style="font-size:0.72rem;font-weight:700;color:#10b981;">Retail &pound;'+parseFloat(item.retailPrice).toFixed(2)+'</span>';
+        if(item.storeGrade) html+='<span style="font-size:0.7rem;font-weight:700;background:var(--line2);border:1px solid var(--line);padding:0.1rem 0.45rem;border-radius:20px;">Grade '+item.storeGrade+'</span>';
+        if(item.intakeMonth) html+='<span style="font-size:0.7rem;color:var(--ink4);">'+item.intakeMonth+'</span>';
+        html+='</div>';
+      }
       html+='</div>';
     });
     html+='</div></div>';
@@ -936,6 +969,7 @@ function renderPipeline(mc){
   html+='</div>';
   mc.innerHTML=html;
 }
+
 
 // ── DETAIL PANEL ─────────────────────────────────────────────────────────────
 function openDetail(devId){
