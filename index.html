@@ -1607,7 +1607,21 @@ function exportRangePDF(){
     '  .card-grid{grid-template-columns:repeat(4,1fr);}'+
     '  .no-print{display:none;}'+
     '}'+
-    '</style></head><body>'+
+    '</style>'+
+    '<scr"+"ipt src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"><\/script>'+
+    '<scr"+"ipt>'+
+    'function doSavePDF(){'+
+    '  var btn=document.getElementById(\'save-pdf-btn\');'+
+    '  btn.textContent=\'Generating...\';btn.disabled=true;'+
+    '  var clone=document.createElement(\'div\');'+
+    '  clone.innerHTML=document.body.innerHTML;'+
+    '  clone.querySelectorAll(\'.no-print\').forEach(function(el){el.remove();});'+
+    '  var fname=\'Range-Plan-\'+new Date().toISOString().slice(0,10)+\'.pdf\';'+
+    '  var opt={margin:[8,8,8,8],filename:fname,image:{type:\'jpeg\',quality:0.95},html2canvas:{scale:2,useCORS:true,allowTaint:true},jsPDF:{unit:\'mm\',format:\'a4\',orientation:\'portrait\'}};'+
+    '  html2pdf().set(opt).from(clone).save().then(function(){btn.textContent=\'Save PDF\';btn.disabled=false;});'+
+    '}'+
+    '<\/script>'+
+    '</head><body>'+
     '<div class="page-header">'+
     '<div><div class="logo">Tender<span>able</span></div><div style="font-size:10px;color:#6b7280;margin-top:3px;">Range Studio</div></div>'+
     '<div class="header-right"><div class="header-title">Range Plan</div><div class="header-meta">'+today+' &bull; '+G.user.name+' &bull; '+(G.user.company||'')+'</div></div>'+
@@ -1621,7 +1635,7 @@ function exportRangePDF(){
     sections+
     '<div class="no-print" style="position:fixed;bottom:20px;right:20px;display:flex;gap:8px;">'+
     '<button onclick="window.print()" style="background:#0c0f14;color:white;border:none;padding:10px 20px;border-radius:8px;font-weight:700;font-size:13px;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,.25);">&#128424; Print</button>'+
-    '<button onclick="document.title=\'Range-Plan-'+new Date().toISOString().slice(0,10)+'\';window.print();" style="background:#6366f1;color:white;border:none;padding:10px 20px;border-radius:8px;font-weight:700;font-size:13px;cursor:pointer;box-shadow:0 4px 14px rgba(99,102,241,.4);">&#128190; Save PDF</button>'+
+    '<button onclick="doSavePDF()" style="background:#6366f1;color:white;border:none;padding:10px 20px;border-radius:8px;font-weight:700;font-size:13px;cursor:pointer;box-shadow:0 4px 14px rgba(99,102,241,.4);" id="save-pdf-btn">&#128190; Save PDF</button>'+
     '</div>'+
     '</body></html>';
 
