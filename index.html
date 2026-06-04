@@ -495,6 +495,7 @@ input, select, textarea { font-family: inherit; }
     <div class="view-toggle">
       <button class="view-btn active" id="view-board" onclick="setView('board')">&#9641; Board</button>
       <button class="view-btn" id="view-pipeline" onclick="setView('pipeline')">&#9776; Pipeline</button>
+      <button class="view-btn" onclick="exportRangePDF()" title="Export current view as PDF" style="background:linear-gradient(135deg,#6366f1,#4f46e5);color:white;border-color:#6366f1;">&#128196; Export PDF</button>
     </div>
   </div>
 
@@ -1466,6 +1467,166 @@ function delComment(btn){
   deleteComment(btn.dataset.devid.trim(), btn.dataset.cid.trim(), parseInt(btn.dataset.cidx));
 }
 window.delComment=delComment;
+
+
+function exportRangePDF(){
+  var devs = filteredDevs();
+  if(!devs.length){ toast('No developments to export','error'); return; }
+
+  // Build flat style list same as board
+  var allStyles=[];
+  devs.forEach(function(dev){
+    var prods=(dev.products||[]).filter(function(p){return p.description;});
+    if(G.filters.colour) prods=prods.filter(function(p){return p.colour===G.filters.colour;});
+    if(G.filters.intake) prods=prods.filter(function(p){return p.intakeMonth===G.filters.intake;});
+    if(G.filters.stylegrade) prods=prods.filter(function(p){return p.storeGrade===G.filters.stylegrade;});
+    if(G.filters.retail){
+      var band=G.filters.retail.split('-'); var lo=parseFloat(band[0]),hi=parseFloat(band[1]);
+      prods=prods.filter(function(p){var r=parseFloat(p.retailPrice||0);return r>=lo&&r<hi;});
+    }
+    if(prods.length===0&&!G.filters.colour&&!G.filters.intake&&!G.filters.stylegrade&&!G.filters.retail){
+      allStyles.push({_dev:dev,_isPlaceholder:true,category:dev.category||'Other'});
+    } else {
+      prods.forEach(function(p){ allStyles.push(Object.assign({},p,{_dev:dev,category:dev.category||'Other'})); });
+    }
+  });
+
+  // Group by category
+  var grouped={}; CATS.forEach(function(c){grouped[c]=[];}); grouped.__other=[];
+  allStyles.forEach(function(s){ if(grouped[s.category]) grouped[s.category].push(s); else grouped.__other.push(s); });
+
+  // Build active filter summary
+  var filterSummary=[];
+  if(G.filters.season) filterSummary.push('Season: '+G.filters.season);
+  if(G.filters.stage) filterSummary.push('Stage: '+STAGE_LABELS[G.filters.stage]);
+  if(G.filters.cat) filterSummary.push('Category: '+G.filters.cat);
+  if(G.filters.dept) filterSummary.push('Dept: '+G.filters.dept);
+  if(G.filters.colour) filterSummary.push('Colour: '+G.filters.colour);
+  if(G.filters.intake) filterSummary.push('Intake: '+G.filters.intake);
+  if(G.filters.retail) filterSummary.push('Retail: '+G.filters.retail);
+  if(G.filters.stylegrade) filterSummary.push('Grade: '+G.filters.stylegrade);
+  if(G.filters.theme) filterSummary.push('Theme: '+G.filters.theme);
+  if(G.filters.supplier) filterSummary.push('Supplier: '+G.filters.supplier);
+
+  var totalStyles=allStyles.filter(function(s){return !s._isPlaceholder;}).length;
+  var totalQty=allStyles.filter(function(s){return !s._isPlaceholder;}).reduce(function(s,x){return s+parseInt(x.qty||0);},0);
+  var today=new Date().toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'});
+
+  // Build HTML sections
+  var sections='';
+  var allCats=CATS.concat(['__other']);
+  allCats.forEach(function(cat){
+    var items=grouped[cat]; if(!items||!items.length) return;
+    var label=cat==='__other'?'Other':cat;
+    var costs=items.filter(function(s){return !s._isPlaceholder&&s.targetCost;});
+    var avgCost=costs.length?(costs.reduce(function(s,p){return s+parseFloat(p.targetCost);},0)/costs.length).toFixed(2):null;
+    var avgRetail=costs.length?(costs.reduce(function(s,p){return s+parseFloat(p.retailPrice||0);},0)/costs.length).toFixed(2):null;
+
+    var cards='';
+    items.forEach(function(s){
+      var dev=s._dev;
+      var imgSrc=s.image||((dev.files||[]).find(function(f){return f.isImage&&f.dataUrl;})||{}).dataUrl;
+      var stageCols={inspiration:'#eef2ff|#6366f1',development:'#fffbeb|#b45309',sampling:'#ecfeff|#0891b2',rangeplan:'#d1fae5|#059669',signedoff:'#ede9fe|#7c3aed',ordersent:'#ecfeff|#0369a1',dropped:'#fee2e2|#b91c1c'};
+      var sc=(stageCols[dev.stage||'inspiration']||'#eef2ff|#6366f1').split('|');
+      var stageLbl=STAGE_LABELS[dev.stage||'inspiration']||dev.stage||'Inspiration';
+      if(s._isPlaceholder){
+        cards+='<div class="card"><div class="card-img-wrap"><div class="card-no-img">No image</div></div><div class="card-info"><div class="style-name">'+dev.description+'</div><div class="style-sub">No styles added</div></div></div>';
+        return;
+      }
+      cards+='<div class="card">';
+      cards+='<div class="card-img-wrap">';
+      if(imgSrc) cards+='<img src="'+imgSrc+'" class="card-img">';
+      else cards+='<div class="card-no-img">No image</div>';
+      cards+='<span class="stage-badge" style="background:'+sc[0]+';color:'+sc[1]+'">'+stageLbl+'</span>';
+      if(s.storeGrade) cards+='<span class="grade-badge">'+s.storeGrade+'</span>';
+      cards+='</div>';
+      cards+='<div class="card-info">';
+      cards+='<div class="style-name">'+s.description+'</div>';
+      cards+='<div class="style-sub">'+dev.description+'</div>';
+      cards+='<div class="style-meta">';
+      if(s.colour) cards+='<span class="meta-tag">'+s.colour+'</span>';
+      if(s.intakeMonth) cards+='<span class="meta-tag">'+s.intakeMonth+'</span>';
+      if(s.qty) cards+='<span class="meta-tag">Qty: '+parseInt(s.qty).toLocaleString()+'</span>';
+      cards+='</div>';
+      cards+='<div class="price-row">';
+      if(s.targetCost) cards+='<span class="cost">Cost &pound;'+parseFloat(s.targetCost).toFixed(2)+'</span>';
+      if(s.retailPrice) cards+='<span class="retail">Retail &pound;'+parseFloat(s.retailPrice).toFixed(2)+'</span>';
+      if(s.costConfirmed&&s.qtyConfirmed) cards+='<span class="confirmed-badge">&#10003; Confirmed</span>';
+      cards+='</div>';
+      if(dev.supplierAllocation) cards+='<div class="supplier">'+dev.supplierAllocation+'</div>';
+      cards+='</div></div>';
+    });
+
+    sections+='<div class="category-section">';
+    sections+='<div class="cat-header"><span class="cat-title">'+label+'</span><span class="cat-count">'+items.length+' style'+(items.length!==1?'s':'')+'</span>';
+    if(avgCost) sections+='<span class="cat-avg">Avg cost &pound;'+avgCost+' &bull; Avg retail &pound;'+avgRetail+'</span>';
+    sections+='</div>';
+    sections+='<div class="card-grid">'+cards+'</div>';
+    sections+='</div>';
+  });
+
+  var html='<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Range Plan '+today+'</title><style>'+
+    '*{box-sizing:border-box;margin:0;padding:0;}'+
+    'body{font-family:"Helvetica Neue",Arial,sans-serif;color:#0c0f14;background:white;font-size:11px;}'+
+    '.page-header{padding:20px 28px 16px;border-bottom:2px solid #e5e7eb;display:flex;justify-content:space-between;align-items:flex-start;}'+
+    '.logo{font-size:22px;font-weight:800;letter-spacing:-1px;color:#0c0f14;}'+
+    '.logo span{color:#6366f1;}'+
+    '.header-right{text-align:right;}'+
+    '.header-title{font-size:14px;font-weight:700;color:#0c0f14;margin-bottom:3px;}'+
+    '.header-meta{font-size:10px;color:#6b7280;}'+
+    '.filter-bar{padding:8px 28px;background:#f8f9fb;border-bottom:1px solid #e5e7eb;font-size:9px;color:#6b7280;}'+
+    '.filter-bar strong{color:#0c0f14;}'+
+    '.summary-bar{padding:10px 28px;display:flex;gap:24px;border-bottom:1px solid #e5e7eb;}'+
+    '.summary-item{font-size:10px;}'+
+    '.summary-item strong{display:block;font-size:16px;font-weight:800;color:#0c0f14;}'+
+    '.category-section{padding:16px 28px;break-inside:avoid-column;page-break-inside:auto;}'+
+    '.cat-header{display:flex;align-items:center;gap:10px;margin-bottom:10px;padding-bottom:8px;border-bottom:2px solid #e5e7eb;}'+
+    '.cat-title{font-size:13px;font-weight:800;text-transform:uppercase;letter-spacing:.05em;}'+
+    '.cat-count{background:#f3f4f6;color:#6b7280;font-size:9px;font-weight:700;padding:2px 8px;border-radius:20px;}'+
+    '.cat-avg{margin-left:auto;font-size:9px;color:#6b7280;}'+
+    '.card-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;}'+
+    '.card{border:1px solid #e5e7eb;border-radius:10px;overflow:hidden;break-inside:avoid;page-break-inside:avoid;}'+
+    '.card-img-wrap{position:relative;aspect-ratio:1;background:#f3f4f6;overflow:hidden;}'+
+    '.card-img{width:100%;height:100%;object-fit:cover;display:block;}'+
+    '.card-no-img{width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:10px;color:#9ca3af;}'+
+    '.stage-badge{position:absolute;top:5px;left:5px;font-size:7px;font-weight:700;text-transform:uppercase;padding:2px 6px;border-radius:20px;letter-spacing:.05em;}'+
+    '.grade-badge{position:absolute;top:5px;right:5px;width:18px;height:18px;border-radius:50%;background:rgba(255,255,255,.9);display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:800;}'+
+    '.card-info{padding:8px;}'+
+    '.style-name{font-size:10px;font-weight:700;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}'+
+    '.style-sub{font-size:8px;color:#6b7280;margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}'+
+    '.style-meta{display:flex;flex-wrap:wrap;gap:3px;margin-bottom:4px;}'+
+    '.meta-tag{font-size:8px;background:#f3f4f6;padding:1px 5px;border-radius:10px;color:#6b7280;}'+
+    '.price-row{display:flex;gap:5px;align-items:center;flex-wrap:wrap;}'+
+    '.cost{font-size:9px;font-weight:700;color:#6366f1;}'+
+    '.retail{font-size:9px;font-weight:700;color:#059669;}'+
+    '.confirmed-badge{font-size:8px;font-weight:700;background:#dcfce7;color:#166534;padding:1px 5px;border-radius:10px;}'+
+    '.supplier{font-size:8px;color:#9ca3af;margin-top:3px;}'+
+    '@media print{'+
+    '  @page{margin:10mm;size:A4;}'+
+    '  body{-webkit-print-color-adjust:exact;print-color-adjust:exact;}'+
+    '  .card-grid{grid-template-columns:repeat(4,1fr);}'+
+    '  .no-print{display:none;}'+
+    '}'+
+    '</style></head><body>'+
+    '<div class="page-header">'+
+    '<div><div class="logo">Tender<span>able</span></div><div style="font-size:10px;color:#6b7280;margin-top:3px;">Range Studio</div></div>'+
+    '<div class="header-right"><div class="header-title">Range Plan</div><div class="header-meta">'+today+' &bull; '+G.user.name+' &bull; '+(G.user.company||'')+'</div></div>'+
+    '</div>'+
+    (filterSummary.length?'<div class="filter-bar"><strong>Filters:</strong> '+filterSummary.join(' &bull; ')+'</div>':'')+
+    '<div class="summary-bar">'+
+    '<div class="summary-item"><strong>'+allStyles.filter(function(s){return !s._isPlaceholder;}).length+'</strong>Styles</div>'+
+    '<div class="summary-item"><strong>'+devs.length+'</strong>Developments</div>'+
+    '<div class="summary-item"><strong>'+totalQty.toLocaleString()+'</strong>Total Units</div>'+
+    '</div>'+
+    sections+
+    '<button class="no-print" onclick="window.print()" style="position:fixed;bottom:20px;right:20px;background:#6366f1;color:white;border:none;padding:10px 22px;border-radius:8px;font-weight:700;font-size:13px;cursor:pointer;box-shadow:0 4px 14px rgba(99,102,241,.4);">&#128196; Print / Save PDF</button>'+
+    '</body></html>';
+
+  var w=window.open('','_blank');
+  w.document.write(html);
+  w.document.close();
+  setTimeout(function(){ w.print(); },800);
+}
 
 async function deleteDev(devId){
   if(!confirm('Delete this development? This cannot be undone.')) return;
