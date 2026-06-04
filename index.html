@@ -1314,45 +1314,46 @@ function handleDrop(e) {
     handleFiles({ target: { files } });
 }
 
-function handlePasteImage(items) {
-    for (let item of items) {
-        if (item.type.startsWith('image/')) {
-            const file = item.getAsFile();
-            if (!file) continue;
-            const fileSize = file.size > 1024 * 1024
-                ? (file.size / 1024 / 1024).toFixed(2) + ' MB'
-                : (file.size / 1024).toFixed(1) + ' KB';
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                data.uploadedFiles.push({
-                    name: 'pasted-image-' + Date.now() + '.png',
-                    size: fileSize,
-                    type: file.type,
-                    isImage: true,
-                    dataUrl: e.target.result
-                });
-                renderFileList();
-                // Flash the upload zone green briefly to confirm
-                const zone = document.getElementById('uploadZone');
-                if (zone) {
-                    zone.style.borderColor = '#22c55e';
-                    zone.style.background = '#f0fdf4';
-                    setTimeout(() => {
-                        zone.style.borderColor = '';
-                        zone.style.background = '';
-                    }, 800);
-                }
-            };
-            reader.readAsDataURL(file);
+function pasteImageInto(items, targetArray, renderFn, zoneId) {
+    for (var i = 0; i < items.length; i++) {
+        if (items[i].kind === 'file' && items[i].type.startsWith('image/')) {
+            (function(item) {
+                var file = item.getAsFile();
+                if (!file) return;
+                var sz = file.size > 1048576 ? (file.size/1048576).toFixed(2)+' MB' : (file.size/1024).toFixed(1)+' KB';
+                var r = new FileReader();
+                r.onload = function(ev) {
+                    targetArray.push({ name: 'pasted-'+Date.now()+'.png', size: sz, isImage: true, dataUrl: ev.target.result });
+                    renderFn();
+                    if (zoneId) {
+                        var zone = document.getElementById(zoneId);
+                        if (zone) {
+                            zone.style.borderColor = '#22c55e';
+                            zone.style.background = '#f0fdf4';
+                            setTimeout(function() { zone.style.borderColor=''; zone.style.background=''; }, 800);
+                        }
+                    }
+                };
+                r.readAsDataURL(file);
+            })(items[i]);
         }
     }
+}
+
+function handlePasteImage(items) {
+    pasteImageInto(items, data.uploadedFiles, renderFileList, 'uploadZone');
 }
 
 // Global paste listener — works on create page and edit page
 document.addEventListener('paste', function(e) {
     var items = e.clipboardData && e.clipboardData.items;
-    if (!items) return;
-    var hasImage = Array.from(items).some(function(i) { return i.type.startsWith('image/'); });
+    if (!items || items.length === 0) return;
+
+    // Check if any item is an image
+    var hasImage = false;
+    for (var i = 0; i < items.length; i++) {
+        if (items[i].kind === 'file' && items[i].type.startsWith('image/')) { hasImage = true; break; }
+    }
     if (!hasImage) return;
 
     // Create development page
@@ -1363,29 +1364,17 @@ document.addEventListener('paste', function(e) {
         if (specsTab && specsTab.style.display !== 'none') {
             handlePasteSpecsImage(items);
         } else {
-            handlePasteImage(items);
+            pasteImageInto(items, data.uploadedFiles, renderFileList, 'uploadZone');
         }
         return;
     }
 
-    // Edit page (edit tender / edit development)
+    // Edit page
     var editPage = document.getElementById('edit-tender-page');
     if (editPage && !editPage.classList.contains('hidden')) {
         e.preventDefault();
-        for (var i = 0; i < items.length; i++) {
-            if (items[i].type.startsWith('image/')) {
-                (function(item) {
-                    var f = item.getAsFile();
-                    var sz = f.size > 1048576 ? (f.size/1048576).toFixed(2)+' MB' : (f.size/1024).toFixed(1)+' KB';
-                    var r = new FileReader();
-                    r.onload = function(ev) {
-                        data.editUploadedFiles.push({ name: 'pasted-'+Date.now()+'.png', size: sz, isImage: true, dataUrl: ev.target.result });
-                        renderEditFileList();
-                    };
-                    r.readAsDataURL(f);
-                })(items[i]);
-            }
-        }
+        pasteImageInto(items, data.editUploadedFiles, renderEditFileList, 'edit-uploadZone');
+        return;
     }
 });
 
@@ -1428,26 +1417,9 @@ function handleSpecsFiles(files) {
 }
 
 function handlePasteSpecsImage(items) {
-    for (let item of items) {
-        if (item.type.startsWith('image/')) {
-            const file = item.getAsFile();
-            if (!file) continue;
-            const fileSize = file.size > 1024 * 1024 ? (file.size / 1024 / 1024).toFixed(2) + ' MB' : (file.size / 1024).toFixed(1) + ' KB';
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                data.specsFiles.push({ name: 'pasted-spec-' + Date.now() + '.png', size: fileSize, isImage: true, dataUrl: e.target.result });
-                renderSpecsFileList();
-                const zone = document.getElementById('specsUploadZone');
-                if (zone) {
-                    zone.style.borderColor = '#22c55e';
-                    zone.style.background = '#f0fdf4';
-                    setTimeout(() => { zone.style.borderColor = ''; zone.style.background = ''; }, 800);
-                }
-            };
-            reader.readAsDataURL(file);
-        }
-    }
+    pasteImageInto(items, data.specsFiles, renderSpecsFileList, 'specsUploadZone');
 }
+
 
 function removeSpecsFile(idx) {
     data.specsFiles.splice(idx, 1);
@@ -2763,6 +2735,7 @@ function viewDevelopment(devId) {
         html += '<div style="display:flex;gap:0.5rem;flex-wrap:wrap;">';
         html += '<button onclick="showEditTender(' + "'" + devId + "'" + ')" style="background:#f1f5f9;color:#0f172a;border:1px solid #d1d5db;padding:0.6rem 1.1rem;border-radius:8px;cursor:pointer;font-weight:600;font-size:0.875rem;">&#9999; Edit</button>';
         html += '<button onclick="sendDevToTender(' + "'" + devId + "'" + ')" style="background:linear-gradient(135deg,#06b6d4,#0891b2);color:white;border:none;padding:0.6rem 1.1rem;border-radius:8px;cursor:pointer;font-weight:600;font-size:0.875rem;">Send to Tender</button>';
+        html += '<button onclick="agreedPriceOffline(' + "'" + devId + "'" + ')" style="background:linear-gradient(135deg,#10b981,#059669);color:white;border:none;padding:0.6rem 1.1rem;border-radius:8px;cursor:pointer;font-weight:600;font-size:0.875rem;">&#10003; Agreed Offline</button>';
         html += '<button onclick="confirmDeleteDev(' + "'" + devId + "'" + ')" style="background:#fee2e2;color:#991b1b;border:1px solid #fca5a5;padding:0.6rem 1.1rem;border-radius:8px;cursor:pointer;font-weight:600;font-size:0.875rem;">&#128465; Delete</button>';
         html += '</div>';
     }
@@ -3068,25 +3041,6 @@ function cardCarouselNav(btn) {
     }
 }
 
-function cardCarouselNav(carId, dir, total) {
-    var car = document.getElementById(carId);
-    if (!car) return;
-    // Find current index
-    var cur = 0;
-    for (var i = 0; i < total; i++) {
-        var img = document.getElementById(carId + '-img-' + i);
-        if (img && img.style.display !== 'none') { cur = i; break; }
-    }
-    var next = (cur + dir + total) % total;
-    // Hide all, show next
-    for (var i = 0; i < total; i++) {
-        var img = document.getElementById(carId + '-img-' + i);
-        var dot = document.getElementById(carId + '-dot-' + i);
-        if (img) img.style.display = i === next ? 'block' : 'none';
-        if (dot) dot.className = 'carr-dot' + (i === next ? ' active' : '');
-    }
-}
-
 function renderDevelopmentTab() {
     var container = document.getElementById('buyer-tenders');
     var devs = data.developments || [];
@@ -3196,6 +3150,24 @@ function deleteDevelopment(devId) {
     data.developments = data.developments.filter(function(d) { return d.id !== devId; });
     delete data.devComments[devId];
     renderDevelopmentTab();
+}
+
+
+function agreedPriceOffline(devId) {
+    var dev = (data.developments || []).find(function(d) { return d.id === devId; });
+    if (!dev) return;
+    var price = prompt('Enter the agreed price (FOB) e.g. 12.50:', dev.agreedPrice || dev.priceTarget || '');
+    if (price === null) return; // cancelled
+    price = parseFloat(price);
+    if (isNaN(price) || price <= 0) { alert('Please enter a valid price'); return; }
+    var supplier = prompt('Supplier name (who was price agreed with):', dev.agreedSupplier || '');
+    if (supplier === null) return;
+    dev.agreedPrice = price;
+    dev.agreedSupplier = supplier.trim();
+    dev.agreedAt = new Date().toISOString();
+    dev.status = 'agreed_offline';
+    api('PUT', '/developments/' + devId, { agreedPrice: price, agreedSupplier: dev.agreedSupplier, agreedAt: dev.agreedAt, status: 'agreed_offline' });
+    viewDevelopment(devId); // refresh detail view
 }
 
 function confirmDeleteDev(devId) {
@@ -3956,6 +3928,7 @@ function addEditProductRowWithData(desc,colour,qty,price,imgSrc) {
     var imgWrap=document.createElement('div');
     imgWrap.style.cssText='width:64px;height:64px;flex-shrink:0;border-radius:7px;border:2px dashed #d1d5db;background:#f9fafb;display:flex;align-items:center;justify-content:center;cursor:pointer;overflow:hidden;position:relative;';
     if (imgSrc) {
+        imgWrap.setAttribute('data-imgurl', imgSrc);
         imgWrap.innerHTML='<img src="'+imgSrc+'" style="width:100%;height:100%;object-fit:cover;">';
         imgWrap.style.border='2px solid #8b5cf6';
     } else {
@@ -3999,8 +3972,8 @@ function getEditProducts() {
         var c=r.querySelector('.edit-product-colour') ? r.querySelector('.edit-product-colour').value.trim() : '';
         var q=r.querySelector('.edit-product-qty') ? r.querySelector('.edit-product-qty').value.trim() : '';
         var p=r.querySelector('.edit-product-price') ? r.querySelector('.edit-product-price').value.trim() : '';
-        var imgEl=r.querySelector('div img');
-        var img=imgEl ? imgEl.src : null;
+        var imgWrap=r.querySelector('div[data-imgurl]');
+        var img=imgWrap ? imgWrap.getAttribute('data-imgurl') : null;
         if(d) products.push({description:d,colour:c,qty:parseInt(q)||0,price:parseFloat(p)||0,image:img});
     });
     return products;
