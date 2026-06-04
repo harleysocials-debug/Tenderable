@@ -198,24 +198,41 @@ input, select, textarea { font-family: inherit; }
 .stage-dropped      { background: #fee2e2; color: #b91c1c; }
 
 /* ── PIPELINE VIEW ───────────────────────────────── */
-.pipeline-wrap { display: flex; flex-direction: column; gap: 0; padding: 0; overflow-y: auto; flex: 1; }
-.pipeline-lane { display: flex; align-items: stretch; border-bottom: 1px solid var(--line); min-height: 80px; }
-.pipeline-lane-label { width: 120px; flex-shrink: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 0.75rem 0.5rem; gap: 0.3rem; border-right: 1px solid var(--line); background: var(--surface); }
-.pipeline-lane-label-text { font-size: 0.68rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.06em; text-align: center; }
-.pipeline-lane-count { font-size: 0.65rem; font-weight: 700; padding: 0.15rem 0.5rem; border-radius: 20px; background: rgba(0,0,0,0.07); }
-.pipeline-lane-cards { flex: 1; display: flex; flex-wrap: wrap; gap: 0.5rem; padding: 0.6rem 0.75rem; align-content: flex-start; }
-.pipeline-card {
-  background: white; border-radius: 9px; padding: 0.5rem 0.6rem; cursor: pointer;
-  border: 1px solid var(--line); transition: all 0.15s;
-  display: flex; gap: 0.5rem; align-items: center;
-  width: 200px; flex-shrink: 0;
-}
-.pipeline-card:hover { box-shadow: var(--shadow); border-color: #6366f1; transform: translateY(-1px); }
-.pipeline-card:hover { box-shadow: var(--shadow); transform: translateY(-1px); }
-.pipeline-card-name { font-size: 0.75rem; font-weight: 700; line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.pipeline-card-sub { font-size: 0.65rem; color: var(--ink3); line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.pipeline-card-thumb { width: 36px; height: 36px; border-radius: 6px; object-fit: cover; flex-shrink: 0; }
-.pipeline-card-thumb-ph { width: 36px; height: 36px; border-radius: 6px; background: var(--line2); display: flex; align-items: center; justify-content: center; font-size: 1rem; flex-shrink: 0; }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* ── PIPELINE ────────────────────────────────────── */
+.kb { display:flex; gap:0; height:calc(100vh - 148px); overflow:hidden; }
+.kb-col { flex:1; min-width:0; display:flex; flex-direction:column; border-right:1px solid var(--line); }
+.kb-col:last-child { border-right:none; }
+.kb-head { padding:0.6rem 0.75rem; display:flex; align-items:center; justify-content:space-between; border-bottom:1px solid var(--line); flex-shrink:0; }
+.kb-head-label { font-size:0.68rem; font-weight:800; text-transform:uppercase; letter-spacing:0.07em; }
+.kb-head-count { font-size:0.68rem; font-weight:700; width:20px; height:20px; border-radius:50%; display:flex; align-items:center; justify-content:center; }
+.kb-cards { flex:1; overflow-y:auto; padding:0.4rem; display:flex; flex-direction:column; gap:0.3rem; }
+.kb-card { background:white; border:1px solid var(--line); border-radius:8px; padding:0.5rem 0.6rem; cursor:pointer; transition:all 0.15s; display:flex; align-items:center; gap:0.5rem; }
+.kb-card:hover { border-color:#6366f1; box-shadow:0 2px 8px rgba(99,102,241,0.15); }
+.kb-card-img { width:32px; height:32px; border-radius:5px; object-fit:cover; flex-shrink:0; }
+.kb-card-img-ph { width:32px; height:32px; border-radius:5px; background:var(--line2); display:flex; align-items:center; justify-content:center; font-size:0.9rem; flex-shrink:0; }
+.kb-card-body { flex:1; min-width:0; }
+.kb-card-name { font-size:0.75rem; font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; line-height:1.2; }
+.kb-card-sub { font-size:0.65rem; color:var(--ink3); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; margin-top:0.1rem; }
+.kb-card-meta { display:flex; gap:0.3rem; margin-top:0.2rem; align-items:center; }
+.kb-price { font-size:0.65rem; font-weight:700; color:#6366f1; }
+.kb-retail { font-size:0.65rem; font-weight:700; color:#10b981; }
+.kb-grade { font-size:0.6rem; font-weight:700; background:var(--line2); padding:0.1rem 0.35rem; border-radius:10px; color:var(--ink2); }
+.kb-empty { padding:1rem 0.5rem; text-align:center; font-size:0.72rem; color:var(--ink4); }
 
 /* ── DETAIL PANEL (slide-over) ───────────────────── */
 .detail-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 200; display: none; }
@@ -367,9 +384,9 @@ input, select, textarea { font-family: inherit; }
   .filter-bar { top: 58px; padding: 0.6rem 1rem; }
   .range-board { padding: 1rem; }
   .card-grid { grid-template-columns: repeat(2, 1fr); gap: 0.75rem; }
-  .pipeline-lane { flex-direction: column; }
-  .pipeline-lane-label { width: 100%; flex-direction: row; border-right: none; border-bottom: 1px solid var(--line); padding: 0.5rem 1rem; justify-content: flex-start; }
-  .pipeline-card { width: 160px; }
+  
+  
+  
   .detail-stats { grid-template-columns: 1fr 1fr; }
   .form-grid { grid-template-columns: 1fr; }
   .product-row-fields { grid-template-columns: 1fr 1fr; }
@@ -949,56 +966,60 @@ function carNav(btn){
 // ── PIPELINE ─────────────────────────────────────────────────────────────────
 function renderPipeline(mc){
   var devs=filteredDevs();
-
-  // Build flat list of styles — one card per style, same as board
   var allStyles=[];
   devs.forEach(function(dev){
     var prods=(dev.products||[]).filter(function(p){return p.description;});
     if(G.filters.colour) prods=prods.filter(function(p){return p.colour===G.filters.colour;});
     if(G.filters.intake) prods=prods.filter(function(p){return p.intakeMonth===G.filters.intake;});
     if(G.filters.stylegrade) prods=prods.filter(function(p){return p.storeGrade===G.filters.stylegrade;});
-    if(G.filters.retail){
-      var band=G.filters.retail.split('-'); var lo=parseFloat(band[0]),hi=parseFloat(band[1]);
-      prods=prods.filter(function(p){var r=parseFloat(p.retailPrice||0);return r>=lo&&r<hi;});
-    }
-    if(prods.length===0 && !G.filters.colour && !G.filters.intake && !G.filters.stylegrade && !G.filters.retail){
+    if(G.filters.retail){var band=G.filters.retail.split('-');var lo=parseFloat(band[0]),hi=parseFloat(band[1]);prods=prods.filter(function(p){var r=parseFloat(p.retailPrice||0);return r>=lo&&r<hi;});}
+    if(prods.length===0&&!G.filters.colour&&!G.filters.intake&&!G.filters.stylegrade&&!G.filters.retail){
       allStyles.push({_dev:dev,_isPlaceholder:true,stage:dev.stage||'inspiration'});
     } else {
-      prods.forEach(function(p){
-        allStyles.push(Object.assign({},p,{_dev:dev,stage:dev.stage||'inspiration'}));
-      });
+      prods.forEach(function(p){allStyles.push(Object.assign({},p,{_dev:dev,stage:dev.stage||'inspiration'}));});
     }
   });
-
-  // Group styles by stage
   var grouped={}; STAGES.forEach(function(s){grouped[s]=[];});
-  allStyles.forEach(function(s){ var st=s.stage||'inspiration'; if(!grouped[st]) grouped[st]=[]; grouped[st].push(s); });
+  allStyles.forEach(function(s){var st=s.stage||'inspiration';if(grouped[st])grouped[st].push(s);});
 
-  var html='<div class="pipeline-wrap">';
+  var stageStyle={
+    inspiration:{bg:'#eef2ff',color:'#6366f1'},
+    development:{bg:'#fffbeb',color:'#b45309'},
+    sampling:{bg:'#ecfeff',color:'#0891b2'},
+    rangeplan:{bg:'#d1fae5',color:'#059669'},
+    signedoff:{bg:'#ede9fe',color:'#7c3aed'},
+    ordersent:{bg:'#ecfeff',color:'#0369a1'},
+    dropped:{bg:'#fee2e2',color:'#b91c1c'}
+  };
+
+  var html='<div class="kb">';
   STAGES.forEach(function(s){
     var items=grouped[s]||[];
-    html+='<div class="pipeline-col"><div class="pipeline-header stage-'+s+'"><span>'+STAGE_LABELS[s]+'</span><span style="opacity:0.6;">'+items.length+'</span></div><div class="pipeline-cards">';
-    if(items.length===0) html+='<div style="padding:1rem;text-align:center;font-size:0.78rem;color:var(--ink4);">Empty</div>';
+    var ss=stageStyle[s]||{bg:'#f3f4f6',color:'#374151'};
+    html+='<div class="kb-col">';
+    html+='<div class="kb-head" style="background:'+ss.bg+';">';
+    html+='<span class="kb-head-label" style="color:'+ss.color+';">'+STAGE_LABELS[s]+'</span>';
+    html+='<span class="kb-head-count" style="background:'+ss.color+';color:white;">'+items.length+'</span>';
+    html+='</div>';
+    html+='<div class="kb-cards">';
+    if(!items.length) html+='<div class="kb-empty">—</div>';
     items.forEach(function(item){
       var dev=item._dev;
       var imgSrc=item.image||(dev.files||[]).reduce(function(a,f){return a||(f.isImage&&f.dataUrl?f.dataUrl:null);},null);
-      html+='<div class="pipeline-card" onclick="openDetail(\''+dev.id+'\')">';
-      if(imgSrc) html+='<img class="pipeline-card-img" src="'+imgSrc+'">';
-      else html+='<div class="pipeline-card-img-ph">&#127912;</div>';
-      if(item._isPlaceholder){
-        html+='<div class="pipeline-card-name">'+dev.description+'</div>';
-        html+='<div class="pipeline-card-sub">'+( dev.brand||'')+' &bull; '+( dev.seasonCode||'')+'</div>';
-      } else {
-        html+='<div class="pipeline-card-name">'+item.description+'</div>';
-        html+='<div class="pipeline-card-sub">'+( item.colour||'')+' &bull; '+( dev.brand||'')+' &bull; '+( dev.seasonCode||'')+'</div>';
-        html+='<div style="display:flex;gap:0.4rem;flex-wrap:wrap;margin-top:0.4rem;">';
-        if(item.targetCost) html+='<span style="font-size:0.72rem;font-weight:700;color:#6366f1;">Cost &pound;'+parseFloat(item.targetCost).toFixed(2)+'</span>';
-        if(item.retailPrice) html+='<span style="font-size:0.72rem;font-weight:700;color:#10b981;">Retail &pound;'+parseFloat(item.retailPrice).toFixed(2)+'</span>';
-        if(item.storeGrade) html+='<span style="font-size:0.7rem;font-weight:700;background:var(--line2);border:1px solid var(--line);padding:0.1rem 0.45rem;border-radius:20px;">Grade '+item.storeGrade+'</span>';
-        if(item.intakeMonth) html+='<span style="font-size:0.7rem;color:var(--ink4);">'+item.intakeMonth+'</span>';
+      html+='<div class="kb-card" data-devid="'+dev.id+'" onclick="openDetail(this.dataset.devid)">';
+      if(imgSrc) html+='<img class="kb-card-img" src="'+imgSrc+'">';
+      else html+='<div class="kb-card-img-ph">&#127912;</div>';
+      html+='<div class="kb-card-body">';
+      html+='<div class="kb-card-name">'+(item._isPlaceholder?dev.description:item.description)+'</div>';
+      html+='<div class="kb-card-sub">'+(item.colour||dev.brand||'')+( dev.seasonCode?' &bull; '+dev.seasonCode:'')+'</div>';
+      if(!item._isPlaceholder){
+        html+='<div class="kb-card-meta">';
+        if(item.targetCost) html+='<span class="kb-price">&pound;'+parseFloat(item.targetCost).toFixed(2)+'</span>';
+        if(item.retailPrice) html+='<span class="kb-retail">&pound;'+parseFloat(item.retailPrice).toFixed(2)+'</span>';
+        if(item.storeGrade) html+='<span class="kb-grade">'+item.storeGrade+'</span>';
         html+='</div>';
       }
-      html+='</div>';
+      html+='</div></div>';
     });
     html+='</div></div>';
   });
