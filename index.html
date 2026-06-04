@@ -1048,9 +1048,9 @@ function renderFormBody(d){
   var gradeOptions = [''].concat(GRADES);
   // Store grade moved to individual style rows
 
-  var deptSelect = '<select class="form-input" id="f-dept">';
-  depts.forEach(function(x){ deptSelect+='<option'+(d&&d.department===x?' selected':'')+'>'+x+'</option>'; });
-  deptSelect+='</select>';
+  var deptSelect = '<select class="form-input" id="f-dept"><option value="">Department</option><option value="Mens Accessories">Mens Accessories</option><option value="Mens Branded Stock Buy">Mens Branded Stock Buy</option><option value="Mens Golfwear">Mens Golfwear</option><option value="Mens Jackets">Mens Jackets</option><option value="Mens Jeans">Mens Jeans</option><option value="Mens Joggers">Mens Joggers</option><option value="Mens Knitwear">Mens Knitwear</option><option value="Mens Loungewear">Mens Loungewear</option><option value="Mens Marketing & Events">Mens Marketing & Events</option><option value="Mens Polo Shirts">Mens Polo Shirts</option><option value="Mens Shirts">Mens Shirts</option><option value="Mens Shorts">Mens Shorts</option><option value="Mens Smart/Formal Trousers">Mens Smart/Formal Trousers</option><option value="Mens Socks">Mens Socks</option><option value="Mens Sportswear">Mens Sportswear</option><option value="Mens Sweatshirts">Mens Sweatshirts</option><option value="Mens Swim Shorts">Mens Swim Shorts</option><option value="Mens Tailoring">Mens Tailoring</option><option value="Mens Trousers">Mens Trousers</option><option value="Mens T Shirts/Vests">Mens T Shirts/Vests</option><option value="Mens Underwear">Mens Underwear</option><option value="Mens Workwear">Mens Workwear</option><option value="SB Mens">SB Mens</option></select>';
+  html += '<div class="form-group"><label class="form-label">Season</label>'+sel('f-season',seasons,d?d.seasonCode:'',true)+'</div>';
+  html += '<div class="form-group"><label class="form-label">Stage</label>'+stageSelect+'</div>';
   html += '<div class="form-group"><label class="form-label">Department</label>'+deptSelect+'</div>';
 
   html += '<div class="form-group"><label class="form-label">Supplier Allocation</label>'+inp('f-supplier',d?esc(d.supplierAllocation||''):'','Supplier name')+'</div>';
