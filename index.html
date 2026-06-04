@@ -1592,6 +1592,25 @@ async function refreshDashboard() {
     renderBuyerDashboard();
 }
 
+// ── AUTO POLL ─────────────────────────────────────────────────────────────────
+var _pollInterval = null;
+function startPolling() {
+    stopPolling();
+    _pollInterval = setInterval(function() {
+        if (!data.currentUser) return stopPolling();
+        loadData().then(function() {
+            // Re-render current view silently
+            var page = document.querySelector('.dashboard:not(.hidden)');
+            if (!page) return;
+            var id = page.id;
+            if (id === 'buyer-page') renderBuyerDashboard();
+        });
+    }, 45000); // every 45 seconds
+}
+function stopPolling() {
+    if (_pollInterval) { clearInterval(_pollInterval); _pollInterval = null; }
+}
+
 function goToDashboard() {
     var type = data.currentUser.type;
     if (type === 'buyer') {
@@ -1619,6 +1638,7 @@ function logout() {
 }
 
 function logout() {
+    stopPolling();
     data.currentUser = null;
     showPage('login-page');
 }
@@ -3093,6 +3113,7 @@ function renderDevelopmentTab() {
             '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:0.5rem;">' +
             '<div>' +
             '<span style="background:#e0e7ff;color:#4f46e5;font-size:0.7rem;font-weight:700;padding:0.2rem 0.6rem;border-radius:20px;text-transform:uppercase;letter-spacing:0.05em;">Development</span>' +
+            (dev.status === 'agreed_offline' ? '<span style="background:#dcfce7;color:#166534;font-size:0.7rem;font-weight:700;padding:0.2rem 0.6rem;border-radius:20px;margin-left:0.4rem;">&#10003; Agreed &bull; &pound;' + parseFloat(dev.agreedPrice||0).toFixed(2) + (dev.agreedSupplier ? ' &bull; ' + dev.agreedSupplier : '') + '</span>' : '') +
             '<h3 style="margin:0.4rem 0 0.25rem 0;font-size:1.05rem;">' + dev.description + '</h3>' +
             '<p style="font-size:0.8rem;color:#64748b;margin:0;">' + dev.brand + ' &bull; ' + dev.category + ' &bull; <strong>' + dev.seasonCode + '</strong></p>' +
             '</div>' +
