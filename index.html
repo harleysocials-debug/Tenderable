@@ -1110,17 +1110,13 @@ function renderFormBody(d){
   html += '<div class="form-group"><label class="form-label">Description</label>'+inp('f-desc',d?esc(d.description):'','e.g. License Tee Package')+'</div>';
   html += '<div class="form-group"><label class="form-label">Brand</label>'+sel('f-brand',BRANDS,d?d.brand:'',false)+'</div>';
   html += '<div class="form-group"><label class="form-label">Category</label>'+sel('f-cat',CATS,d?d.category:'',true)+'</div>';
-  html += '<div class="form-group"><label class="form-label">Season</label>'+sel('f-season',seasons,d?d.seasonCode:'',true)+'</div>';
-  html += '<div class="form-group"><label class="form-label">Stage</label>'+sel('f-stage',STAGES.map(function(s){return{v:s,l:STAGE_LABELS[s]};}),'d?d.stage||"concept":"concept"',false)+'</div>';
-  var stageOptions = STAGES.map(function(s){return{v:s,l:STAGE_LABELS[s]};});
-  var stageSelect = '<select class="form-input" id="f-stage">';
-  stageOptions.forEach(function(o){ stageSelect+='<option value="'+o.v+'"'+((d?(d.stage||'concept'):'concept')===o.v?' selected':'')+'>'+o.l+'</option>'; });
-  stageSelect+='</select>';
-  // Replace the broken stage select
-  html = html.replace(/<div class="form-group"><label class="form-label">Stage<\/label>.*?<\/div>/, '<div class="form-group"><label class="form-label">Stage</label>'+stageSelect+'</div>');
-
   var gradeOptions = [''].concat(GRADES);
   // Store grade moved to individual style rows
+
+  var stageOptions=STAGES.map(function(s){return{v:s,l:STAGE_LABELS[s]};});
+  var stageSelect='<select class="form-input" id="f-stage">';
+  stageOptions.forEach(function(o){stageSelect+='<option value="'+o.v+'"'+((d?(d.stage||'concept'):'concept')===o.v?' selected':'')+'>'+o.l+'</option>';});
+  stageSelect+='</select>';
 
   var deptSelect = '<select class="form-input" id="f-dept"><option value="">Department</option><option value="Mens Accessories">Mens Accessories</option><option value="Mens Branded Stock Buy">Mens Branded Stock Buy</option><option value="Mens Golfwear">Mens Golfwear</option><option value="Mens Jackets">Mens Jackets</option><option value="Mens Jeans">Mens Jeans</option><option value="Mens Joggers">Mens Joggers</option><option value="Mens Knitwear">Mens Knitwear</option><option value="Mens Loungewear">Mens Loungewear</option><option value="Mens Marketing & Events">Mens Marketing & Events</option><option value="Mens Polo Shirts">Mens Polo Shirts</option><option value="Mens Shirts">Mens Shirts</option><option value="Mens Shorts">Mens Shorts</option><option value="Mens Smart/Formal Trousers">Mens Smart/Formal Trousers</option><option value="Mens Socks">Mens Socks</option><option value="Mens Sportswear">Mens Sportswear</option><option value="Mens Sweatshirts">Mens Sweatshirts</option><option value="Mens Swim Shorts">Mens Swim Shorts</option><option value="Mens Tailoring">Mens Tailoring</option><option value="Mens Trousers">Mens Trousers</option><option value="Mens T Shirts/Vests">Mens T Shirts/Vests</option><option value="Mens Underwear">Mens Underwear</option><option value="Mens Workwear">Mens Workwear</option><option value="SB Mens">SB Mens</option></select>';
   html += '<div class="form-group"><label class="form-label">Season</label>'+sel('f-season',seasons,d?d.seasonCode:'',true)+'</div>';
