@@ -794,7 +794,7 @@ function styleCard(s){
     '</div>'+
     '<div class="card-body">'+
     '<div class="card-name">'+s.description+'</div>'+
-    '<div class="card-sub">'+( s.colour||'')+( dev.brand?' &bull; '+dev.brand:'')+( dev.seasonCode?' &bull; '+dev.seasonCode:'')+'</div>'+
+    '<div class="card-sub">'+( s.colour||'')+( dev.brand?' &bull; '+dev.brand:'')+( dev.seasonCode?' &bull; '+dev.seasonCode:'')+( s.intakeMonth?' &bull; '+s.intakeMonth:'')+'</div>'+
     '<div class="card-meta" style="display:flex;flex-wrap:wrap;gap:0.3rem 0.6rem;align-items:center;margin-top:0.35rem;">'+costHtml+retailHtml+qtyHtml+'</div>'+
     '</div></div>';
 }
@@ -1126,7 +1126,7 @@ function addProductRow(data){
   var row=document.createElement('div');
   row.className='product-row';
   var pidx=G.formProducts.length;
-  G.formProducts.push({description:d.description||'',colour:d.colour||'',qty:d.qty||'',targetCost:d.targetCost||d.price||'',retailPrice:d.retailPrice||'',storeGrade:d.storeGrade||'',image:d.image||null});
+  G.formProducts.push({description:d.description||'',colour:d.colour||'',qty:d.qty||'',targetCost:d.targetCost||d.price||'',retailPrice:d.retailPrice||'',storeGrade:d.storeGrade||'',intakeMonth:d.intakeMonth||'',image:d.image||null});
 
   // Image thumbnail
   var imgWrap=document.createElement('div');
@@ -1168,9 +1168,21 @@ function addProductRow(data){
     return inp;
   }
 
+  // Row 1: name + colour dropdown + grade
   row1.style.cssText='display:grid;grid-template-columns:2fr 1.5fr 0.7fr;gap:0.4rem;';
+
+  // Style name input
   row1.appendChild(mkInput('product-desc','Style name','description',false));
-  row1.appendChild(mkInput('product-colour','Colourway','colour',false));
+
+  // Colour dropdown
+  var colourSel=document.createElement('select');
+  colourSel.className='form-input product-colour';
+  colourSel.style.cssText='padding:0.5rem 0.65rem;font-size:0.82rem;';
+  colourSel.innerHTML='<option value="">Colourway</option><option value="Black">Black</option><option value="White">White</option><option value="Navy">Navy</option><option value="Blue">Blue</option><option value="Green">Green</option><option value="Red">Red</option><option value="Grey">Grey</option><option value="Brown">Brown</option><option value="Yellow">Yellow</option><option value="Orange">Orange</option><option value="Cream">Cream</option><option value="Purple">Purple</option><option value="Pink">Pink</option><option value="Ivory White">Ivory White</option><option value="Burnt Orange">Burnt Orange</option><option value="Dark Red">Dark Red</option><option value="Off White">Off White</option><option value="Stone">Stone</option><option value="Camel Brown">Camel Brown</option><option value="Dark Purple">Dark Purple</option><option value="Light Brown">Light Brown</option><option value="Chocolate Brown">Chocolate Brown</option><option value="Berry Purple">Berry Purple</option><option value="Black Patent">Black Patent</option><option value="Dark Brown">Dark Brown</option><option value="Grey Marl">Grey Marl</option><option value="Light Purple">Light Purple</option><option value="Petrol Blue">Petrol Blue</option>';
+  colourSel.value=d.colour||'';
+  colourSel.addEventListener('change',function(){G.formProducts[pidx].colour=this.value;});
+  row1.appendChild(colourSel);
+
   // Grade select
   var gradeInp=document.createElement('select');
   gradeInp.className='form-input product-grade';
@@ -1179,9 +1191,19 @@ function addProductRow(data){
   gradeInp.value=d.storeGrade||'';
   gradeInp.addEventListener('change',function(){G.formProducts[pidx].storeGrade=this.value;});
   row1.appendChild(gradeInp);
+  row2.style.cssText='display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:0.4rem;';
   row2.appendChild(mkInput('product-qty','Qty','qty',true,'1'));
   row2.appendChild(mkInput('product-cost','£ Cost','targetCost',true,'0.01'));
   row2.appendChild(mkInput('product-retail','£ Retail','retailPrice',true,'0.01'));
+
+  // Intake month dropdown
+  var monthSel=document.createElement('select');
+  monthSel.className='form-input product-intake';
+  monthSel.style.cssText='padding:0.5rem 0.5rem;font-size:0.82rem;';
+  monthSel.innerHTML='<option value="">Intake</option><option value="Jan">Jan</option><option value="Feb">Feb</option><option value="Mar">Mar</option><option value="Apr">Apr</option><option value="May">May</option><option value="Jun">Jun</option><option value="Jul">Jul</option><option value="Aug">Aug</option><option value="Sep">Sep</option><option value="Oct">Oct</option><option value="Nov">Nov</option><option value="Dec">Dec</option>';
+  monthSel.value=d.intakeMonth||'';
+  monthSel.addEventListener('change',function(){G.formProducts[pidx].intakeMonth=this.value;});
+  row2.appendChild(monthSel);
 
   fields.appendChild(row1);
   fields.appendChild(row2);
@@ -1207,7 +1229,9 @@ async function submitDev(){
     var imgWrap=row.querySelector('div[data-imgurl]');
     var name=d?d.value.trim():''; if(!name) return;
     var gr=row.querySelector('.product-grade');
-    products.push({description:name,colour:c?c.value.trim():'',qty:parseInt(q?q.value:0)||0,targetCost:parseFloat(tc?tc.value:0)||0,retailPrice:parseFloat(rp?rp.value:0)||0,storeGrade:gr?gr.value:'',image:imgWrap?imgWrap.getAttribute('data-imgurl')||null:null});
+    var im=row.querySelector('.product-intake');
+    var co=row.querySelector('.product-colour');
+    products.push({description:name,colour:co?co.value:'',qty:parseInt(q?q.value:0)||0,targetCost:parseFloat(tc?tc.value:0)||0,retailPrice:parseFloat(rp?rp.value:0)||0,storeGrade:gr?gr.value:'',intakeMonth:im?im.value:'',image:imgWrap?imgWrap.getAttribute('data-imgurl')||null:null});
   });
   var body={
     description:desc,brand:$('f-brand').value,category:$('f-cat').value,seasonCode:$('f-season').value,
