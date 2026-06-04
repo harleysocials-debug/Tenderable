@@ -228,7 +228,7 @@ input, select, textarea { font-family: inherit; }
 .detail-img-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px,1fr)); gap: 0.75rem; margin-bottom: 1.5rem; }
 .detail-img-tile { aspect-ratio: 1; border-radius: 10px; overflow: hidden; cursor: pointer; border: 1px solid var(--line); }
 .detail-img-tile img { width: 100%; height: 100%; object-fit: cover; }
-.detail-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.75rem; margin-bottom: 1.5rem; }
+.detail-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.75rem; margin-bottom: 1.5rem; }
 .detail-stat { background: var(--line2); border-radius: 10px; padding: 0.9rem; }
 .detail-stat-label { font-size: 0.65rem; font-weight: 700; color: var(--ink4); text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 0.3rem; }
 .detail-stat-val { font-size: 1.1rem; font-weight: 800; }
@@ -551,6 +551,13 @@ async function api(method, path, body){
   } catch(e) { console.warn(method, path, e.message); return null; }
 }
 function stageClass(s){ return 'stage-'+(s||'concept'); }
+function devStats(d){
+  var prods=(d.products||[]).filter(function(p){return p.description;});
+  if(!prods.length) return {avgCost:d.priceTarget||0, avgRetail:0, totalQty:d.orderQty||0, count:0};
+  var totalCost=0, totalRetail=0, totalQty=0;
+  prods.forEach(function(p){ totalCost+=parseFloat(p.targetCost||0); totalRetail+=parseFloat(p.retailPrice||0); totalQty+=parseInt(p.qty||0); });
+  return { avgCost:totalCost/prods.length, avgRetail:totalRetail/prods.length, totalQty:totalQty, count:prods.length };
+}
 function stagePill(s){ return '<span class="card-stage-badge '+stageClass(s)+'">'+((STAGE_LABELS[s]||s||'Concept'))+'</span>'; }
 function detailPill(s, extra){ return '<span class="detail-pill '+stageClass(s)+'">'+(STAGE_LABELS[s]||s||'Concept')+(extra?' &bull; '+extra:'')+'</span>'; }
 function initials(name){ if(!name) return '?'; return name.split(' ').map(function(w){return w[0];}).join('').substring(0,2).toUpperCase(); }
@@ -654,7 +661,7 @@ function startApp(){
 function buildTopbarNav(){
   var u=G.user; var nav=$('topbar-nav'); nav.innerHTML='';
   var tabs = u.type==='buyer'||u.type==='stakeholder'
-    ? [{id:'board',label:'Range Board'},{id:'pipeline',label:'Pipeline'},{id:'tenders',label:'Tenders'},{id:'admin',label:'Admin',admin:true}]
+    ? [{id:'board',label:'Range Board'},{id:'pipeline',label:'Pipeline'},{id:'admin',label:'Admin',admin:true}]
     : [{id:'available',label:'Available'},{id:'active',label:'Active'},{id:'accepted',label:'Accepted'}];
   tabs.forEach(function(t){
     if(t.admin && u.name!=='Harley Killingsworth') return;
@@ -746,7 +753,7 @@ function renderBoard(mc){
   var html='<div class="range-board">';
   CATS.forEach(function(cat){
     if(grouped[cat].length===0) return;
-    var total=grouped[cat].reduce(function(s,d){return s+(d.priceTarget||0);},0);
+    var total=grouped[cat].reduce(function(s,d){var st=devStats(d);return s+st.avgCost;},0);
     html+='<div class="board-section">';
     html+='<div class="section-header"><span class="section-title">'+cat+'</span><span class="section-count">'+grouped[cat].length+'</span><span class="section-subtotal">Avg target: &pound;'+( grouped[cat].length?(total/grouped[cat].length).toFixed(2):'0.00')+'</span></div>';
     html+='<div class="card-grid">';
@@ -1021,7 +1028,7 @@ function renderFormBody(d){
   html += '<div class="form-group"><label class="form-label">Department</label>'+deptSelect+'</div>';
 
   html += '<div class="form-group"><label class="form-label">Supplier Allocation</label>'+inp('f-supplier',d?esc(d.supplierAllocation||''):'','Supplier name')+'</div>';
-  html += '<div class="form-group"><label class="form-label">Price Target &#163;</label><input class="form-input" type="number" id="f-price" min="0" step="0.01" value="'+(d?d.priceTarget||'':'')+'" placeholder="0.00"></div>';
+  // price moved to product level
   html += '<div class="form-group"><label class="form-label">Order Qty</label><input class="form-input" type="number" id="f-qty" min="0" value="'+(d?d.orderQty||'':'')+'" placeholder="e.g. 1000"></div>';
   html += '<div class="form-group"><label class="form-label">Lead Time (weeks)</label><input class="form-input" type="number" id="f-lead" min="0" value="'+(d?d.leadTimeTarget||'':'')+'" placeholder="e.g. 12"></div>';
   html += '<div class="form-group"><label class="form-label">Fabric</label><input class="form-input" id="f-fabric" value="'+(d?esc(d.fabric||''):'')+'" placeholder="e.g. 180gsm Cotton"></div>';
@@ -1149,7 +1156,7 @@ async function submitDev(){
     description:desc,brand:$('f-brand').value,category:$('f-cat').value,seasonCode:$('f-season').value,
     stage:$('f-stage').value||'concept',storeGrade:$('f-grade').value||null,department:$('f-dept').value||null,
     supplierAllocation:$('f-supplier').value.trim()||null,fabric:$('f-fabric').value.trim(),
-    priceTarget:parseFloat($('f-price').value)||0,orderQty:parseInt($('f-qty').value)||0,
+    priceTarget:0, orderQty:parseInt($('f-qty').value)||0,
     leadTimeTarget:parseInt($('f-lead').value)||null,labellingReqs:$('f-notes').value.trim(),
     files:G.uploadedFiles,products:products
   };
@@ -1170,7 +1177,7 @@ async function submitDev(){
 // ── AGREED OFFLINE ────────────────────────────────────────────────────────────
 async function agreedOffline(devId){
   var d=G.devs.find(function(x){return x.id===devId;}); if(!d) return;
-  var price=prompt('Agreed price (FOB £):',d.agreedPrice||d.priceTarget||'');
+  var st=devStats(d); var price=prompt('Agreed price (FOB £):', d.agreedPrice||st.avgCost||'');
   if(price===null) return;
   price=parseFloat(price); if(isNaN(price)||price<=0){toast('Invalid price','error');return;}
   var sup=prompt('Supplier name:',d.agreedSupplier||d.supplierAllocation||'');
