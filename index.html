@@ -794,26 +794,50 @@ function renderMainContent(){
 function renderBoard(mc){
   var devs=filteredDevs();
   if(devs.length===0){ mc.innerHTML='<div class="range-board"><div class="empty-state"><div class="empty-state-icon">&#127912;</div><h3>No developments found</h3><p>Create your first development or adjust your filters.</p></div></div>'; return; }
+
+  // Build flat list of styles — one card per style
+  var allStyles=[];
+  devs.forEach(function(dev){
+    var prods=(dev.products||[]).filter(function(p){return p.description;});
+    // Apply style-level filters here
+    if(G.filters.colour) prods=prods.filter(function(p){return p.colour===G.filters.colour;});
+    if(G.filters.intake) prods=prods.filter(function(p){return p.intakeMonth===G.filters.intake;});
+    if(G.filters.stylegrade) prods=prods.filter(function(p){return p.storeGrade===G.filters.stylegrade;});
+    if(G.filters.retail){
+      var band=G.filters.retail.split('-'); var lo=parseFloat(band[0]),hi=parseFloat(band[1]);
+      prods=prods.filter(function(p){var r=parseFloat(p.retailPrice||0);return r>=lo&&r<hi;});
+    }
+    if(prods.length===0 && !G.filters.colour && !G.filters.intake && !G.filters.stylegrade && !G.filters.retail){
+      allStyles.push({_dev:dev,_isPlaceholder:true,category:dev.category||'Other'});
+    } else {
+      prods.forEach(function(p){ allStyles.push(Object.assign({},p,{_dev:dev,category:dev.category||'Other'})); });
+    }
+  });
+
+  if(allStyles.length===0){ mc.innerHTML='<div class="range-board"><div class="empty-state"><div class="empty-state-icon">&#127912;</div><h3>No styles match your filters</h3><p>Try adjusting or clearing your filters.</p></div></div>'; return; }
+
+  // Group by category
   var grouped={}; CATS.forEach(function(c){grouped[c]=[];}); grouped.__other=[];
-  devs.forEach(function(d){ if(grouped[d.category]) grouped[d.category].push(d); else grouped.__other.push(d); });
+  allStyles.forEach(function(s){ if(grouped[s.category]) grouped[s.category].push(s); else grouped.__other.push(s); });
+
   var html='<div class="range-board">';
-  CATS.forEach(function(cat){
-    if(grouped[cat].length===0) return;
-    var total=grouped[cat].reduce(function(s,d){var st=devStats(d);return s+st.avgCost;},0);
+  CATS.concat(['__other']).forEach(function(cat){
+    var items=grouped[cat]; if(!items||items.length===0) return;
+    var label=cat==='__other'?'Other':cat;
+    var costs=items.filter(function(s){return !s._isPlaceholder&&s.targetCost;});
+    var avgStr=costs.length>0?'&pound;'+(costs.reduce(function(s,p){return s+parseFloat(p.targetCost);},0)/costs.length).toFixed(2):'&mdash;';
+    var retails=items.filter(function(s){return !s._isPlaceholder&&s.retailPrice;});
+    var avgRetailStr=retails.length>0?'&pound;'+(retails.reduce(function(s,p){return s+parseFloat(p.retailPrice);},0)/retails.length).toFixed(2):'&mdash;';
     html+='<div class="board-section">';
-    html+='<div class="section-header"><span class="section-title">'+cat+'</span><span class="section-count">'+grouped[cat].length+'</span><span class="section-subtotal">Avg target: &pound;'+( grouped[cat].length?(total/grouped[cat].length).toFixed(2):'0.00')+'</span></div>';
+    html+='<div class="section-header"><span class="section-title">'+label+'</span><span class="section-count">'+items.length+'</span><span class="section-subtotal">Avg cost: '+avgStr+' &bull; Avg retail: '+avgRetailStr+'</span></div>';
     html+='<div class="card-grid">';
-    grouped[cat].forEach(function(d){ html+=devCard(d); });
+    items.forEach(function(s){ html+=styleCard(s); });
     html+='</div></div>';
   });
-  if(grouped.__other.length>0){
-    html+='<div class="board-section"><div class="section-header"><span class="section-title">Other</span><span class="section-count">'+grouped.__other.length+'</span></div><div class="card-grid">';
-    grouped.__other.forEach(function(d){ html+=devCard(d); });
-    html+='</div></div>';
-  }
   html+='</div>';
   mc.innerHTML=html;
 }
+
 
 function styleCard(s){
   var dev=s._dev;
