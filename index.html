@@ -642,14 +642,21 @@ async function loadData(){
     api('GET','/bids?role='+role+'&company='+co),
     api('GET','/messages')
   ]);
-  if(dRes&&dRes.developments) G.devs=dRes.developments;
+  if(dRes&&dRes.developments&&dRes.developments.length>=0) G.devs=dRes.developments;
   if(dRes&&dRes.devComments) G.devComments=dRes.devComments;
   if(tRes&&tRes.tenders) G.tenders=tRes.tenders.map(function(t){ return Object.assign({},t,{deadlineDate:new Date(t.deadlineDate)}); });
   if(bRes&&bRes.bids) G.bids=bRes.bids;
   if(mRes&&mRes.messages) G.messages=mRes.messages;
 }
 
-function startPolling(){ G._pollTimer=setInterval(async function(){ await loadData(); if(G.view==='board'||G.view==='pipeline') renderMainContent(); },45000); }
+function startPolling(){ G._pollTimer=setInterval(async function(){
+    var prevCount=G.devs.length;
+    await loadData();
+    // Only re-render if we got data back (don't wipe board on network blip)
+    if(G.devs.length>0||prevCount===0){
+      if(G.view==='board'||G.view==='pipeline') renderMainContent();
+    }
+  },45000); }
 function stopPolling(){ if(G._pollTimer){ clearInterval(G._pollTimer); G._pollTimer=null; } }
 
 // ── APP START ───────────────────────────────────────────────────────────────
@@ -771,7 +778,7 @@ function clearFilters(){ G.filters={season:'',stage:'',cat:'',dept:'',colour:'',
 
 function filteredDevs(){
   return G.devs.filter(function(d){
-    if(!d.description||d.description==='null') return false; // skip corrupted devs
+    if(d.description==='null') return false; // skip corrupted devs (allow undefined — they show as placeholder)
     // Dev-level filters
     if(G.filters.season&&d.seasonCode!==G.filters.season) return false;
     if(G.filters.stage&&(d.stage||'inspiration')!==G.filters.stage) return false;
@@ -1362,14 +1369,19 @@ async function submitDev(){
   var r;
   if(G.editId){
     r=await api('PUT','/developments/'+G.editId,body);
-    if(r){var idx=G.devs.findIndex(function(d){return d.id===G.editId;}); if(idx>=0) G.devs[idx]=Object.assign(G.devs[idx],body,{id:G.editId});}
   } else {
     r=await api('POST','/developments',body);
-    if(r&&r.development) G.devs.unshift(r.development);
   }
-  loading(false);
-  if(r){closeForm();buildFilters();renderMainContent();toast(G.editId?'Development updated':'Development created','success');}
-  else toast('Save failed','error');
+  // Always reload from server after save to guarantee fresh state
+  if(r){
+    await loadData();
+    loading(false);
+    closeForm();buildFilters();renderMainContent();
+    toast(G.editId?'Development updated':'Development created','success');
+  } else {
+    loading(false);
+    toast('Save failed — please try again','error');
+  }
 }
 
 // ── AGREED OFFLINE ────────────────────────────────────────────────────────────
