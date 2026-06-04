@@ -576,10 +576,11 @@ async function doLogin(){
   loading(true);
   var r = await api('POST','/auth/login',{name,pin});
   loading(false);
-  if(!r||!r.user){ $('login-msg').innerHTML='<div class="error-msg">'+(r&&r.error?r.error:'Invalid name or PIN')+'</div>'; return; }
-  if(r.user.status==='pending'){ $('login-msg').innerHTML='<div class="pending-msg">Your account is awaiting approval.</div>'; return; }
-  if(r.user.status==='rejected'){ $('login-msg').innerHTML='<div class="error-msg">Your account has been rejected.</div>'; return; }
-  G.user = r.user;
+  if(!r||r.error){ $('login-msg').innerHTML='<div class="error-msg">'+(r&&r.error?r.error:'Invalid name or PIN')+'</div>'; return; }
+  var u = r.user || r;
+  if(u.status==='pending'){ $('login-msg').innerHTML='<div class="pending-msg">Your account is awaiting approval.</div>'; return; }
+  if(u.status==='rejected'){ $('login-msg').innerHTML='<div class="error-msg">Your account has been rejected.</div>'; return; }
+  G.user = u;
   await loadData();
   startApp();
 }
@@ -590,9 +591,11 @@ async function doRegister(){
   loading(true);
   var r = await api('POST','/auth/register',{name,pin,role,company,categories:cats});
   loading(false);
-  if(!r||!r.user){ $('login-msg').innerHTML='<div class="error-msg">'+(r&&r.error?r.error:'Registration failed')+'</div>'; return; }
-  if(r.user.status==='pending'){ $('login-msg').innerHTML='<div class="pending-msg">Account created! Waiting for admin approval.</div>'; showLogin(); return; }
-  G.user = r.user;
+  if(!r||r.error){ $('login-msg').innerHTML='<div class="error-msg">'+(r&&r.error?r.error:'Registration failed')+'</div>'; return; }
+  if(r.pending){ $('login-msg').innerHTML='<div class="pending-msg">Account created! Waiting for Harley to approve.</div>'; showLogin(); return; }
+  var u = r.user || r;
+  if(!u.id){ $('login-msg').innerHTML='<div class="pending-msg">Account created! Waiting for Harley to approve.</div>'; showLogin(); return; }
+  G.user = u;
   await loadData();
   startApp();
 }
