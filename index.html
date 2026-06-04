@@ -858,6 +858,7 @@ function styleCard(s){
   var costHtml=s.targetCost?'<span class="card-price">Cost &pound;'+parseFloat(s.targetCost).toFixed(2)+'</span>':'';
   var retailHtml=s.retailPrice?'<span style="font-size:0.78rem;font-weight:700;color:#10b981;">Retail &pound;'+parseFloat(s.retailPrice).toFixed(2)+'</span>':'';
   var qtyHtml=s.qty?'<span style="font-size:0.7rem;color:var(--ink4);">'+parseInt(s.qty).toLocaleString()+' units</span>':'';
+  var gradeBodyHtml=s.storeGrade?'<span style="font-size:0.7rem;font-weight:800;background:var(--line2);border:1px solid var(--line);padding:0.15rem 0.5rem;border-radius:20px;color:var(--ink2);">Grade '+s.storeGrade+'</span>':'';
   return '<div class="dev-card" onclick="openDetail(\''+dev.id+'\')">'+
     '<div class="card-img" style="position:relative;">'+
     (imgSrc?'<img src="'+imgSrc+'" style="position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;">':'<div class="card-img-placeholder" style="width:100%;height:100%;">&#127912;</div>')+
@@ -866,7 +867,7 @@ function styleCard(s){
     '<div class="card-body">'+
     '<div class="card-name">'+s.description+'</div>'+
     '<div class="card-sub">'+( s.colour||'')+( dev.brand?' &bull; '+dev.brand:'')+( dev.seasonCode?' &bull; '+dev.seasonCode:'')+( s.intakeMonth?' &bull; '+s.intakeMonth:'')+'</div>'+
-    '<div class="card-meta" style="display:flex;flex-wrap:wrap;gap:0.3rem 0.6rem;align-items:center;margin-top:0.35rem;">'+costHtml+retailHtml+qtyHtml+'</div>'+
+    '<div class="card-meta" style="display:flex;flex-wrap:wrap;gap:0.3rem 0.6rem;align-items:center;margin-top:0.35rem;">'+costHtml+retailHtml+qtyHtml+gradeBodyHtml+'</div>'+
     '</div></div>';
 }
 
