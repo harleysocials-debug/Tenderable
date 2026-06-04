@@ -553,7 +553,7 @@ async function api(method, path, body){
 function stageClass(s){ return 'stage-'+(s||'concept'); }
 function devStats(d){
   var prods=(d.products||[]).filter(function(p){return p.description;});
-  if(!prods.length) return {avgCost:d.priceTarget||0, avgRetail:0, totalQty:d.orderQty||0, count:0};
+  if(!prods.length) return {avgCost:d.priceTarget||0, avgRetail:0, totalQty:0, count:0};
   var totalCost=0, totalRetail=0, totalQty=0;
   prods.forEach(function(p){ totalCost+=parseFloat(p.targetCost||0); totalRetail+=parseFloat(p.retailPrice||0); totalQty+=parseInt(p.qty||0); });
   return { avgCost:totalCost/prods.length, avgRetail:totalRetail/prods.length, totalQty:totalQty, count:prods.length };
@@ -888,7 +888,7 @@ function openDetail(devId){
     '<div class="detail-pills">'+detailPill(d.stage||'concept')+(d.storeGrade?'<span class="detail-pill" style="background:var(--line2);color:var(--ink2);">Grade '+d.storeGrade+'</span>':'')+(d.department?'<span class="detail-pill" style="background:var(--line2);color:var(--ink2);">'+d.department+'</span>':'')+(d.brand?'<span class="detail-pill" style="background:var(--line2);color:var(--ink2);">'+d.brand+'</span>':'')+(d.seasonCode?'<span class="detail-pill" style="background:var(--line2);color:var(--ink2);">'+d.seasonCode+'</span>':'')+'</div></div>'+
     '<div class="detail-body">'+stageBar+agreedSection+imgGrid+
     '<div class="detail-stats"><div class="detail-stat"><div class="detail-stat-label">Price Target</div><div class="detail-stat-val" style="color:#6366f1;">&pound;'+parseFloat(d.priceTarget||0).toFixed(2)+'</div></div>'+
-    '<div class="detail-stat"><div class="detail-stat-label">Order Qty</div><div class="detail-stat-val">'+( (d.orderQty||0).toLocaleString())+'</div></div>'+
+    '<div class="detail-stat"><div class="detail-stat-label">Total Qty</div><div class="detail-stat-val">'+devStats(d).totalQty.toLocaleString()+'</div></div>'+
     '<div class="detail-stat"><div class="detail-stat-label">Lead Time</div><div class="detail-stat-val">'+( d.leadTimeTarget?d.leadTimeTarget+' wks':'&mdash;')+'</div></div>'+
     '<div class="detail-stat"><div class="detail-stat-label">Supplier</div><div class="detail-stat-val" style="font-size:0.9rem;">'+( d.supplierAllocation||'&mdash;')+'</div></div></div>'+
     (d.fabric?'<div class="detail-section-title">Fabric</div><div style="background:var(--line2);border-radius:9px;padding:0.85rem;font-size:0.9rem;">'+d.fabric+'</div>':'')+
@@ -1029,7 +1029,7 @@ function renderFormBody(d){
 
   html += '<div class="form-group"><label class="form-label">Supplier Allocation</label>'+inp('f-supplier',d?esc(d.supplierAllocation||''):'','Supplier name')+'</div>';
   // price moved to product level
-  html += '<div class="form-group"><label class="form-label">Order Qty</label><input class="form-input" type="number" id="f-qty" min="0" value="'+(d?d.orderQty||'':'')+'" placeholder="e.g. 1000"></div>';
+  // Order Qty removed - calculated dynamically from styles
   html += '<div class="form-group"><label class="form-label">Lead Time (weeks)</label><input class="form-input" type="number" id="f-lead" min="0" value="'+(d?d.leadTimeTarget||'':'')+'" placeholder="e.g. 12"></div>';
   html += '<div class="form-group"><label class="form-label">Fabric</label><input class="form-input" id="f-fabric" value="'+(d?esc(d.fabric||''):'')+'" placeholder="e.g. 180gsm Cotton"></div>';
   html += '<div class="form-group full"><label class="form-label">Notes &amp; Requirements</label><textarea class="form-input" id="f-notes" rows="3" placeholder="Labelling, trim details etc.">'+(d?esc(d.labellingReqs||''):'')+' </textarea></div>';
@@ -1156,7 +1156,7 @@ async function submitDev(){
     description:desc,brand:$('f-brand').value,category:$('f-cat').value,seasonCode:$('f-season').value,
     stage:$('f-stage').value||'concept',storeGrade:$('f-grade').value||null,department:$('f-dept').value||null,
     supplierAllocation:$('f-supplier').value.trim()||null,fabric:$('f-fabric').value.trim(),
-    priceTarget:0, orderQty:parseInt($('f-qty').value)||0,
+    priceTarget:0, orderQty:0,
     leadTimeTarget:parseInt($('f-lead').value)||null,labellingReqs:$('f-notes').value.trim(),
     files:G.uploadedFiles,products:products
   };
