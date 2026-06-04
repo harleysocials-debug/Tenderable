@@ -18,13 +18,15 @@
   --surface: #f8f9fb;
 
   /* Stage colours */
-  --concept: #6366f1;   --concept-bg: #eef2ff;
+  --inspiration: #6366f1;   --inspiration-bg: #eef2ff;
   --dev: #f59e0b;       --dev-bg: #fffbeb;
   --sampling: #06b6d4;  --sampling-bg: #ecfeff;
-  --approved: #10b981;  --approved-bg: #d1fae5;
-  --production: #8b5cf6;--production-bg: #ede9fe;
-  --dropped: #ef4444;   --dropped-bg: #fee2e2;
+  --rangeplan: #10b981;  --rangeplan-bg: #d1fae5;
+  --signedoff: #8b5cf6;--signedoff-bg: #ede9fe;
+  --ordersent: #0891b2;  --ordersent-bg: #ecfeff;
   --agreed: #059669;    --agreed-bg: #d1fae5;
+  --concept: #6366f1;   --concept-bg: #eef2ff;  /* legacy */
+  --approved: #10b981;  --approved-bg: #d1fae5; /* legacy */
 
   --radius: 12px;
   --card-radius: 16px;
@@ -187,12 +189,13 @@ input, select, textarea { font-family: inherit; }
 .card-agreed-bar { background: var(--approved-bg); padding: 0.35rem 0.85rem; display: flex; align-items: center; gap: 0.4rem; font-size: 0.72rem; color: var(--agreed); font-weight: 600; border-top: 1px solid rgba(16,185,129,0.15); }
 
 /* Stage colours applied */
-.stage-concept     { background: var(--concept-bg); color: var(--concept); }
-.stage-development { background: var(--dev-bg);     color: #b45309; }
-.stage-sampling    { background: var(--sampling-bg);color: #0891b2; }
-.stage-approved    { background: var(--approved-bg);color: var(--agreed); }
-.stage-production  { background: var(--production-bg);color: #7c3aed; }
-.stage-dropped     { background: var(--dropped-bg); color: #b91c1c; }
+.stage-inspiration  { background: #eef2ff; color: #6366f1; }
+.stage-development  { background: var(--dev-bg); color: #b45309; }
+.stage-sampling     { background: var(--sampling-bg); color: #0891b2; }
+.stage-rangeplan    { background: #d1fae5; color: #059669; }
+.stage-signedoff    { background: #ede9fe; color: #7c3aed; }
+.stage-ordersent    { background: #ecfeff; color: #0369a1; }
+.stage-dropped      { background: #fee2e2; color: #b91c1c; }
 
 /* ── PIPELINE VIEW ───────────────────────────────── */
 .pipeline-wrap { display: flex; gap: 1rem; padding: 1.75rem; overflow-x: auto; align-items: flex-start; }
@@ -320,12 +323,13 @@ input, select, textarea { font-family: inherit; }
 }
 .stage-step:first-child { border-radius: 9px 0 0 9px; }
 .stage-step:last-child { border-radius: 0 9px 9px 0; border-right: none; }
-.stage-step.on.concept     { background: var(--concept-bg); color: var(--concept); }
+.stage-step.on.inspiration { background: #eef2ff; color: #6366f1; }
 .stage-step.on.development { background: var(--dev-bg); color: #b45309; }
 .stage-step.on.sampling    { background: var(--sampling-bg); color: #0891b2; }
-.stage-step.on.approved    { background: var(--approved-bg); color: var(--agreed); }
-.stage-step.on.production  { background: var(--production-bg); color: #7c3aed; }
-.stage-step.on.dropped     { background: var(--dropped-bg); color: #b91c1c; }
+.stage-step.on.rangeplan   { background: #d1fae5; color: #059669; }
+.stage-step.on.signedoff   { background: #ede9fe; color: #7c3aed; }
+.stage-step.on.ordersent   { background: #ecfeff; color: #0369a1; }
+.stage-step.on.dropped     { background: #fee2e2; color: #b91c1c; }
 
 /* ── IMAGE MODAL ─────────────────────────────────── */
 #img-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.92); z-index: 999; display: none; align-items: center; justify-content: center; }
@@ -527,8 +531,8 @@ input, select, textarea { font-family: inherit; }
 
 <script>
 const API = 'https://tenderable-production.up.railway.app';
-const STAGES = ['concept','development','sampling','approved','production','dropped'];
-const STAGE_LABELS = {concept:'Concept',development:'Development',sampling:'Sampling',approved:'Approved',production:'Production',dropped:'Dropped'};
+const STAGES = ['inspiration','development','sampling','rangeplan','signedoff','ordersent','dropped'];
+const STAGE_LABELS = {inspiration:'Inspiration',development:'Development',sampling:'Sampling',rangeplan:'Range Plan',signedoff:'Signed Off',ordersent:'Order Sent',dropped:'Dropped'};
 const CATS = ['OUTERWEAR','TOPS','BOTTOMS','UNDERWEAR','NIGHTWEAR','SWIMWEAR','ACCESSORIES','FOOTWEAR'];
 const BRANDS = ['BadRhino',"Evan\'s",'Long Tall Sally','Pixie Girl','M&Co','Star x JM'];
 const GRADES = ['A','B','C','D'];
@@ -559,7 +563,7 @@ async function api(method, path, body){
     return r.json();
   } catch(e) { console.warn(method, path, e.message); return null; }
 }
-function stageClass(s){ return 'stage-'+(s||'concept'); }
+function stageClass(s){ return 'stage-'+(s||'inspiration'); }
 function devStats(d){
   var prods=(d.products||[]).filter(function(p){return p.description;});
   if(!prods.length) return {avgCost:d.priceTarget||0, avgRetail:0, totalQty:0, count:0};
@@ -770,7 +774,7 @@ function filteredDevs(){
     if(!d.description||d.description==='null') return false; // skip corrupted devs
     // Dev-level filters
     if(G.filters.season&&d.seasonCode!==G.filters.season) return false;
-    if(G.filters.stage&&(d.stage||'concept')!==G.filters.stage) return false;
+    if(G.filters.stage&&(d.stage||'inspiration')!==G.filters.stage) return false;
     if(G.filters.cat&&d.category!==G.filters.cat) return false;
     if(G.filters.dept&&(d.department||'')!==G.filters.dept) return false;
     if(G.filters.supplier&&(d.supplierAllocation||'').toLowerCase()!==G.filters.supplier.toLowerCase()) return false;
@@ -860,7 +864,7 @@ function styleCard(s){
   var imgHtml=imgSrc
     ?'<div class="card-img"><img src="'+imgSrc+'"></div>'
     :'<div class="card-img"><div class="card-img-placeholder">&#127912;</div></div>';
-  var stagePillHtml=stagePill(dev.stage||'concept');
+  var stagePillHtml=stagePill(dev.stage||'inspiration');
   var gradeHtml=s.storeGrade?'<div class="card-grade-badge">'+s.storeGrade+'</div>':'';
   var costHtml=s.targetCost?'<span class="card-price">Cost &pound;'+parseFloat(s.targetCost).toFixed(2)+'</span>':'';
   var retailHtml=s.retailPrice?'<span style="font-size:0.78rem;font-weight:700;color:#10b981;">Retail &pound;'+parseFloat(s.retailPrice).toFixed(2)+'</span>':'';
@@ -882,7 +886,7 @@ function devCard(d){
   var imgs=(d.files||[]).filter(function(f){return f.isImage&&f.dataUrl;});
   // Add product images
   (d.products||[]).forEach(function(p){if(p.image&&p.image.startsWith('data:')) imgs.push({dataUrl:p.image});});
-  var stage=d.stage||'concept';
+  var stage=d.stage||'inspiration';
   var carId='car-'+d.id;
   var imgHtml='';
   if(imgs.length===0){
@@ -933,17 +937,17 @@ function renderPipeline(mc){
       prods=prods.filter(function(p){var r=parseFloat(p.retailPrice||0);return r>=lo&&r<hi;});
     }
     if(prods.length===0 && !G.filters.colour && !G.filters.intake && !G.filters.stylegrade && !G.filters.retail){
-      allStyles.push({_dev:dev,_isPlaceholder:true,stage:dev.stage||'concept'});
+      allStyles.push({_dev:dev,_isPlaceholder:true,stage:dev.stage||'inspiration'});
     } else {
       prods.forEach(function(p){
-        allStyles.push(Object.assign({},p,{_dev:dev,stage:dev.stage||'concept'}));
+        allStyles.push(Object.assign({},p,{_dev:dev,stage:dev.stage||'inspiration'}));
       });
     }
   });
 
   // Group styles by stage
   var grouped={}; STAGES.forEach(function(s){grouped[s]=[];});
-  allStyles.forEach(function(s){ var st=s.stage||'concept'; if(!grouped[st]) grouped[st]=[]; grouped[st].push(s); });
+  allStyles.forEach(function(s){ var st=s.stage||'inspiration'; if(!grouped[st]) grouped[st]=[]; grouped[st].push(s); });
 
   var html='<div class="pipeline-wrap">';
   STAGES.forEach(function(s){
@@ -1012,7 +1016,7 @@ function openDetail(devId){
   // Stage progress
   var stageBar='<div class="stage-progress">';
   STAGES.forEach(function(s){
-    var on=(d.stage||'concept')===s;
+    var on=(d.stage||'inspiration')===s;
     stageBar+='<div class="stage-step'+(on?' on '+s:'')+'" data-devid="'+devId+'" data-stage="'+s+'" onclick="quickSetStage(this.dataset.devid,this.dataset.stage)">'+STAGE_LABELS[s]+'</div>';
   });
   stageBar+='</div>';
@@ -1031,7 +1035,7 @@ function openDetail(devId){
 
   panel.innerHTML=
     '<div class="detail-head"><div class="detail-head-top"><div class="detail-title">'+d.description+'</div><button class="detail-close" onclick="closeDetail()">&#10005;</button></div>'+
-    '<div class="detail-pills">'+detailPill(d.stage||'concept')+(d.storeGrade?'<span class="detail-pill" style="background:var(--line2);color:var(--ink2);">Grade '+d.storeGrade+'</span>':'')+(d.department?'<span class="detail-pill" style="background:var(--line2);color:var(--ink2);">'+d.department+'</span>':'')+(d.brand?'<span class="detail-pill" style="background:var(--line2);color:var(--ink2);">'+d.brand+'</span>':'')+(d.seasonCode?'<span class="detail-pill" style="background:var(--line2);color:var(--ink2);">'+d.seasonCode+'</span>':'')+(d.theme?'<span class="detail-pill" style="background:#fef3c7;color:#92400e;">'+d.theme+'</span>':'')+'</div></div>'+
+    '<div class="detail-pills">'+detailPill(d.stage||'inspiration')+(d.storeGrade?'<span class="detail-pill" style="background:var(--line2);color:var(--ink2);">Grade '+d.storeGrade+'</span>':'')+(d.department?'<span class="detail-pill" style="background:var(--line2);color:var(--ink2);">'+d.department+'</span>':'')+(d.brand?'<span class="detail-pill" style="background:var(--line2);color:var(--ink2);">'+d.brand+'</span>':'')+(d.seasonCode?'<span class="detail-pill" style="background:var(--line2);color:var(--ink2);">'+d.seasonCode+'</span>':'')+(d.theme?'<span class="detail-pill" style="background:#fef3c7;color:#92400e;">'+d.theme+'</span>':'')+'</div></div>'+
     '<div class="detail-body">'+stageBar+agreedSection+imgGrid+
     '<div class="detail-stats"><div class="detail-stat"><div class="detail-stat-label">Price Target</div><div class="detail-stat-val" style="color:#6366f1;">&pound;'+parseFloat(d.priceTarget||0).toFixed(2)+'</div></div>'+
     '<div class="detail-stat"><div class="detail-stat-label">Total Qty</div><div class="detail-stat-val">'+devStats(d).totalQty.toLocaleString()+'</div></div>'+
@@ -1158,7 +1162,7 @@ function renderFormBody(d){
 
   var stageOptions=STAGES.map(function(s){return{v:s,l:STAGE_LABELS[s]};});
   var stageSelect='<select class="form-input" id="f-stage">';
-  stageOptions.forEach(function(o){stageSelect+='<option value="'+o.v+'"'+((d?(d.stage||'concept'):'concept')===o.v?' selected':'')+'>'+o.l+'</option>';});
+  stageOptions.forEach(function(o){stageSelect+='<option value="'+o.v+'"'+((d?(d.stage||'inspiration'):'concept')===o.v?' selected':'')+'>'+o.l+'</option>';});
   stageSelect+='</select>';
 
   var deptSelect = '<select class="form-input" id="f-dept"><option value="">Department</option><option value="Mens Accessories">Mens Accessories</option><option value="Mens Branded Stock Buy">Mens Branded Stock Buy</option><option value="Mens Golfwear">Mens Golfwear</option><option value="Mens Jackets">Mens Jackets</option><option value="Mens Jeans">Mens Jeans</option><option value="Mens Joggers">Mens Joggers</option><option value="Mens Knitwear">Mens Knitwear</option><option value="Mens Loungewear">Mens Loungewear</option><option value="Mens Marketing & Events">Mens Marketing & Events</option><option value="Mens Polo Shirts">Mens Polo Shirts</option><option value="Mens Shirts">Mens Shirts</option><option value="Mens Shorts">Mens Shorts</option><option value="Mens Smart/Formal Trousers">Mens Smart/Formal Trousers</option><option value="Mens Socks">Mens Socks</option><option value="Mens Sportswear">Mens Sportswear</option><option value="Mens Sweatshirts">Mens Sweatshirts</option><option value="Mens Swim Shorts">Mens Swim Shorts</option><option value="Mens Tailoring">Mens Tailoring</option><option value="Mens Trousers">Mens Trousers</option><option value="Mens T Shirts/Vests">Mens T Shirts/Vests</option><option value="Mens Underwear">Mens Underwear</option><option value="Mens Workwear">Mens Workwear</option><option value="SB Mens">SB Mens</option></select>';
@@ -1348,7 +1352,7 @@ async function submitDev(){
   });
   var body={
     description:desc,brand:$('f-brand').value,category:$('f-cat').value,seasonCode:$('f-season').value,theme:$('f-theme')?$('f-theme').value.trim():'',
-    stage:$('f-stage').value||'concept',storeGrade:null,department:$('f-dept').value||null,
+    stage:$('f-stage').value||'inspiration',storeGrade:null,department:$('f-dept').value||null,
     supplierAllocation:$('f-supplier').value.trim()||null,fabric:$('f-fabric').value.trim(),
     priceTarget: products.length>0 ? products.reduce(function(s,p){return s+parseFloat(p.targetCost||0);},0)/products.length : 0, orderQty:0,
     leadTimeTarget:parseInt($('f-lead').value)||null,labellingReqs:$('f-notes').value.trim(),
