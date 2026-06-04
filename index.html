@@ -769,6 +769,36 @@ function renderBoard(mc){
   mc.innerHTML=html;
 }
 
+function styleCard(s){
+  var dev=s._dev;
+  if(s._isPlaceholder){
+    // Dev with no styles yet
+    var imgs=(dev.files||[]).filter(function(f){return f.isImage&&f.dataUrl;});
+    var imgHtml=imgs.length>0?'<div class="card-img"><img src="'+imgs[0].dataUrl+'"></div>':'<div class="card-img"><div class="card-img-placeholder">&#127912;</div></div>';
+    return '<div class="dev-card" onclick="openDetail(\''+dev.id+'\')">'+imgHtml+'<div class="card-body"><div class="card-name">'+dev.description+'</div><div class="card-sub">'+( dev.brand||'')+' &bull; '+( dev.seasonCode||'')+'</div><div style="font-size:0.72rem;color:var(--ink4);margin-top:0.3rem;">No styles added yet</div></div></div>';
+  }
+  // Style card
+  var imgSrc = s.image || ((dev.files||[]).find(function(f){return f.isImage&&f.dataUrl;})||{}).dataUrl;
+  var imgHtml=imgSrc
+    ?'<div class="card-img"><img src="'+imgSrc+'"></div>'
+    :'<div class="card-img"><div class="card-img-placeholder">&#127912;</div></div>';
+  var stagePillHtml=stagePill(dev.stage||'concept');
+  var gradeHtml=s.storeGrade?'<div class="card-grade-badge">'+s.storeGrade+'</div>':'';
+  var costHtml=s.targetCost?'<span class="card-price">Cost &pound;'+parseFloat(s.targetCost).toFixed(2)+'</span>':'';
+  var retailHtml=s.retailPrice?'<span style="font-size:0.78rem;font-weight:700;color:#10b981;">Retail &pound;'+parseFloat(s.retailPrice).toFixed(2)+'</span>':'';
+  var qtyHtml=s.qty?'<span style="font-size:0.7rem;color:var(--ink4);">'+parseInt(s.qty).toLocaleString()+' units</span>':'';
+  return '<div class="dev-card" onclick="openDetail(\''+dev.id+'\')">'+
+    '<div class="card-img" style="position:relative;">'+
+    (imgSrc?'<img src="'+imgSrc+'" style="position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;">':'<div class="card-img-placeholder" style="width:100%;height:100%;">&#127912;</div>')+
+    stagePillHtml+gradeHtml+
+    '</div>'+
+    '<div class="card-body">'+
+    '<div class="card-name">'+s.description+'</div>'+
+    '<div class="card-sub">'+( s.colour||'')+( dev.brand?' &bull; '+dev.brand:'')+( dev.seasonCode?' &bull; '+dev.seasonCode:'')+'</div>'+
+    '<div class="card-meta" style="display:flex;flex-wrap:wrap;gap:0.3rem 0.6rem;align-items:center;margin-top:0.35rem;">'+costHtml+retailHtml+qtyHtml+'</div>'+
+    '</div></div>';
+}
+
 function devCard(d){
   var imgs=(d.files||[]).filter(function(f){return f.isImage&&f.dataUrl;});
   // Add product images
@@ -900,8 +930,7 @@ function openDetail(devId){
   var actions='<div class="detail-actions">';
   if(isBuyer){
     actions+='<button class="btn btn-primary btn-sm" onclick="openEditDev(\''+devId+'\')">&#9999; Edit</button>';
-    actions+='<button class="btn btn-cyan btn-sm" onclick="sendDevToTender(\''+devId+'\')">Send to Tender</button>';
-    actions+='<button class="btn btn-green btn-sm" onclick="agreedOffline(\''+devId+'\')">&#10003; Agreed Offline</button>';
+    // Send to Tender and Agreed Offline removed
     actions+='<button class="btn btn-danger btn-sm" onclick="deleteDev(\''+devId+'\')">&#128465; Delete</button>';
   }
   actions+='</div>';
@@ -1017,10 +1046,7 @@ function renderFormBody(d){
   html = html.replace(/<div class="form-group"><label class="form-label">Stage<\/label>.*?<\/div>/, '<div class="form-group"><label class="form-label">Stage</label>'+stageSelect+'</div>');
 
   var gradeOptions = [''].concat(GRADES);
-  var gradeSelect = '<select class="form-input" id="f-grade"><option value="">None</option>';
-  GRADES.forEach(function(g){ gradeSelect+='<option'+(d&&d.storeGrade===g?' selected':'')+'>'+g+'</option>'; });
-  gradeSelect+='</select>';
-  html += '<div class="form-group"><label class="form-label">Store Grade</label>'+gradeSelect+'</div>';
+  // Store grade moved to individual style rows
 
   var deptSelect = '<select class="form-input" id="f-dept">';
   depts.forEach(function(x){ deptSelect+='<option'+(d&&d.department===x?' selected':'')+'>'+x+'</option>'; });
@@ -1100,7 +1126,7 @@ function addProductRow(data){
   var row=document.createElement('div');
   row.className='product-row';
   var pidx=G.formProducts.length;
-  G.formProducts.push({description:d.description||'',colour:d.colour||'',qty:d.qty||'',targetCost:d.targetCost||d.price||'',retailPrice:d.retailPrice||'',image:d.image||null});
+  G.formProducts.push({description:d.description||'',colour:d.colour||'',qty:d.qty||'',targetCost:d.targetCost||d.price||'',retailPrice:d.retailPrice||'',storeGrade:d.storeGrade||'',image:d.image||null});
 
   // Image thumbnail
   var imgWrap=document.createElement('div');
@@ -1142,8 +1168,17 @@ function addProductRow(data){
     return inp;
   }
 
+  row1.style.cssText='display:grid;grid-template-columns:2fr 1.5fr 0.7fr;gap:0.4rem;';
   row1.appendChild(mkInput('product-desc','Style name','description',false));
   row1.appendChild(mkInput('product-colour','Colourway','colour',false));
+  // Grade select
+  var gradeInp=document.createElement('select');
+  gradeInp.className='form-input product-grade';
+  gradeInp.style.cssText='padding:0.5rem 0.5rem;font-size:0.82rem;';
+  ['','A','B','C','D'].forEach(function(g){ var o=document.createElement('option'); o.value=g; o.textContent=g||'Grade'; gradeInp.appendChild(o); });
+  gradeInp.value=d.storeGrade||'';
+  gradeInp.addEventListener('change',function(){G.formProducts[pidx].storeGrade=this.value;});
+  row1.appendChild(gradeInp);
   row2.appendChild(mkInput('product-qty','Qty','qty',true,'1'));
   row2.appendChild(mkInput('product-cost','£ Cost','targetCost',true,'0.01'));
   row2.appendChild(mkInput('product-retail','£ Retail','retailPrice',true,'0.01'));
@@ -1171,13 +1206,14 @@ async function submitDev(){
     var tc=row.querySelector('.product-cost'); var rp=row.querySelector('.product-retail');
     var imgWrap=row.querySelector('div[data-imgurl]');
     var name=d?d.value.trim():''; if(!name) return;
-    products.push({description:name,colour:c?c.value.trim():'',qty:parseInt(q?q.value:0)||0,targetCost:parseFloat(tc?tc.value:0)||0,retailPrice:parseFloat(rp?rp.value:0)||0,image:imgWrap?imgWrap.getAttribute('data-imgurl')||null:null});
+    var gr=row.querySelector('.product-grade');
+    products.push({description:name,colour:c?c.value.trim():'',qty:parseInt(q?q.value:0)||0,targetCost:parseFloat(tc?tc.value:0)||0,retailPrice:parseFloat(rp?rp.value:0)||0,storeGrade:gr?gr.value:'',image:imgWrap?imgWrap.getAttribute('data-imgurl')||null:null});
   });
   var body={
     description:desc,brand:$('f-brand').value,category:$('f-cat').value,seasonCode:$('f-season').value,
-    stage:$('f-stage').value||'concept',storeGrade:$('f-grade').value||null,department:$('f-dept').value||null,
+    stage:$('f-stage').value||'concept',storeGrade:null,department:$('f-dept').value||null,
     supplierAllocation:$('f-supplier').value.trim()||null,fabric:$('f-fabric').value.trim(),
-    priceTarget:0, orderQty:0,
+    priceTarget: products.length>0 ? products.reduce(function(s,p){return s+parseFloat(p.targetCost||0);},0)/products.length : 0, orderQty:0,
     leadTimeTarget:parseInt($('f-lead').value)||null,labellingReqs:$('f-notes').value.trim(),
     files:G.uploadedFiles,products:products
   };
