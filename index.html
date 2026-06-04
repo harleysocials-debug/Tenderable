@@ -580,7 +580,7 @@ async function doLogin(){
   var u = r.user || r;
   if(u.status==='pending'){ $('login-msg').innerHTML='<div class="pending-msg">Your account is awaiting approval.</div>'; return; }
   if(u.status==='rejected'){ $('login-msg').innerHTML='<div class="error-msg">Your account has been rejected.</div>'; return; }
-  G.user = u;
+  G.user = Object.assign({}, u, { type: u.type || u.role });
   await loadData();
   startApp();
 }
@@ -595,7 +595,7 @@ async function doRegister(){
   if(r.pending){ $('login-msg').innerHTML='<div class="pending-msg">Account created! Waiting for Harley to approve.</div>'; showLogin(); return; }
   var u = r.user || r;
   if(!u.id){ $('login-msg').innerHTML='<div class="pending-msg">Account created! Waiting for Harley to approve.</div>'; showLogin(); return; }
-  G.user = u;
+  G.user = Object.assign({}, u, { type: u.type || u.role });
   await loadData();
   startApp();
 }
