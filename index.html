@@ -1059,8 +1059,9 @@ function openDetail(devId){
 
   // Comments
   var commHtml='<div class="comment-thread">';
-  comments.forEach(function(c){
-    commHtml+='<div class="comment-item"><div class="comment-avatar">'+initials(c.userName)+'</div><div class="comment-bubble"><div class="comment-meta"><span class="comment-author">'+( c.userName||'')+'</span><span class="comment-time">'+new Date(c.createdAt).toLocaleString()+'</span></div><div class="comment-text">'+( c.comment||'')+'</div></div></div>';
+  comments.forEach(function(c,cIdx){
+    var canDel=isBuyer||(c.userName===u.name);
+    commHtml+='<div class="comment-item"><div class="comment-avatar">'+initials(c.userName)+'</div><div class="comment-bubble"><div class="comment-meta"><span class="comment-author">'+( c.userName||'')+'</span><span class="comment-time">'+new Date(c.createdAt).toLocaleString()+'</span>'+(canDel?'<button style="background:none;border:none;color:var(--ink4);font-size:0.75rem;cursor:pointer;margin-left:auto;padding:0 0.25rem;" data-devid="'+devId+'" data-cid="'+(c.id||'')+' " data-cidx="'+cIdx+'" onclick="window.delComment(this)" title="Delete">&#128465;</button>':'')+'</div><div class="comment-text">'+( c.comment||'')+'</div></div></div>';
   });
   commHtml+='</div>';
   if(isBuyer||u.type==='stakeholder'){
@@ -1450,6 +1451,21 @@ async function toggleConfirmField(devId, pIdx, field){
 window.toggleConfirmField=toggleConfirmField;
 function tcf(btn){ toggleConfirmField(btn.dataset.devid, parseInt(btn.dataset.pidx), btn.dataset.field); }
 window.tcf=tcf;
+
+
+async function deleteComment(devId, commentId, cidx){
+  if(!confirm('Delete this comment?')) return;
+  var r = await api('DELETE','/developments/'+devId+'/comments/'+commentId);
+  if(r){
+    if(G.devComments[devId]) G.devComments[devId].splice(cidx,1);
+    openDetail(devId);
+    toast('Comment deleted');
+  } else toast('Delete failed','error');
+}
+function delComment(btn){
+  deleteComment(btn.dataset.devid.trim(), btn.dataset.cid.trim(), parseInt(btn.dataset.cidx));
+}
+window.delComment=delComment;
 
 async function deleteDev(devId){
   if(!confirm('Delete this development? This cannot be undone.')) return;
