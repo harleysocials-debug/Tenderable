@@ -761,6 +761,7 @@ function clearFilters(){ G.filters={season:'',stage:'',cat:'',dept:'',colour:'',
 
 function filteredDevs(){
   return G.devs.filter(function(d){
+    if(!d.description||d.description==='null') return false; // skip corrupted devs
     // Dev-level filters
     if(G.filters.season&&d.seasonCode!==G.filters.season) return false;
     if(G.filters.stage&&(d.stage||'concept')!==G.filters.stage) return false;
@@ -807,7 +808,7 @@ function renderBoard(mc){
       var band=G.filters.retail.split('-'); var lo=parseFloat(band[0]),hi=parseFloat(band[1]);
       prods=prods.filter(function(p){var r=parseFloat(p.retailPrice||0);return r>=lo&&r<hi;});
     }
-    if(prods.length===0 && !G.filters.colour && !G.filters.intake && !G.filters.stylegrade && !G.filters.retail){
+    if(prods.length===0 && dev.description && dev.description!=='null' && !G.filters.colour && !G.filters.intake && !G.filters.stylegrade && !G.filters.retail){
       allStyles.push({_dev:dev,_isPlaceholder:true,category:dev.category||'Other'});
     } else {
       prods.forEach(function(p){ allStyles.push(Object.assign({},p,{_dev:dev,category:dev.category||'Other'})); });
@@ -957,8 +958,11 @@ function openDetail(devId){
     prodHtml+='<div class="detail-product-row">';
     if(p.image) prodHtml+='<img class="detail-product-img" src="'+p.image+'">';
     else prodHtml+='<div class="detail-product-img-ph">&#128247;</div>';
-    prodHtml+='<div><div class="detail-product-name">'+( p.description||'')+'</div><div class="detail-product-sub">'+( p.colour||'')+( p.qty?' &bull; Qty '+p.qty:'')+'</div></div>';
-    if(p.price) prodHtml+='<div class="detail-product-price">&pound;'+parseFloat(p.price).toFixed(2)+'</div>';
+    prodHtml+='<div style="flex:1;"><div class="detail-product-name">'+(p.description||'')+'</div><div class="detail-product-sub">'+(p.colour||'')+( p.qty?' &bull; '+parseInt(p.qty).toLocaleString()+' units':'')+( p.storeGrade?' &bull; Grade '+p.storeGrade:'')+( p.intakeMonth?' &bull; '+p.intakeMonth:'')+'</div></div>';
+    var priceHtml='';
+    if(p.targetCost) priceHtml+='<div style="font-size:0.78rem;font-weight:700;color:#6366f1;">Cost &pound;'+parseFloat(p.targetCost).toFixed(2)+'</div>';
+    if(p.retailPrice) priceHtml+='<div style="font-size:0.78rem;font-weight:700;color:#10b981;">Retail &pound;'+parseFloat(p.retailPrice).toFixed(2)+'</div>';
+    if(priceHtml) prodHtml+='<div style="text-align:right;flex-shrink:0;">'+priceHtml+'</div>';
     prodHtml+='</div>';
   });
   prodHtml+='</div>';
