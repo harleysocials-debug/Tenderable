@@ -1115,10 +1115,11 @@ async function postComment(devId){
 
 async function quickSetStage(devId, stage){
   var d=G.devs.find(function(x){return x.id===devId;}); if(!d) return;
-  d.stage=stage;
-  openDetail(devId); // re-render immediately
+  d.stage=stage; // update local state immediately
+  openDetail(devId);
   renderMainContent();
-  await api('PUT','/developments/'+devId,{stage:stage});
+  var r=await api('PUT','/developments/'+devId,{stage:stage});
+  if(!r) { toast('Stage update failed','error'); return; }
   toast('Stage updated to '+STAGE_LABELS[stage],'success');
 }
 
@@ -1431,19 +1432,20 @@ async function agreedOffline(devId){
 
 async function toggleConfirmField(devId, pIdx, field){
   var d=G.devs.find(function(x){return x.id===devId;}); if(!d) return;
-  var prods=(d.products||[]).slice(); // copy
+  var prods=JSON.parse(JSON.stringify(d.products||[])); // deep copy
   if(!prods[pIdx]) return;
   if(field==='cost'){
-    prods[pIdx]=Object.assign({},prods[pIdx],{costConfirmed:!prods[pIdx].costConfirmed});
+    prods[pIdx].costConfirmed = !prods[pIdx].costConfirmed;
     toast(prods[pIdx].costConfirmed?'Cost confirmed':'Cost unconfirmed','success');
   } else {
-    prods[pIdx]=Object.assign({},prods[pIdx],{qtyConfirmed:!prods[pIdx].qtyConfirmed});
+    prods[pIdx].qtyConfirmed = !prods[pIdx].qtyConfirmed;
     toast(prods[pIdx].qtyConfirmed?'Qty confirmed':'Qty unconfirmed','success');
   }
-  d.products=prods;
-  openDetail(devId); // re-render immediately with new state
+  d.products=prods; // update local state
+  openDetail(devId); // re-render immediately
   renderMainContent();
-  await api('PUT','/developments/'+devId,{products:prods}); // save in background
+  var r=await api('PUT','/developments/'+devId,{products:prods});
+  if(!r) toast('Save failed','error');
 }
 window.toggleConfirmField=toggleConfirmField;
 function tcf(btn){ toggleConfirmField(btn.dataset.devid, parseInt(btn.dataset.pidx), btn.dataset.field); }
