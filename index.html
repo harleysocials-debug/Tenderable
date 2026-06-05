@@ -976,7 +976,7 @@ function devCard(d){
   if(d.storeGrade) imgHtml+='<div class="card-grade-badge">'+d.storeGrade+'</div>';
   imgHtml+='</div>';
   var agreedBar=d.status==='agreed_offline'?'<div class="card-agreed-bar">&#10003; Agreed &bull; &pound;'+parseFloat(d.agreedPrice||0).toFixed(2)+(d.agreedSupplier?' &bull; '+d.agreedSupplier:'')+'</div>':'';
-  return '<div class="dev-card'+(d.status==='agreed_offline'?' agreed':'')+'" onclick="openDetail(\''+d.id+'\')">'+imgHtml+'<div class="card-body"><div class="card-name">'+d.description+'</div><div class="card-sub">'+( d.brand||'')+' &bull; '+(d.seasonCode||'')+( d.department?' &bull; '+d.department:'')+'</div><div class="card-meta"><span class="card-price">&pound;'+parseFloat(d.priceTarget||0).toFixed(2)+'</span><span class="card-supplier">'+( d.supplierAllocation||'')+'</span></div></div>'+agreedBar+'</div>';
+  return '<div class="dev-card'+(d.status==='agreed_offline'?' agreed':'')+'" onclick="openDetail(\''+d.id+'\')">'+imgHtml+'<div class="card-body"><div class="card-name">'+d.description+'</div><div class="card-sub">'+( d.brand||'')+' &bull; '+(d.seasonCode||'')+'</div><div class="card-meta"><span class="card-price">&pound;'+parseFloat(d.priceTarget||0).toFixed(2)+'</span><span class="card-supplier">'+( d.supplierAllocation||'')+'</span></div></div>'+agreedBar+'</div>';
 }
 
 function carNav(btn){
@@ -1127,7 +1127,7 @@ function openDetail(devId){
 
   panel.innerHTML=
     '<div class="detail-head"><div class="detail-head-top"><div class="detail-title">'+d.description+'</div><button class="detail-close" onclick="closeDetail()">&#10005;</button></div>'+
-    '<div class="detail-pills">'+detailPill(d.stage||'inspiration')+(d.storeGrade?'<span class="detail-pill" style="background:var(--line2);color:var(--ink2);">Grade '+d.storeGrade+'</span>':'')+(d.department?'<span class="detail-pill" style="background:var(--line2);color:var(--ink2);">'+d.department+'</span>':'')+(d.brand?'<span class="detail-pill" style="background:var(--line2);color:var(--ink2);">'+d.brand+'</span>':'')+(d.seasonCode?'<span class="detail-pill" style="background:var(--line2);color:var(--ink2);">'+d.seasonCode+'</span>':'')+(d.theme?'<span class="detail-pill" style="background:#fef3c7;color:#92400e;">'+d.theme+'</span>':'')+'</div></div>'+
+    '<div class="detail-pills">'+detailPill(d.stage||'inspiration')+(d.storeGrade?'<span class="detail-pill" style="background:var(--line2);color:var(--ink2);">Grade '+d.storeGrade+'</span>':'')+(d.brand?'<span class="detail-pill" style="background:var(--line2);color:var(--ink2);">'+d.brand+'</span>':'')+(d.seasonCode?'<span class="detail-pill" style="background:var(--line2);color:var(--ink2);">'+d.seasonCode+'</span>':'')+(d.theme?'<span class="detail-pill" style="background:#fef3c7;color:#92400e;">'+d.theme+'</span>':'')+'</div></div>'+
     '<div class="detail-body">'+stageBar+agreedSection+imgGrid+
     '<div class="detail-stats"><div class="detail-stat"><div class="detail-stat-label">Price Target</div><div class="detail-stat-val" style="color:#6366f1;">&pound;'+parseFloat(d.priceTarget||0).toFixed(2)+'</div></div>'+
     '<div class="detail-stat"><div class="detail-stat-label">Total Qty</div><div class="detail-stat-val">'+devStats(d).totalQty.toLocaleString()+'</div></div>'+
@@ -1258,11 +1258,8 @@ function renderFormBody(d){
   stageOptions.forEach(function(o){stageSelect+='<option value="'+o.v+'"'+((d?(d.stage||'inspiration'):'concept')===o.v?' selected':'')+'>'+o.l+'</option>';});
   stageSelect+='</select>';
 
-  var deptSelect = '<select class="form-input" id="f-dept"><option value="">Department</option><option value="Mens Accessories">Mens Accessories</option><option value="Mens Branded Stock Buy">Mens Branded Stock Buy</option><option value="Mens Golfwear">Mens Golfwear</option><option value="Mens Jackets">Mens Jackets</option><option value="Mens Jeans">Mens Jeans</option><option value="Mens Joggers">Mens Joggers</option><option value="Mens Knitwear">Mens Knitwear</option><option value="Mens Loungewear">Mens Loungewear</option><option value="Mens Marketing & Events">Mens Marketing & Events</option><option value="Mens Polo Shirts">Mens Polo Shirts</option><option value="Mens Shirts">Mens Shirts</option><option value="Mens Shorts">Mens Shorts</option><option value="Mens Smart/Formal Trousers">Mens Smart/Formal Trousers</option><option value="Mens Socks">Mens Socks</option><option value="Mens Sportswear">Mens Sportswear</option><option value="Mens Sweatshirts">Mens Sweatshirts</option><option value="Mens Swim Shorts">Mens Swim Shorts</option><option value="Mens Tailoring">Mens Tailoring</option><option value="Mens Trousers">Mens Trousers</option><option value="Mens T Shirts/Vests">Mens T Shirts/Vests</option><option value="Mens Underwear">Mens Underwear</option><option value="Mens Workwear">Mens Workwear</option><option value="SB Mens">SB Mens</option></select>';
-  html += '<div class="form-group"><label class="form-label">Season</label>'+sel('f-season',seasons,d?d.seasonCode:'',true)+'</div>';
-  html += '<div class="form-group"><label class="form-label">Stage</label>'+stageSelect+'</div>';
-  html += '<div class="form-group"><label class="form-label">Department</label>'+deptSelect+'</div>';
-
+  // Department removed from dev level — style level only
+  // (dept select removed)
   html += '<div class="form-group"><label class="form-label">Supplier Allocation</label>'+inp('f-supplier',d?esc(d.supplierAllocation||''):'','Supplier name')+'</div>';
   // price moved to product level
   // Order Qty removed - calculated dynamically from styles
