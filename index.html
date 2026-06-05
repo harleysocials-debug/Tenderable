@@ -2205,7 +2205,7 @@ function supplierBrief(devId){
       '  btn.textContent="Generating...";btn.disabled=true;',
       '  var el=document.querySelector(".page");',
       '  var fname="Supplier-Brief-'+d.description.replace(/[^a-z0-9]/gi,'-')+'-'+today.replace(/ /g,'-')+'.pdf";',
-      '  var opt={margin:[8,8,8,8],filename:fname,image:{type:"jpeg",quality:0.95},html2canvas:{scale:2,useCORS:true,allowTaint:true},jsPDF:{unit:"mm",format:"a4",orientation:"portrait"}};',
+      '  var opt={margin:[8,8,8,8],filename:fname,image:{type:"jpeg",quality:0.95},html2canvas:{scale:2,useCORS:true,allowTaint:true,logging:false,imageTimeout:15000,removeContainer:true},jsPDF:{unit:"mm",format:"a4",orientation:"portrait"}};',
       '  html2pdf().set(opt).from(el).save().then(function(){btn.textContent="Save PDF";btn.disabled=false;});',
       '}'
     ].join('\n');
