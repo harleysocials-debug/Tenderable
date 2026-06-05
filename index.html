@@ -195,6 +195,7 @@ input, select, textarea { font-family: inherit; }
 .stage-rangeplan    { background: #d1fae5; color: #059669; }
 .stage-signedoff    { background: #ede9fe; color: #7c3aed; }
 .stage-ordersent    { background: #ecfeff; color: #0369a1; }
+.stage-stocked      { background: #dcfce7; color: #166534; }
 .stage-dropped      { background: #fee2e2; color: #b91c1c; }
 
 /* ── PIPELINE VIEW ───────────────────────────────── */
@@ -356,6 +357,7 @@ input, select, textarea { font-family: inherit; }
 .stage-step.on.rangeplan   { background: #d1fae5; color: #059669; }
 .stage-step.on.signedoff   { background: #ede9fe; color: #7c3aed; }
 .stage-step.on.ordersent   { background: #ecfeff; color: #0369a1; }
+.stage-step.on.stocked     { background: #dcfce7; color: #166534; }
 .stage-step.on.dropped     { background: #fee2e2; color: #b91c1c; }
 
 /* ── IMAGE MODAL ─────────────────────────────────── */
@@ -582,8 +584,8 @@ const API = 'https://tenderable-production.up.railway.app';
     localStorage.removeItem('t_user');
   }
 })();
-const STAGES = ['inspiration','development','sampling','rangeplan','signedoff','ordersent','dropped'];
-const STAGE_LABELS = {inspiration:'Inspiration',development:'Development',sampling:'Sampling',rangeplan:'Range Plan',signedoff:'Signed Off',ordersent:'Order Sent',dropped:'Dropped'};
+const STAGES = ['inspiration','development','sampling','rangeplan','signedoff','ordersent','stocked','dropped'];
+const STAGE_LABELS = {inspiration:'Inspiration',development:'Development',sampling:'Sampling',rangeplan:'Range Plan',signedoff:'Signed Off',ordersent:'Order Sent',stocked:'Stocked',dropped:'Dropped'};
 const CATS = ['Outerwear','Tops','Bottoms','Underwear','Nightwear','Swimwear','Accessories','Footwear'];
 const BRANDS = ['BadRhino',"Evan\'s",'Long Tall Sally','Pixie Girl','M&Co','Star x JM'];
 const GRADES = ['A','B','C','D','E','F','Web Only'];
@@ -773,8 +775,8 @@ function buildFilters(){
   var MONTHS=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
   var RETAIL_BANDS=[{val:'0-10',label:'Under £10'},{val:'10-20',label:'£10-20'},{val:'20-30',label:'£20-30'},{val:'30-50',label:'£30-50'},{val:'50-999',label:'£50+'}];
 
-  // Season - from devs
-  var seasons=['All']; G.devs.forEach(function(d){ if(d.seasonCode&&!seasons.includes(d.seasonCode)) seasons.push(d.seasonCode); });
+  // Season - from style-level products
+  var seasons=['All']; G.devs.forEach(function(d){ (d.products||[]).forEach(function(p){ if(p.seasonCode&&!seasons.includes(p.seasonCode)) seasons.push(p.seasonCode); }); if(d.seasonCode&&!seasons.includes(d.seasonCode)) seasons.push(d.seasonCode); });
   buildChips('filter-season', seasons, 'season', 'Season');
 
   // Stage - fixed
@@ -854,7 +856,7 @@ function filteredDevs(){
   return G.devs.filter(function(d){
     if(d.description==='null') return false;
     // Dev-level filters — only apply when array has values
-    if(active(f.season)&&f.season.indexOf(d.seasonCode)<0) return false;
+    if(active(f.season)&&!(d.products||[]).some(function(p){return f.season.indexOf(p.seasonCode||d.seasonCode)>=0;})) return false;
     if(active(f.stage)&&f.stage.indexOf(d.stage||'inspiration')<0) return false;
     if(active(f.supplier)&&!f.supplier.some(function(s){return s.toLowerCase()===(d.supplierAllocation||'').toLowerCase();})) return false;
     if(active(f.theme)&&!f.theme.some(function(s){return s.toLowerCase()===(d.theme||'').toLowerCase();})) return false;
@@ -899,6 +901,7 @@ function renderBoard(mc){
     if(G.filters.stylegrade&&G.filters.stylegrade.length) prods=prods.filter(function(p){return G.filters.stylegrade.indexOf(p.storeGrade)>=0;});
     if(G.filters.cat&&G.filters.cat.length) prods=prods.filter(function(p){return G.filters.cat.indexOf(p.category||dev.category||'')>=0;});
     if(G.filters.dept&&G.filters.dept.length) prods=prods.filter(function(p){return G.filters.dept.indexOf(p.department||dev.department||'')>=0;});
+    if(G.filters.season&&G.filters.season.length) prods=prods.filter(function(p){return G.filters.season.indexOf(p.seasonCode||dev.seasonCode||'')>=0;});
     if(G.filters.retail&&G.filters.retail.length){
       prods=prods.filter(function(p){return G.filters.retail.some(function(band){var b=band.split('-');var lo=parseFloat(b[0]),hi=parseFloat(b[1]);var r=parseFloat(p.retailPrice||0);return r>=lo&&r<hi;});});
     }
@@ -968,7 +971,7 @@ function styleCard(s){
     '</div>'+
     '<div class="card-body">'+
     '<div class="card-name">'+s.description+'</div>'+
-    '<div class="card-sub">'+( s.colour||'')+( s.category||dev.category?' &bull; '+(s.category||dev.category):'')+( dev.brand?' &bull; '+dev.brand:'')+( dev.seasonCode?' &bull; '+dev.seasonCode:'')+( s.intakeMonth?' &bull; '+s.intakeMonth:'')+'</div>'+
+    '<div class="card-sub">'+( s.colour||'')+( s.category||dev.category?' &bull; '+(s.category||dev.category):'')+( dev.brand?' &bull; '+dev.brand:'')+( (s.seasonCode||dev.seasonCode)?' &bull; '+(s.seasonCode||dev.seasonCode):'')+( s.intakeMonth?' &bull; '+s.intakeMonth:'')+'</div>'+
     '<div class="card-meta" style="display:flex;flex-wrap:wrap;gap:0.3rem 0.6rem;align-items:center;margin-top:0.35rem;">'+costHtml+retailHtml+qtyHtml+gradeBodyHtml+confirmedHtml+'</div>'+
     '</div></div>';
 }
@@ -1023,6 +1026,7 @@ function renderPipeline(mc){
     if(G.filters.stylegrade&&G.filters.stylegrade.length) prods=prods.filter(function(p){return G.filters.stylegrade.indexOf(p.storeGrade)>=0;});
     if(G.filters.cat&&G.filters.cat.length) prods=prods.filter(function(p){return G.filters.cat.indexOf(p.category||dev.category||'')>=0;});
     if(G.filters.dept&&G.filters.dept.length) prods=prods.filter(function(p){return G.filters.dept.indexOf(p.department||dev.department||'')>=0;});
+    if(G.filters.season&&G.filters.season.length) prods=prods.filter(function(p){return G.filters.season.indexOf(p.seasonCode||dev.seasonCode||'')>=0;});
     if(G.filters.retail&&G.filters.retail.length){prods=prods.filter(function(p){return G.filters.retail.some(function(band){var b=band.split('-');var r=parseFloat(p.retailPrice||0);return r>=parseFloat(b[0])&&r<parseFloat(b[1]);});});}
     if(prods.length===0&&!G.filters.colour.length&&!G.filters.intake.length&&!G.filters.stylegrade.length&&!G.filters.retail.length&&!G.filters.cat.length&&!G.filters.dept.length){
       allStyles.push({_dev:dev,_isPlaceholder:true,stage:dev.stage||'inspiration'});
@@ -1040,6 +1044,7 @@ function renderPipeline(mc){
     rangeplan:{bg:'#d1fae5',color:'#059669'},
     signedoff:{bg:'#ede9fe',color:'#7c3aed'},
     ordersent:{bg:'#ecfeff',color:'#0369a1'},
+    stocked:{bg:'#dcfce7',color:'#166534'},
     dropped:{bg:'#fee2e2',color:'#b91c1c'}
   };
 
@@ -1279,17 +1284,12 @@ function renderFormBody(d){
   var gradeOptions = [''].concat(GRADES);
   // Store grade moved to individual style rows
 
-  var seasons=['SS27','AW27','SS26','AW26','SS25','AW25'];
-  var seasonSelect='<select class="form-input" id="f-season"><option value="">Season</option>';
-  seasons.forEach(function(s){seasonSelect+='<option value="'+s+'"'+(d&&d.seasonCode===s?' selected':'')+'>'+s+'</option>';});
-  seasonSelect+='</select>';
-
   var stageOptions=STAGES.map(function(s){return{v:s,l:STAGE_LABELS[s]};});
   var stageSelect='<select class="form-input" id="f-stage">';
   stageOptions.forEach(function(o){stageSelect+='<option value="'+o.v+'"'+((d?(d.stage||'inspiration'):'inspiration')===o.v?' selected':'')+'>'+o.l+'</option>';});
   stageSelect+='</select>';
 
-  html += '<div class="form-group"><label class="form-label">Season</label>'+seasonSelect+'</div>';
+  // Season moved to style level
   html += '<div class="form-group"><label class="form-label">Stage</label>'+stageSelect+'</div>';
 
   html += '<div class="form-group"><label class="form-label">Supplier Allocation</label>'+inp('f-supplier',d?esc(d.supplierAllocation||''):'','Supplier name')+'</div>';
@@ -1365,7 +1365,7 @@ function addProductRow(data){
   var row=document.createElement('div');
   row.className='product-row';
   var pidx=G.formProducts.length;
-  G.formProducts.push({description:d.description||'',colour:d.colour||'',qty:d.qty||'',targetCost:d.targetCost||d.price||'',retailPrice:d.retailPrice||'',storeGrade:d.storeGrade||'',intakeMonth:d.intakeMonth||'',category:d.category||'',department:d.department||'',image:d.image||null});
+  G.formProducts.push({description:d.description||'',colour:d.colour||'',qty:d.qty||'',targetCost:d.targetCost||d.price||'',retailPrice:d.retailPrice||'',storeGrade:d.storeGrade||'',intakeMonth:d.intakeMonth||'',category:d.category||'',department:d.department||'',seasonCode:d.seasonCode||'',image:d.image||null});
 
   // Image thumbnail
   var imgWrap=document.createElement('div');
@@ -1410,8 +1410,13 @@ function addProductRow(data){
   // Row 1: name + colour dropdown + grade
   row1.style.cssText='display:grid;grid-template-columns:2fr 1.5fr 0.7fr;gap:0.4rem;';
 
-  // Style name input
+  // Style name input — full width top row
+  row1.style.cssText='display:grid;grid-template-columns:1fr;gap:0.4rem;';
   row1.appendChild(mkInput('product-desc','Style name','description',false));
+
+  // Second row: colour + season + grade
+  var row1b=document.createElement('div');
+  row1b.style.cssText='display:grid;grid-template-columns:1.5fr 1fr 0.7fr;gap:0.4rem;';
 
   // Colour dropdown
   var colourSel=document.createElement('select');
@@ -1420,7 +1425,15 @@ function addProductRow(data){
   colourSel.innerHTML='<option value="">Colourway</option><option value="Black">Black</option><option value="White">White</option><option value="Navy">Navy</option><option value="Blue">Blue</option><option value="Green">Green</option><option value="Red">Red</option><option value="Grey">Grey</option><option value="Brown">Brown</option><option value="Yellow">Yellow</option><option value="Orange">Orange</option><option value="Cream">Cream</option><option value="Purple">Purple</option><option value="Pink">Pink</option><option value="Ivory White">Ivory White</option><option value="Burnt Orange">Burnt Orange</option><option value="Dark Red">Dark Red</option><option value="Off White">Off White</option><option value="Stone">Stone</option><option value="Camel Brown">Camel Brown</option><option value="Dark Purple">Dark Purple</option><option value="Light Brown">Light Brown</option><option value="Chocolate Brown">Chocolate Brown</option><option value="Berry Purple">Berry Purple</option><option value="Black Patent">Black Patent</option><option value="Dark Brown">Dark Brown</option><option value="Grey Marl">Grey Marl</option><option value="Light Purple">Light Purple</option><option value="Petrol Blue">Petrol Blue</option>';
   colourSel.value=d.colour||'';
   colourSel.addEventListener('change',function(){G.formProducts[pidx].colour=this.value;});
-  row1.appendChild(colourSel);
+  row1b.appendChild(colourSel);
+
+  // Season dropdown
+  var seasonProd=document.createElement('select');
+  seasonProd.className='form-input product-season';
+  seasonProd.style.cssText='padding:0.5rem 0.5rem;font-size:0.82rem;';
+  seasonProd.innerHTML='<option value="">Season</option><option value="SS27">SS27</option><option value="AW27">AW27</option><option value="SS26">SS26</option><option value="AW26">AW26</option><option value="SS25">SS25</option><option value="AW25">AW25</option><option value="Flow">Flow</option>';
+  seasonProd.addEventListener('change',function(){G.formProducts[pidx].seasonCode=this.value;});
+  row1b.appendChild(seasonProd);
 
   // Grade select
   var gradeInp=document.createElement('select');
@@ -1428,10 +1441,11 @@ function addProductRow(data){
   gradeInp.style.cssText='padding:0.5rem 0.5rem;font-size:0.82rem;';
   ['','A','B','C','D','E','F','Web Only'].forEach(function(g){ var o=document.createElement('option'); o.value=g; o.textContent=g||'Grade'; gradeInp.appendChild(o); });
   gradeInp.addEventListener('change',function(){G.formProducts[pidx].storeGrade=this.value;});
-  row1.appendChild(gradeInp);
+  row1b.appendChild(gradeInp);
 
+  fields.appendChild(row1b);
   // Set select values after appending
-  setTimeout(function(){ colourSel.value=d.colour||''; gradeInp.value=d.storeGrade||''; },0);
+  setTimeout(function(){ colourSel.value=d.colour||''; seasonProd.value=d.seasonCode||''; gradeInp.value=d.storeGrade||''; },0);
   // Category + Dept row
   var rowCatDept=document.createElement('div');
   rowCatDept.style.cssText='display:grid;grid-template-columns:1fr 1fr;gap:0.4rem;';
@@ -1471,6 +1485,7 @@ function addProductRow(data){
   setTimeout(function(){ monthSel.value=d.intakeMonth||''; },0);
 
   fields.appendChild(row1);
+  // row1b appended inside colour block above
   fields.appendChild(rowCatDept);
   fields.appendChild(row2);
 
@@ -1573,10 +1588,11 @@ async function submitDev(){
     var co=row.querySelector('.product-colour');
     var pc=row.querySelector('.product-cat');
     var pd=row.querySelector('.product-dept');
-    products.push({description:name,colour:co?co.value:'',qty:parseInt(q?q.value:0)||0,targetCost:parseFloat(tc?tc.value:0)||0,retailPrice:parseFloat(rp?rp.value:0)||0,storeGrade:gr?gr.value:'',intakeMonth:im?im.value:'',category:pc?pc.value:'',department:pd?pd.value:'',image:imgWrap?imgWrap.getAttribute('data-imgurl')||null:null});
+    var ps=row.querySelector('.product-season');
+    products.push({description:name,colour:co?co.value:'',qty:parseInt(q?q.value:0)||0,targetCost:parseFloat(tc?tc.value:0)||0,retailPrice:parseFloat(rp?rp.value:0)||0,storeGrade:gr?gr.value:'',intakeMonth:im?im.value:'',category:pc?pc.value:'',department:pd?pd.value:'',seasonCode:ps?ps.value:'',image:imgWrap?imgWrap.getAttribute('data-imgurl')||null:null});
   });
   var body={
-    description:desc,brand:$('f-brand').value,seasonCode:$('f-season').value,theme:$('f-theme')?$('f-theme').value.trim():'',
+    description:desc,brand:$('f-brand').value,seasonCode:null,theme:$('f-theme')?$('f-theme').value.trim():'',
     stage:$('f-stage').value||'inspiration',storeGrade:null,department:null,category:null,
     supplierAllocation:$('f-supplier').value.trim()||null,fabric:$('f-fabric').value.trim(),
     priceTarget: products.length>0 ? products.reduce(function(s,p){return s+parseFloat(p.targetCost||0);},0)/products.length : 0, orderQty:0,
