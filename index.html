@@ -512,6 +512,13 @@ input, select, textarea { font-family: inherit; }
 .look-add-row { display:flex; gap:0.4rem; padding:0.4rem 0.6rem; border-top:1px solid var(--line); background:var(--surface); }
 .look-add-btn { background:none; border:1px dashed var(--line); border-radius:6px; padding:0.3rem 0.65rem; font-size:0.72rem; color:var(--ink3); cursor:pointer; font-weight:600; }
 .look-add-btn:hover { border-color:#6366f1; color:#6366f1; background:#eef2ff; }
+.pack-stage-bar { display:flex; gap:0; border-radius:8px; overflow:hidden; border:1px solid var(--line); flex-shrink:0; }
+.pack-stage-step { flex:1; padding:0.4rem 0.85rem; text-align:center; font-size:0.68rem; font-weight:700; text-transform:uppercase; letter-spacing:0.05em; cursor:pointer; background:var(--line2); color:var(--ink4); transition:all 0.15s; border-right:1px solid var(--line); white-space:nowrap; }
+.pack-stage-step:last-child { border-right:none; }
+.pack-stage-step:hover { background:var(--line); color:var(--ink); }
+.pack-stage-step.on.draft { background:#fef3c7; color:#b45309; }
+.pack-stage-step.on.readyforsignoff { background:#dbeafe; color:#1e40af; }
+.pack-stage-step.on.signedoff { background:#ede9fe; color:#7c3aed; }
 .add-look-btn { border:2px dashed var(--line); border-radius:10px; padding:0.85rem; text-align:center; font-size:0.85rem; color:var(--ink3); cursor:pointer; font-weight:600; background:none; width:100%; margin-top:0.5rem; }
 .add-look-btn:hover { border-color:#6366f1; color:#6366f1; background:#eef2ff; }
 
@@ -2426,7 +2433,6 @@ function renderPackDetail(mc, pack){
     '</div>'+
     '<div style="display:flex;gap:0.5rem;">'+
     '<button class="btn btn-ghost btn-sm" onclick="editPackHeader(\''+pack.id+'\')">&#9999; Edit</button>'+
-    (pack.status!=='confirmed'?'<button class="btn btn-green btn-sm" onclick="confirmPack(\''+pack.id+'\')">&#10003; Confirm</button>':'')+
     '<button class="btn btn-ghost btn-sm" onclick="exportPackPDF(\''+pack.id+'\')">&#128196; PDF</button>'+
     '<button class="btn btn-danger btn-sm" onclick="deletePack(\''+pack.id+'\')">&#128465;</button>'+
     '</div>';
@@ -2983,6 +2989,17 @@ async function createPack(data){
     openPackDetail(r.pack.id);
   } else toast('Failed to create pack','error');
 }
+
+async function setPackStatus(packId, status){
+  var p=G.packs.find(function(x){return x.id===packId;}); if(!p) return;
+  p.status=status;
+  await api('PUT','/packs/'+packId,{status:status});
+  G.activePack=p;
+  renderMainContent();
+  var labels={draft:'Reset to Draft',readyforsignoff:'Marked Ready For Sign Off',signedoff:'Signed Off ✓'};
+  toast(labels[status]||'Status updated','success');
+}
+window.setPackStatus=setPackStatus;
 
 async function cyclePackStatus(packId){
   var p=G.packs.find(function(x){return x.id===packId;}); if(!p) return;
