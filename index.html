@@ -2091,10 +2091,11 @@ async function renderAdmin(mc){
     all.map(function(u){ return userRow(u,false); }).join('')+'</div>';
 }
 function userRow(u, showActions){
-  return '<div class="user-row"><div><div class="user-row-name">'+u.name+'</div><div class="user-row-meta">'+u.type+(u.company?' &bull; '+u.company:'')+'</div></div><span class="user-row-status status-'+u.status+'">'+u.status+'</span>'+(showActions?'<button class="btn btn-green btn-sm" onclick="adminApprove(\''+u.id+'\')">Approve</button><button class="btn btn-danger btn-sm" onclick="adminReject(\''+u.id+'\')">Reject</button>':'')+'</div>';
+  return '<div class="user-row"><div><div class="user-row-name">'+u.name+'</div><div class="user-row-meta">'+(u.role||u.type||'')+(u.company?' &bull; '+u.company:'')+'</div></div><span class="user-row-status status-'+u.status+'">'+u.status+'</span>'+(showActions?'<button class="btn btn-green btn-sm" onclick="adminApprove(\''+u.id+'\')">Approve</button><button class="btn btn-danger btn-sm" onclick="adminReject(\''+u.id+'\')">Reject</button>':'')+'</div>';
 }
-async function adminApprove(uid){ await api('POST','/admin/approve/'+uid); toast('User approved','success'); renderAdmin($('main-content')); }
-async function adminReject(uid){ await api('POST','/admin/reject/'+uid); toast('User rejected'); renderAdmin($('main-content')); }
+async function adminApprove(uid){ var r=await api('POST','/admin/approve/'+uid); if(r) toast('User approved','success'); else toast('Approve failed','error'); renderAdmin($('main-content')); }
+async function adminReject(uid){ var r=await api('POST','/admin/reject/'+uid); if(r) toast('User rejected'); else toast('Reject failed','error'); renderAdmin($('main-content')); }
+window.adminApprove=adminApprove; window.adminReject=adminReject;
 </script>
 </body>
 </html>
