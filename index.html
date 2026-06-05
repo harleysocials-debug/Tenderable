@@ -756,7 +756,7 @@ async function loadData(){
     api('GET','/messages')
   ]);
   if(dRes&&dRes.developments&&dRes.developments.length>=0) G.devs=dRes.developments;
-  await loadDirectMessages();
+  try { await loadDirectMessages(); } catch(e) { console.warn('Messages not loaded:', e.message); }
   if(dRes&&dRes.devComments) G.devComments=dRes.devComments;
   if(tRes&&tRes.tenders) G.tenders=tRes.tenders.map(function(t){ return Object.assign({},t,{deadlineDate:new Date(t.deadlineDate)}); });
   if(bRes&&bRes.bids) G.bids=bRes.bids;
@@ -2156,6 +2156,9 @@ async function sendDM(toUserId, toUserName, inp){
     G_msgs.push({id:r.id,from_user_id:G.user.id,from_user_name:G.user.name,to_user_id:toUserId,to_user_name:toUserName,message:msg,created_at:new Date().toISOString(),read_at:null});
     renderConvo(toUserId,toUserName);
     renderMsgSidebar();
+  } else {
+    toast('Message failed to send — please try again','error');
+    inp.value=msg; // restore the message text
   }
 }
 
