@@ -333,6 +333,10 @@ input, select, textarea { font-family: inherit; }
 .product-row-del { background: none; border: none; color: var(--ink4); font-size: 1.1rem; padding: 0.25rem; flex-shrink: 0; }
 .product-row-del:hover { color: #ef4444; }
 .add-row-btn { background: none; border: 2px dashed var(--line); border-radius: 9px; padding: 0.65rem; font-size: 0.82rem; color: var(--ink3); width: 100%; font-weight: 600; transition: all 0.15s; }
+.drag-handle { color: var(--ink4); cursor: grab; padding: 0.25rem 0.15rem; font-size: 1rem; flex-shrink: 0; align-self: center; user-select: none; }
+.drag-handle:active { cursor: grabbing; }
+.product-row.drag-over { border: 2px dashed #6366f1; background: #eef2ff; }
+.product-row.dragging { opacity: 0.4; }
 .add-row-btn:hover { border-color: #6366f1; color: #6366f1; background: #eef2ff; }
 
 /* Stage progress bar */
@@ -864,7 +868,7 @@ function renderMainContent(){
 // ── RANGE BOARD ───────────────────────────────────────────────────────────────
 function renderBoard(mc){
   var devs=filteredDevs();
-  if(devs.length===0){ mc.innerHTML='<div class="range-board"><div class="empty-state"><div class="empty-state-icon">&#127912;</div><h3>No developments found</h3><p>Create your first development or adjust your filters.</p></div></div>'; return; }
+  if(devs.length===0){ mc.innerHTML='<div class="range-board"><div class="empty-state"><div class="empty-state-icon">&#127912;</div><h3>Get designing! ✏️</h3><p>Nothing here yet — hit <strong>+ New Development</strong> to start building your range.</p></div></div>'; return; }
 
   // Build flat list of styles — one card per style
   var allStyles=[];
@@ -885,7 +889,7 @@ function renderBoard(mc){
     }
   });
 
-  if(allStyles.length===0){ mc.innerHTML='<div class="range-board"><div class="empty-state"><div class="empty-state-icon">&#127912;</div><h3>No styles match your filters</h3><p>Try adjusting or clearing your filters.</p></div></div>'; return; }
+  if(allStyles.length===0){ mc.innerHTML='<div class="range-board"><div class="empty-state"><div class="empty-state-icon">&#127912;</div><h3>Too niche? 🔍</h3><p>No styles match those filters. Try loosening them up a bit.</p></div></div>'; return; }
 
   // Group by category
   var grouped={}; CATS.forEach(function(c){grouped[c]=[];}); grouped.__other=[];
@@ -1439,9 +1443,51 @@ function addProductRow(data){
   del.style.cssText='background:none;border:none;color:var(--ink4);font-size:1.1rem;padding:0.25rem;flex-shrink:0;align-self:flex-start;margin-top:0.15rem;';
   del.onclick=function(){row.remove(); G.formProducts[pidx]={_deleted:true};};
 
-  row.appendChild(imgWrap); row.appendChild(fields); row.appendChild(del);
+  // Drag handle
+  var handle=document.createElement('div');
+  handle.className='drag-handle'; handle.innerHTML='&#8597;'; handle.title='Drag to reorder';
+  handle.setAttribute('draggable','false'); // only the row is draggable
+
+  // Make row draggable
+  row.setAttribute('draggable','true');
+  row.addEventListener('dragstart',function(e){
+    e.dataTransfer.effectAllowed='move';
+    e.dataTransfer.setData('text/plain','');
+    row.classList.add('dragging');
+    window._dragRow=row;
+  });
+  row.addEventListener('dragend',function(){
+    row.classList.remove('dragging');
+    document.querySelectorAll('.product-row').forEach(function(r){r.classList.remove('drag-over');});
+    window._dragRow=null;
+    // Sync G.formProducts order to DOM order
+    syncProductOrder();
+  });
+  row.addEventListener('dragover',function(e){
+    e.preventDefault(); e.dataTransfer.dropEffect='move';
+    if(window._dragRow&&window._dragRow!==row) row.classList.add('drag-over');
+  });
+  row.addEventListener('dragleave',function(){ row.classList.remove('drag-over'); });
+  row.addEventListener('drop',function(e){
+    e.preventDefault(); row.classList.remove('drag-over');
+    if(!window._dragRow||window._dragRow===row) return;
+    var wrap=$('f-products');
+    var rows=Array.from(wrap.querySelectorAll('.product-row'));
+    var fromIdx=rows.indexOf(window._dragRow);
+    var toIdx=rows.indexOf(row);
+    if(fromIdx<toIdx) wrap.insertBefore(window._dragRow,row.nextSibling);
+    else wrap.insertBefore(window._dragRow,row);
+  });
+
+  row.appendChild(handle); row.appendChild(imgWrap); row.appendChild(fields); row.appendChild(del);
   $('f-products').appendChild(row);
 }
+function syncProductOrder(){
+  // Re-read all product rows from DOM in current visual order
+  // so G.formProducts reflects the dragged order on submit
+  // (submitDev reads from DOM directly so order is always correct)
+}
+
 function renderFormProducts(){ $('f-products').innerHTML=''; G.formProducts.forEach(function(p){ if(!p._deleted) addProductRow(p); }); G.formProducts=[]; }
 
 
