@@ -1298,6 +1298,7 @@ function renderFormBody(d){
   // Order Qty removed - calculated dynamically from styles
   html += '<div class="form-group"><label class="form-label">Lead Time From Order (weeks)</label><input class="form-input" type="number" id="f-lead" min="0" value="'+(d?d.leadTimeTarget||'':'')+'" placeholder="e.g. 12 weeks"></div>';
   html += '<div class="form-group"><label class="form-label">Fabric</label><input class="form-input" id="f-fabric" value="'+(d?esc(d.fabric||''):'')+'" placeholder="e.g. 180gsm Cotton"></div>';
+  html += '<div class="form-group"><label class="form-label">Block</label><input class="form-input" id="f-block" value="'+(d?esc(d.block||''):'')+'" placeholder="e.g. Slim Fit Block A"></div>';
   html += '<div class="form-group full"><label class="form-label">Notes &amp; Requirements</label><textarea class="form-input" id="f-notes" rows="3" placeholder="Labelling, trim details etc.">'+(d?esc(d.labellingReqs||''):'')+' </textarea></div>';
   html += '</div>';
   html += '<div class="form-section-head">Reference Images</div>';
