@@ -919,12 +919,16 @@ function renderBoard(mc){
   CATS.concat(['__other']).forEach(function(cat){
     var items=grouped[cat]; if(!items||items.length===0) return;
     var label=cat==='__other'?'Other':cat;
-    var costs=items.filter(function(s){return !s._isPlaceholder&&s.targetCost;});
+    var styleItems=items.filter(function(s){return !s._isPlaceholder;});
+    var costs=styleItems.filter(function(s){return s.targetCost;});
     var avgStr=costs.length>0?'&pound;'+(costs.reduce(function(s,p){return s+parseFloat(p.targetCost);},0)/costs.length).toFixed(2):'&mdash;';
-    var retails=items.filter(function(s){return !s._isPlaceholder&&s.retailPrice;});
+    var retails=styleItems.filter(function(s){return s.retailPrice;});
     var avgRetailStr=retails.length>0?'&pound;'+(retails.reduce(function(s,p){return s+parseFloat(p.retailPrice);},0)/retails.length).toFixed(2):'&mdash;';
+    var totalUnits=styleItems.reduce(function(s,p){return s+parseInt(p.qty||0);},0);
+    var avgLineBuy=styleItems.length>0?(totalUnits/styleItems.length).toFixed(0):0;
+    var unitsStr=totalUnits>0?totalUnits.toLocaleString()+' units &bull; Avg line '+parseInt(avgLineBuy).toLocaleString():'';
     html+='<div class="board-section">';
-    html+='<div class="section-header"><span class="section-title">'+label+'</span><span class="section-count">'+items.length+'</span><span class="section-subtotal">Avg cost: '+avgStr+' &bull; Avg retail: '+avgRetailStr+'</span></div>';
+    html+='<div class="section-header"><span class="section-title">'+label+'</span><span class="section-count">'+styleItems.length+' style'+(styleItems.length!==1?'s':'')+'</span><span class="section-subtotal">Avg cost: '+avgStr+' &bull; Avg retail: '+avgRetailStr+(unitsStr?' &bull; '+unitsStr:'')+'</span></div>';
     html+='<div class="card-grid">';
     items.forEach(function(s){ html+=styleCard(s); });
     html+='</div></div>';
