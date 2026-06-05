@@ -566,7 +566,7 @@ const STAGES = ['inspiration','development','sampling','rangeplan','signedoff','
 const STAGE_LABELS = {inspiration:'Inspiration',development:'Development',sampling:'Sampling',rangeplan:'Range Plan',signedoff:'Signed Off',ordersent:'Order Sent',dropped:'Dropped'};
 const CATS = ['OUTERWEAR','TOPS','BOTTOMS','UNDERWEAR','NIGHTWEAR','SWIMWEAR','ACCESSORIES','FOOTWEAR'];
 const BRANDS = ['BadRhino',"Evan\'s",'Long Tall Sally','Pixie Girl','M&Co','Star x JM'];
-const GRADES = ['A','B','C','D'];
+const GRADES = ['A','B','C','D','E','F','Web Only'];
 
 var G = {
   user: null, devs: [], tenders: [], bids: [], messages: [],
@@ -774,7 +774,7 @@ function buildFilters(){
 
   // Store grade - from style-level products
   var sgrades=['All']; G.devs.forEach(function(d){ (d.products||[]).forEach(function(p){ if(p.storeGrade&&!sgrades.includes(p.storeGrade)) sgrades.push(p.storeGrade); }); });
-  if(sgrades.length===1) sgrades=['All','A','B','C','D'];
+  if(sgrades.length===1) sgrades=['All','A','B','C','D','E','F','Web Only'];
   buildChips('filter-stylegrade', sgrades, 'stylegrade', 'Grade');
 
   // Theme - from devs
@@ -1374,7 +1374,7 @@ function addProductRow(data){
   var gradeInp=document.createElement('select');
   gradeInp.className='form-input product-grade';
   gradeInp.style.cssText='padding:0.5rem 0.5rem;font-size:0.82rem;';
-  ['','A','B','C','D'].forEach(function(g){ var o=document.createElement('option'); o.value=g; o.textContent=g||'Grade'; gradeInp.appendChild(o); });
+  ['','A','B','C','D','E','F','Web Only'].forEach(function(g){ var o=document.createElement('option'); o.value=g; o.textContent=g||'Grade'; gradeInp.appendChild(o); });
   gradeInp.value=d.storeGrade||'';
   gradeInp.addEventListener('change',function(){G.formProducts[pidx].storeGrade=this.value;});
   row1.appendChild(gradeInp);
