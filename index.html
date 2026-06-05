@@ -2430,7 +2430,7 @@ function renderPackDetail(mc, pack){
   var cur=pack.status||'draft';
   var stageBarHtml='<div class="pack-stage-bar">';
   stages.forEach(function(s){
-    var isOn=stages.indexOf(cur)>=stages.indexOf(s);
+    var isOn=cur===s;
     stageBarHtml+='<div class="pack-stage-step'+(isOn?' on '+s:'')+'" data-packid="'+pack.id+'" data-status="'+s+'" onclick="window.setPackStatus(this.dataset.packid,this.dataset.status)">'+stageLabels[s]+'</div>';
   });
   stageBarHtml+='</div>';
@@ -2446,7 +2446,7 @@ function renderPackDetail(mc, pack){
     (pack.shoot_type?'<span class="pack-stat" style="background:#ede9fe;color:#7c3aed;">'+pack.shoot_type+'</span>':'')+
     (pack.trade_deadline?'<span class="pack-stat" style="background:#fee2e2;color:#991b1b;">&#128197; Trade: '+new Date(pack.trade_deadline).toLocaleDateString("en-GB",{day:"numeric",month:"short"})+'</span>':'')+
     (pack.samples_ready_by?'<span class="pack-stat" style="background:#dbeafe;color:#1e40af;">&#10003; Samples: '+new Date(pack.samples_ready_by).toLocaleDateString("en-GB",{day:"numeric",month:"short"})+'</span>':'')+
-    (retailStr?'<span class="pack-stat" style="background:#d1fae5;color:#065f46;font-weight:800;">&#127907; Shoot Retail: '+retailStr+'</span>':'')+
+    '<span class="pack-stat" id="pack-retail-badge" style="background:#d1fae5;color:#065f46;font-weight:800;'+(retailStr?'':'display:none;')+'">&#127907; Shoot Retail: '+(retailStr||'')+'</span>'+
     '</div>'+
     stageBarHtml+
     '<div style="display:flex;gap:0.5rem;">'+
@@ -2764,6 +2764,7 @@ async function confirmStylePicker(){
   await api('PUT','/packs/'+_pickerPackId,{looks:p.looks});
   closeStylePicker();
   renderLooks(p);
+  updatePackRetailValue(_pickerPackId);
 }
 
 // Quick add from board card
@@ -3290,6 +3291,27 @@ window.packHandleFiles=packHandleFiles;
 window.deleteAttachment=deleteAttachment;
 window.openAttachment=openAttachment;
 
+
+function updatePackRetailValue(packId){
+  var p=G.packs.find(function(x){return x.id===packId;}); if(!p) return;
+  var retailTotal=0;
+  (p.looks||[]).forEach(function(l){
+    (l.items||[]).forEach(function(it){
+      var r=parseFloat((it.retailPrice+'').replace(/[^0-9.]/g,'')||0);
+      var q=parseInt(it.qty||0);
+      retailTotal+=r*q;
+    });
+  });
+  var badge=document.getElementById('pack-retail-badge');
+  if(badge){
+    if(retailTotal>0){
+      badge.textContent='\u{1F3AD} Shoot Retail: \u{00A3}'+retailTotal.toLocaleString('en-GB',{minimumFractionDigits:2,maximumFractionDigits:2});
+      badge.style.display='';
+    } else {
+      badge.style.display='none';
+    }
+  }
+}
 async function deleteDev(devId){
   if(!confirm('Delete this development? This cannot be undone.')) return;
   await api('DELETE','/developments/'+devId);
