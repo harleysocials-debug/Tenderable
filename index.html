@@ -1853,6 +1853,143 @@ function exportRangePDF(){
   setTimeout(function(){ w.print(); },800);
 }
 
+
+function supplierBrief(devId){
+  var d=G.devs.find(function(x){return x.id===devId;});
+  if(!d) return;
+
+  // Ask about cost price
+  var includeCost = confirm('Include cost price in the supplier brief?\n\nClick OK to include, Cancel to exclude.');
+  var today=new Date().toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'});
+  var prods=(d.products||[]).filter(function(p){return p.description;});
+  var totalQty=prods.reduce(function(s,p){return s+parseInt(p.qty||0);},0);
+
+  // Style cards
+  var styleCards='';
+  prods.forEach(function(p){
+    styleCards+='<div class="style-card">';
+    if(p.image) styleCards+='<img src="'+p.image+'" class="style-img">';
+    else styleCards+='<div class="style-img-ph">No image</div>';
+    styleCards+='<div class="style-info">';
+    styleCards+='<div class="style-name">'+p.description+'</div>';
+    var meta=[];
+    if(p.colour) meta.push(p.colour);
+    if(p.category) meta.push(p.category);
+    if(p.department) meta.push(p.department);
+    if(p.seasonCode) meta.push(p.seasonCode);
+    if(p.storeGrade) meta.push('Grade '+p.storeGrade);
+    if(p.intakeMonth) meta.push('Intake: '+p.intakeMonth);
+    if(meta.length) styleCards+='<div class="style-meta">'+meta.join(' &bull; ')+'</div>';
+    styleCards+='<div class="style-qty">Qty: <strong>'+(parseInt(p.qty||0)).toLocaleString()+'</strong></div>';
+    if(includeCost&&p.targetCost) styleCards+='<div class="style-cost">Target Cost: <strong>&pound;'+parseFloat(p.targetCost).toFixed(2)+'</strong></div>';
+    styleCards+='</div></div>';
+  });
+
+  var html='<!DOCTYPE html><html><head><meta charset="UTF-8">'+
+    '<title>Supplier Brief - '+d.description+'</title>'+
+    '<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">'+
+    '<style>'+
+    '*{box-sizing:border-box;margin:0;padding:0;}'+
+    'body{font-family:"DM Sans",Arial,sans-serif;color:#0c0f14;background:white;font-size:11px;-webkit-print-color-adjust:exact;print-color-adjust:exact;}'+
+    '.page{max-width:794px;margin:0 auto;padding:32px;}'+
+    '.header{display:flex;justify-content:space-between;align-items:flex-start;padding-bottom:20px;border-bottom:2px solid #0c0f14;margin-bottom:20px;}'+
+    '.logo{font-size:20px;font-weight:800;letter-spacing:-0.5px;}'+
+    '.logo span{color:#6366f1;}'+
+    '.header-right{text-align:right;}'+
+    '.brief-title{font-size:22px;font-weight:800;margin-bottom:4px;letter-spacing:-0.5px;}'+
+    '.brief-sub{font-size:11px;color:#6b7280;}'+
+    '.summary{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:24px;}'+
+    '.sum-box{background:#f8f9fb;border-radius:8px;padding:10px 12px;}'+
+    '.sum-label{font-size:9px;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:0.07em;margin-bottom:3px;}'+
+    '.sum-val{font-size:14px;font-weight:800;}'+
+    '.section-title{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#9ca3af;margin-bottom:12px;padding-bottom:6px;border-bottom:1px solid #e5e7eb;}'+
+    '.styles-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:24px;}'+
+    '.style-card{border:1px solid #e5e7eb;border-radius:10px;overflow:hidden;}'+
+    '.style-img{width:100%;aspect-ratio:1;object-fit:cover;display:block;background:#f3f4f6;}'+
+    '.style-img-ph{width:100%;aspect-ratio:1;background:#f3f4f6;display:flex;align-items:center;justify-content:center;font-size:10px;color:#9ca3af;}'+
+    '.style-info{padding:8px 10px;}'+
+    '.style-name{font-size:11px;font-weight:700;margin-bottom:3px;}'+
+    '.style-meta{font-size:9px;color:#6b7280;margin-bottom:4px;line-height:1.5;}'+
+    '.style-qty{font-size:10px;color:#0c0f14;margin-bottom:2px;}'+
+    '.style-cost{font-size:10px;color:#6366f1;}'+
+    '.total-row{background:#0c0f14;color:white;border-radius:8px;padding:12px 16px;display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;}'+
+    '.total-label{font-size:10px;font-weight:600;opacity:0.6;}'+
+    '.total-val{font-size:16px;font-weight:800;}'+
+    '.notes-box{background:#f8f9fb;border-radius:8px;padding:14px;margin-bottom:20px;}'+
+    '.notes-text{font-size:10px;line-height:1.7;color:#374151;}'+
+    '.footer{border-top:1px solid #e5e7eb;padding-top:12px;display:flex;justify-content:space-between;align-items:center;}'+
+    '.footer-note{font-size:9px;color:#9ca3af;}'+
+    '.conf-banner{background:#fee2e2;border-radius:6px;padding:6px 10px;font-size:9px;font-weight:700;color:#991b1b;text-align:center;margin-bottom:16px;}'+
+    '.action-bar{position:fixed;bottom:20px;right:20px;display:flex;gap:8px;z-index:999;}'+
+    '.action-btn{padding:10px 20px;border:none;border-radius:8px;font-weight:700;font-size:13px;cursor:pointer;font-family:inherit;}'+
+    '@media print{.action-bar{display:none;}@page{margin:10mm;size:A4;}}'+
+    '</style></head><body>'+
+    '<div class="page">'+
+    // Confidentiality
+    '<div class="conf-banner">CONFIDENTIAL &mdash; FOR SUPPLIER USE ONLY &mdash; NOT FOR DISTRIBUTION</div>'+
+    // Header
+    '<div class="header">'+
+    '<div><div class="logo">Tender<span>able</span></div><div style="font-size:9px;color:#9ca3af;margin-top:2px;">Supplier Development Brief</div></div>'+
+    '<div class="header-right"><div class="brief-title">'+d.description+'</div>'+
+    '<div class="brief-sub">'+(d.brand||'')+' &bull; Issued: '+today+'</div></div>'+
+    '</div>'+
+    // Summary boxes
+    '<div class="summary">'+
+    '<div class="sum-box"><div class="sum-label">Category</div><div class="sum-val">'+(prods[0]&&prods[0].category?prods[0].category:d.category||'&mdash;')+'</div></div>'+
+    '<div class="sum-box"><div class="sum-label">Lead Time</div><div class="sum-val">'+(d.leadTimeTarget?d.leadTimeTarget+' weeks':'&mdash;')+'</div></div>'+
+    '<div class="sum-box"><div class="sum-label">Total Styles</div><div class="sum-val">'+prods.length+'</div></div>'+
+    '<div class="sum-box"><div class="sum-label">Total Units</div><div class="sum-val">'+totalQty.toLocaleString()+'</div></div>'+
+    '</div>'+
+    // Fabric
+    (d.fabric?'<div class="section-title">Fabric &amp; Construction</div><div class="notes-box"><div class="notes-text">'+d.fabric+'</div></div>':'')+
+    // Styles
+    '<div class="section-title">Styles &amp; Quantities ('+prods.length+')</div>'+
+    '<div class="styles-grid">'+styleCards+'</div>'+
+    // Total
+    '<div class="total-row">'+
+    '<div><div class="total-label">TOTAL ORDER QUANTITY</div></div>'+
+    '<div class="total-val">'+totalQty.toLocaleString()+' units</div>'+
+    '</div>'+
+    // Notes
+    (d.labellingReqs?'<div class="section-title">Notes, Labelling &amp; Requirements</div><div class="notes-box"><div class="notes-text">'+d.labellingReqs+'</div></div>':'')+
+    // Footer
+    '<div class="footer">'+
+    '<div class="footer-note">'+d.description+' &bull; '+(d.brand||'')+' &bull; Generated '+today+'</div>'+
+    '<div class="footer-note">Retail price not included. All costs subject to confirmation.</div>'+
+    '</div>'+
+    '</div>'+
+    // Action buttons
+    '<div class="action-bar">'+
+    '<button class="action-btn" style="background:#0c0f14;color:white;" onclick="window.print()">&#128424; Print</button>'+
+    '<button class="action-btn" id="dl-btn" style="background:#6366f1;color:white;" onclick="dlPDF()">&#128190; Save PDF</button>'+
+    '</div>'+
+    '</body></html>';
+
+  var w=window.open('','_blank');
+  w.document.write(html);
+  w.document.close();
+
+  // Inject html2pdf after page loads
+  var s1=w.document.createElement('script');
+  s1.src='https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js';
+  s1.onload=function(){
+    var s2=w.document.createElement('script');
+    s2.textContent=[
+      'function dlPDF(){',
+      '  var btn=document.getElementById("dl-btn");',
+      '  btn.textContent="Generating...";btn.disabled=true;',
+      '  var el=document.querySelector(".page");',
+      '  var fname="Supplier-Brief-'+d.description.replace(/[^a-z0-9]/gi,'-')+'-'+today.replace(/ /g,'-')+'.pdf";',
+      '  var opt={margin:[8,8,8,8],filename:fname,image:{type:"jpeg",quality:0.95},html2canvas:{scale:2,useCORS:true,allowTaint:true},jsPDF:{unit:"mm",format:"a4",orientation:"portrait"}};',
+      '  html2pdf().set(opt).from(el).save().then(function(){btn.textContent="Save PDF";btn.disabled=false;});',
+      '}'
+    ].join('\n');
+    w.document.head.appendChild(s2);
+  };
+  w.document.head.appendChild(s1);
+}
+window.supplierBrief=supplierBrief;
+
 async function deleteDev(devId){
   if(!confirm('Delete this development? This cannot be undone.')) return;
   await api('DELETE','/developments/'+devId);
