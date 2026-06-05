@@ -1043,7 +1043,7 @@ function renderPipeline(mc){
     items.forEach(function(item){
       var dev=item._dev;
       var imgSrc=item.image||(dev.files||[]).reduce(function(a,f){return a||(f.isImage&&f.dataUrl?f.dataUrl:null);},null);
-      html+='<div class="kb-card" data-devid="'+dev.id+'" onclick="openDetail(this.dataset.devid)">';
+      html+='<div class="kb-card" data-devid="'+dev.id+'" onclick="window.openDetail(this.dataset.devid)">';
       if(imgSrc) html+='<img class="kb-card-img" src="'+imgSrc+'">';
       else html+='<div class="kb-card-img-ph">&#127912;</div>';
       html+='<div class="kb-card-body">';
@@ -1067,6 +1067,7 @@ function renderPipeline(mc){
 
 // ── DETAIL PANEL ─────────────────────────────────────────────────────────────
 function openDetail(devId){
+  if(!devId||devId==='undefined') return;
   var d=G.devs.find(function(x){return x.id===devId;}); if(!d) return;
   var panel=$('detail-panel');
   var imgs=(d.files||[]).filter(function(f){return f.isImage&&f.dataUrl;});
@@ -1166,6 +1167,7 @@ function openDetail(devId){
 }
 
 function closeDetail(){ $('detail-overlay').classList.remove('open'); }
+window.openDetail=openDetail;
 function closeDetailIfBg(e){ if(e.target===$('detail-overlay')) closeDetail(); }
 
 async function postComment(devId){
@@ -1238,8 +1240,6 @@ function closeForm(){ $('form-overlay').classList.remove('open'); }
 function closeFormIfBg(e){ if(e.target===$('form-overlay')) closeForm(); }
 
 function renderFormBody(d){
-  var seasons=['SS27','AW26','SS26','AW25','SS25'];
-  var depts=['','Menswear','Womenswear','Kidswear','Footwear','Accessories','Lingerie','Sport'];
   var fb = $('form-body');
 
   function sel(id, options, curVal, withBlank){
