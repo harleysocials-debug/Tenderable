@@ -892,7 +892,7 @@ function renderBoard(mc){
     if(G.filters.retail&&G.filters.retail.length){
       prods=prods.filter(function(p){return G.filters.retail.some(function(band){var b=band.split('-');var lo=parseFloat(b[0]),hi=parseFloat(b[1]);var r=parseFloat(p.retailPrice||0);return r>=lo&&r<hi;});});
     }
-    if(prods.length===0 && dev.description && dev.description!=='null' && !G.filters.colour && !G.filters.intake && !G.filters.stylegrade && !G.filters.retail){
+    if(prods.length===0 && dev.description && dev.description!=='null' && !G.filters.colour.length && !G.filters.intake.length && !G.filters.stylegrade.length && !G.filters.retail.length){
       allStyles.push({_dev:dev,_isPlaceholder:true,category:dev.category||'Other'}); // placeholder uses dev-level
     } else {
       prods.forEach(function(p){ allStyles.push(Object.assign({},p,{_dev:dev,category:p.category||dev.category||'Other'})); });
