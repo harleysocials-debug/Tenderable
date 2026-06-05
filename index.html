@@ -498,7 +498,7 @@ input, select, textarea { font-family: inherit; }
 .look-body { padding:0.75rem; display:flex; flex-direction:column; gap:0.5rem; }
 .look-item { display:flex; gap:0.75rem; align-items:flex-start; background:var(--line2); border-radius:9px; padding:0.65rem 0.85rem; }
 .look-item-img { width:52px; height:52px; border-radius:7px; object-fit:cover; flex-shrink:0; }
-.look-item-img-ph { width:52px; height:52px; border-radius:7px; background:var(--line); display:flex; align-items:center; justify-content:center; font-size:1.2rem; flex-shrink:0; }
+.look-item-img-ph { width:80px; height:80px; border-radius:8px; background:var(--line2); display:flex; align-items:center; justify-content:center; font-size:1.5rem; flex-shrink:0; }
 .look-item-info { flex:1; min-width:0; }
 .look-item-name { font-size:0.82rem; font-weight:700; }
 .look-item-sub { font-size:0.7rem; color:var(--ink3); margin-bottom:0.35rem; }
@@ -641,11 +641,36 @@ input, select, textarea { font-family: inherit; }
   <div class="main" id="main-content"></div>
 </div>
 
+<!-- Pack form overlay -->
+<div class="form-overlay" id="pack-form-overlay" onclick="closePackFormIfBg(event)">
+  <div class="form-sheet" style="max-width:620px;">
+    <div class="form-head">
+      <div class="form-title" id="pack-form-title">New Shoot Pack</div>
+      <button class="form-close" onclick="closePackForm()">&#10005;</button>
+    </div>
+    <div class="form-body">
+      <div class="form-grid">
+        <div class="form-group full"><label class="form-label">Pack Name</label><input class="form-input" id="pf-name" placeholder="e.g. SS27 Beach Shoot"></div>
+        <div class="form-group"><label class="form-label">Brand</label><select class="form-input" id="pf-brand"><option value="">Select brand</option><option>BadRhino</option><option>Evan's</option><option>Long Tall Sally</option><option>Pixie Girl</option><option>M&Co</option><option>Star x JM</option></select></div>
+        <div class="form-group"><label class="form-label">Season</label><select class="form-input" id="pf-season"><option value="">Select season</option><option>SS27</option><option>AW27</option><option>SS26</option><option>AW26</option><option>SS25</option><option>AW25</option><option>Flow</option></select></div>
+        <div class="form-group"><label class="form-label">Shoot Date</label><input class="form-input" type="date" id="pf-date"></div>
+        <div class="form-group"><label class="form-label">Location</label><input class="form-input" id="pf-location" placeholder="e.g. Marbella, Spain"></div>
+        <div class="form-group full"><label class="form-label">Photographer</label><input class="form-input" id="pf-photographer" placeholder="Photographer name"></div>
+        <div class="form-group full"><label class="form-label">Notes</label><textarea class="form-input" id="pf-notes" rows="2" placeholder="Shoot brief, mood, direction..."></textarea></div>
+      </div>
+    </div>
+    <div class="form-foot">
+      <button class="btn btn-ghost" onclick="closePackForm()">Cancel</button>
+      <button class="btn btn-primary" onclick="submitPackForm()">Save Pack</button>
+    </div>
+  </div>
+</div>
+
 <!-- Style picker -->
 <div class="style-picker-overlay" id="style-picker-overlay">
   <div class="style-picker-box">
     <div class="style-picker-head">
-      <div style="font-size:1rem;font-weight:800;">Add Styles to Look</div>
+      <div style="font-size:1rem;font-weight:800;" id="sp-title">Add Styles to Look</div>
       <button class="detail-close" onclick="closeStylePicker()">&#10005;</button>
     </div>
     <div class="style-picker-search">
@@ -2417,7 +2442,7 @@ function buildLookCard(pack, look, li){
   addRow.className='look-add-row';
   addRow.innerHTML=
     '<button class="look-add-btn" data-packid="'+pack.id+'" data-lookid="'+look.id+'" onclick="openStylePicker(this.dataset.packid,this.dataset.lookid)">+ Add from Range Board</button>'+
-    '<button class="look-add-btn" data-packid="'+pack.id+'" data-lookid="'+look.id+'" onclick="addFreeTextItem(this.dataset.packid,this.dataset.lookid)">+ Add Styling Item</button>';
+    '<button class="look-add-btn" data-packid="'+pack.id+'" data-lookid="'+look.id+'" onclick="openStylePicker(this.dataset.packid,this.dataset.lookid,true)">+ Add Styling Piece</button>';
   card.appendChild(addRow);
   return card;
 }
@@ -2426,19 +2451,17 @@ function buildLookItemEl(pack, look, item, ii){
   var el=document.createElement('div');
   el.className='look-item';
   var img='';
-  if(item.image) img='<img class="look-item-img" src="'+item.image+'">';
+  if(item.image) img='<img class="look-item-img" src="'+item.image+'" style="width:80px;height:80px;object-fit:cover;border-radius:8px;flex-shrink:0;display:block;">';
   else img='<div class="look-item-img-ph">&#127912;</div>';
 
   var badges='';
-  if(item.type==='range_style'){
+  if(item.type==='range_style'||item.type==='styling_piece'){
     if(item.colour) badges+='<span class="look-badge">'+item.colour+'</span>';
     if(item.storeGrade) badges+='<span class="look-badge">Grade '+item.storeGrade+'</span>';
     if(item.seasonCode) badges+='<span class="look-badge">'+item.seasonCode+'</span>';
     if(item.intakeMonth) badges+='<span class="look-badge">'+item.intakeMonth+'</span>';
-  } else {
-    badges+='<span class="look-badge" style="background:#fef3c7;color:#b45309;">Styling</span>';
-    if(item.source) badges+='<span class="look-badge">'+item.source+'</span>';
   }
+  if(item.type==='styling_piece') badges+='<span class="look-badge" style="background:#fef3c7;color:#b45309;">Styling Piece</span>';
 
   var priceQty='';
   if(item.retailPrice) priceQty+='<span class="look-badge" style="color:#10b981;">£'+parseFloat(item.retailPrice).toFixed(2)+'</span>';
@@ -2555,10 +2578,11 @@ async function addFreeTextItem(packId, lookId){
 }
 
 // ── STYLE PICKER ──────────────────────────────────────────────────────────────
-var _pickerPackId=null, _pickerLookId=null, _pickerSelected=[];
+var _pickerPackId=null, _pickerLookId=null, _pickerSelected=[], _pickerIsStyling=false;
 
-function openStylePicker(packId, lookId){
-  _pickerPackId=packId; _pickerLookId=lookId; _pickerSelected=[];
+function openStylePicker(packId, lookId, isStyling){
+  _pickerPackId=packId; _pickerLookId=lookId; _pickerSelected=[]; _pickerIsStyling=!!isStyling;
+  document.getElementById('sp-title').textContent=isStyling?'Add Styling Pieces':'Add Styles to Look';
   renderStylePicker();
   document.getElementById('style-picker-overlay').classList.add('open');
 }
@@ -2614,7 +2638,7 @@ async function confirmStylePicker(){
   _pickerSelected.forEach(function(i){
     var s=allStyles[i]; if(!s) return;
     look.items.push({
-      type:'range_style', devId:s._dev.id, devName:s._dev.description,
+      type:_pickerIsStyling?'styling_piece':'range_style', devId:s._dev.id, devName:s._dev.description,
       description:s.description, colour:s.colour||'', storeGrade:s.storeGrade||'',
       seasonCode:s.seasonCode||s._dev.seasonCode||'', intakeMonth:s.intakeMonth||'',
       retailPrice:s.retailPrice||'', qty:s.qty||'', targetCost:s.targetCost||'',
@@ -2668,14 +2692,48 @@ function quickAddToPack(btn){
 
 // ── PACK FORMS ────────────────────────────────────────────────────────────────
 var PACK_SEASONS=['SS27','AW27','SS26','AW26','SS25','AW25','Flow'];
-function openNewPackForm(){
-  var name=prompt('Pack name (e.g. SS27 Beach Shoot):'); if(!name) return;
-  var date=prompt('Shoot date (YYYY-MM-DD):');
-  var location=prompt('Location (e.g. Marbella):');
-  var photographer=prompt('Photographer:');
-  var season=prompt('Season ('+PACK_SEASONS.join(', ')+'):');
-  var brand=prompt('Brand:');
-  createPack({name:name.trim(),shootDate:date||null,location:location||null,photographer:photographer||null,season:season||null,brand:brand||null});
+function openNewPackForm(packId){
+  // Reset form
+  var isEdit=!!packId;
+  document.getElementById('pack-form-title').textContent=isEdit?'Edit Pack':'New Shoot Pack';
+  var p=isEdit?G.packs.find(function(x){return x.id===packId;}):null;
+  document.getElementById('pf-name').value=p?p.name:'';
+  document.getElementById('pf-brand').value=p?( p.brand||''):'';
+  document.getElementById('pf-season').value=p?( p.season||''):'';
+  document.getElementById('pf-date').value=p&&p.shoot_date?p.shoot_date.split('T')[0]:'';
+  document.getElementById('pf-location').value=p?( p.location||''):'';
+  document.getElementById('pf-photographer').value=p?( p.photographer||''):'';
+  document.getElementById('pf-notes').value=p?( p.notes||''):'';
+  document.getElementById('pack-form-overlay').dataset.editid=packId||'';
+  document.getElementById('pack-form-overlay').classList.add('open');
+  setTimeout(function(){document.getElementById('pf-name').focus();},100);
+}
+function closePackForm(){ document.getElementById('pack-form-overlay').classList.remove('open'); }
+function closePackFormIfBg(e){ if(e.target===document.getElementById('pack-form-overlay')) closePackForm(); }
+async function submitPackForm(){
+  var name=document.getElementById('pf-name').value.trim();
+  if(!name){document.getElementById('pf-name').focus();return;}
+  var data={
+    name:name,
+    brand:document.getElementById('pf-brand').value||null,
+    season:document.getElementById('pf-season').value||null,
+    shootDate:document.getElementById('pf-date').value||null,
+    location:document.getElementById('pf-location').value.trim()||null,
+    photographer:document.getElementById('pf-photographer').value.trim()||null,
+    notes:document.getElementById('pf-notes').value.trim()||null
+  };
+  var editId=document.getElementById('pack-form-overlay').dataset.editid;
+  closePackForm();
+  if(editId){
+    var p=G.packs.find(function(x){return x.id===editId;}); if(!p) return;
+    Object.assign(p,data);
+    await api('PUT','/packs/'+editId,data);
+    toast('Pack updated','success');
+    G.activePack=p;
+    renderMainContent();
+  } else {
+    createPack(data);
+  }
 }
 
 async function createPack(data){
