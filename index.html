@@ -2429,12 +2429,49 @@ function buildLookCard(pack, look, li){
     '<button class="look-del-btn" data-lookid="'+look.id+'" data-packid="'+pack.id+'" onclick="deleteLook(this.dataset.packid,this.dataset.lookid)">&#10005;</button>';
   card.appendChild(hd);
 
-  // Items
+  // Items split into key pieces and styling pieces
   var body=document.createElement('div');
-  body.className='look-body';
+  body.style.cssText='display:grid;grid-template-columns:1fr 1fr;gap:0;';
+  
+  var keyCol=document.createElement('div');
+  keyCol.style.cssText='padding:0.75rem;display:flex;flex-direction:column;gap:0.5rem;border-right:1px solid var(--line);';
+  var keyHead=document.createElement('div');
+  keyHead.style.cssText='font-size:0.65rem;font-weight:800;text-transform:uppercase;letter-spacing:0.07em;color:var(--ink4);margin-bottom:0.35rem;';
+  keyHead.textContent='Key Pieces';
+  keyCol.appendChild(keyHead);
+
+  var styleCol=document.createElement('div');
+  styleCol.style.cssText='padding:0.75rem;display:flex;flex-direction:column;gap:0.5rem;background:#fffbeb;';
+  var styleHead=document.createElement('div');
+  styleHead.style.cssText='font-size:0.65rem;font-weight:800;text-transform:uppercase;letter-spacing:0.07em;color:#b45309;margin-bottom:0.35rem;';
+  styleHead.textContent='✦ Styling Pieces';
+  styleCol.appendChild(styleHead);
+
+  var keyItems=(look.items||[]).filter(function(i){return i.type!=='styling_piece';});
+  var styleItems=(look.items||[]).filter(function(i){return i.type==='styling_piece';});
+
+  // Track overall index for delete
   (look.items||[]).forEach(function(item,ii){
-    body.appendChild(buildLookItemEl(pack, look, item, ii));
+    var el=buildLookItemEl(pack, look, item, ii);
+    if(item.type==='styling_piece') styleCol.appendChild(el);
+    else keyCol.appendChild(el);
   });
+
+  if(!keyItems.length){
+    var emptyKey=document.createElement('div');
+    emptyKey.style.cssText='font-size:0.75rem;color:var(--ink4);padding:0.5rem 0;';
+    emptyKey.textContent='No key pieces yet';
+    keyCol.appendChild(emptyKey);
+  }
+  if(!styleItems.length){
+    var emptySty=document.createElement('div');
+    emptySty.style.cssText='font-size:0.75rem;color:#b45309;opacity:0.5;padding:0.5rem 0;';
+    emptySty.textContent='No styling pieces yet';
+    styleCol.appendChild(emptySty);
+  }
+
+  body.appendChild(keyCol);
+  body.appendChild(styleCol);
   card.appendChild(body);
 
   // Add row
@@ -2461,7 +2498,7 @@ function buildLookItemEl(pack, look, item, ii){
     if(item.seasonCode) badges+='<span class="look-badge">'+item.seasonCode+'</span>';
     if(item.intakeMonth) badges+='<span class="look-badge">'+item.intakeMonth+'</span>';
   }
-  if(item.type==='styling_piece') badges+='<span class="look-badge" style="background:#fef3c7;color:#b45309;">Styling Piece</span>';
+  // styling_piece column position makes badge redundant
 
   var priceQty='';
   if(item.retailPrice) priceQty+='<span class="look-badge" style="color:#10b981;">£'+parseFloat(item.retailPrice).toFixed(2)+'</span>';
@@ -2607,7 +2644,7 @@ function renderStylePicker(){
     var imgSrc=s.image||((dev.files||[]).find(function(f){return f.isImage&&f.dataUrl;})||{}).dataUrl;
     var card=document.createElement('div');
     card.className='style-picker-card'+( _pickerSelected.indexOf(i)>=0?' selected':'');
-    card.innerHTML=(imgSrc?'<img src="'+imgSrc+'" style="width:100%;aspect-ratio:1/1;object-fit:cover;display:block;">':'<div style="width:100%;aspect-ratio:1/1;background:var(--line2);display:flex;align-items:center;justify-content:center;font-size:1.5rem;">&#127912;</div>')+
+    card.innerHTML=(imgSrc?'<div class="style-picker-card-imgwrap"><img src="'+imgSrc+'"></div>':'<div class="style-picker-card-imgwrap-ph">&#127912;</div>')+
       '<div class="style-picker-card-info"><div class="style-picker-card-name">'+s.description+'</div><div class="style-picker-card-sub">'+(s.colour||'')+' &bull; '+(dev.brand||'')+'</div></div>';
     card.dataset.idx=i;
     card.onclick=function(){
