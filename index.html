@@ -2853,7 +2853,8 @@ async function atpAddToLook(el){
   var packId=el.dataset.packid, lookId=el.dataset.lookid;
   var p=G.packs.find(function(x){return x.id===packId;}); if(!p) return;
   var look=(p.looks||[]).find(function(l){return l.id===lookId;}); if(!look) return;
-  var s=_atpStyle; var dev=s._dev;
+  var s=_atpStyle; if(!s) return;
+  var dev=s._dev;
   if(!look.items) look.items=[];
   look.items.push({
     type:'range_style', devId:dev.id, devName:dev.description,
@@ -2863,10 +2864,16 @@ async function atpAddToLook(el){
     image:s.image||((dev.files||[]).find(function(f){return f.isImage&&f.dataUrl;})||{}).dataUrl||'',
     stylingNotes:''
   });
-  await api('PUT','/packs/'+packId,{looks:p.looks});
+  var r=await api('PUT','/packs/'+packId,{looks:p.looks});
+  if(!r){ toast('Failed to save — please try again','error'); return; }
   atpClose();
   var lookNum=(p.looks||[]).findIndex(function(l){return l.id===lookId;})+1;
   toast('Added to '+p.name+' — Look '+lookNum,'success');
+  // Re-render looks if this pack is currently open
+  if(G.activePack&&G.activePack.id===packId){
+    renderLooks(p);
+    updatePackRetailValue(packId);
+  }
 }
 
 async function atpNewLook(packId){
@@ -2874,7 +2881,8 @@ async function atpNewLook(packId){
   if(!p.looks) p.looks=[];
   var newLook={id:'look-'+Date.now(),name:'',items:[]};
   p.looks.push(newLook);
-  var s=_atpStyle; var dev=s._dev;
+  var s=_atpStyle; if(!s) return;
+  var dev=s._dev;
   newLook.items=[{
     type:'range_style', devId:dev.id, devName:dev.description,
     description:s.description, colour:s.colour||'', storeGrade:s.storeGrade||'',
@@ -2883,9 +2891,14 @@ async function atpNewLook(packId){
     image:s.image||((dev.files||[]).find(function(f){return f.isImage&&f.dataUrl;})||{}).dataUrl||'',
     stylingNotes:''
   }];
-  await api('PUT','/packs/'+packId,{looks:p.looks});
+  var r=await api('PUT','/packs/'+packId,{looks:p.looks});
+  if(!r){ toast('Failed to save — please try again','error'); return; }
   atpClose();
   toast('New look created in '+p.name,'success');
+  if(G.activePack&&G.activePack.id===packId){
+    renderLooks(p);
+    updatePackRetailValue(packId);
+  }
 }
 
 async function atpNewPack(){
