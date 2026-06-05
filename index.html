@@ -3134,17 +3134,20 @@ function exportPackPDF(packId){
   s1.src='https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js';
   s1.onload=function(){
     var s2=w.document.createElement('script');
-    s2.textContent=[
-      'function dlPackPDF(){',
-      'var btn=document.getElementById("pdf-dl-btn");btn.textContent="Generating...";btn.disabled=true;',
-      'var opt={margin:[8,8,8,8],filename:fname,image:{type:"jpeg",quality:0.95},html2canvas:{scale:2,useCORS:true,allowTaint:true},jsPDF:{unit:"mm",format:"a4",orientation:"portrait"}};',
-      'var el=document.querySelector(".page");',
-      'var opt={margin:[8,8,8,8],filename:fname,image:{type:"jpeg",quality:0.95},html2canvas:{scale:2,useCORS:true,allowTaint:true,logging:false,imageTimeout:0},jsPDF:{unit:"mm",format:"a4",orientation:"portrait"}};',
-      'var imgs=Array.from(el.querySelectorAll("img"));var done=0;',
-      'function go(){html2pdf().set(opt).from(el).save().then(function(){btn.textContent="Save PDF";btn.disabled=false;});}',
-      'if(!imgs.length){go();return;}',
-      'imgs.forEach(function(i){if(i.complete){done++;if(done===imgs.length)go();}else{i.onload=i.onerror=function(){done++;if(done===imgs.length)go();};}})',
-    '}'].join('\n');
+    var packFilename=pack.name.replace(/[^a-z0-9]/gi,'-')+'-Shoot-Pack.pdf';
+    s2.textContent='function dlPackPDF(){'
+      +'var btn=document.getElementById("pdf-dl-btn");'
+      +'btn.textContent="Generating...";btn.disabled=true;'
+      +'var fname="'+packFilename+'";'
+      +'var el=document.querySelector(".page");'
+      +'var opt={margin:[8,8,8,8],filename:fname,image:{type:"jpeg",quality:0.95},html2canvas:{scale:2,useCORS:true,allowTaint:true,logging:false,imageTimeout:0},jsPDF:{unit:"mm",format:"a4",orientation:"portrait"}};'
+      +'var imgs=Array.from(el.querySelectorAll("img"));var done=0;var total=imgs.length;'
+      +'function go(){html2pdf().set(opt).from(el).save().then(function(){btn.textContent="Save PDF";btn.disabled=false;});}'
+      +'if(!total){go();return;}'
+      +'imgs.forEach(function(img){'
+      +'if(img.complete&&img.naturalHeight!==0){done++;if(done===total)go();}'
+      +'else{img.onload=function(){done++;if(done===total)go();};img.onerror=function(){done++;if(done===total)go();};}});'
+      +'}';
 }
 
 window.quickAddToPack=quickAddToPack;
