@@ -2910,11 +2910,14 @@ async function atpNewPack(){
     '<button onclick="atpShowStep1()" style="background:none;border:none;cursor:pointer;color:var(--ink3);font-size:0.8rem;">&#8592; Back</button>'+
     '<div style="font-size:0.875rem;font-weight:700;">New Pack</div></div>'+
     '<div class="form-grid">'+
-    '<div class="form-group full"><label class="form-label">Pack Name</label><input class="form-input" id="atp-pname" placeholder="e.g. SS27 Beach Shoot" autofocus></div>'+
-    '<div class="form-group"><label class="form-label">Brand</label><select class="form-input" id="atp-pbrand"><option value="">Brand</option><option>BadRhino</option><option>Evan&#39;s</option><option>Long Tall Sally</option><option>Pixie Girl</option><option>M&Co</option><option>Star x JM</option></select></div>'+
-    '<div class="form-group"><label class="form-label">Season</label><select class="form-input" id="atp-pseason"><option value="">Season</option><option>SS27</option><option>AW27</option><option>SS26</option><option>AW26</option><option>SS25</option><option>AW25</option><option>Flow</option></select></div>'+
-    '<div class="form-group"><label class="form-label">Shoot Date</label><input class="form-input" type="date" id="atp-pdate"></div>'+
+    '<div class="form-group full"><label class="form-label">Pack Name</label><input class="form-input" id="atp-pname" placeholder="e.g. SS27 Beach Shoot"></div>'+
+    '<div class="form-group"><label class="form-label">Brand</label><select class="form-input" id="atp-pbrand"><option value="">Select brand</option><option>BadRhino</option><option>Evan&#39;s</option><option>Long Tall Sally</option><option>Pixie Girl</option><option>M&Co</option><option>Star x JM</option></select></div>'+
+    '<div class="form-group"><label class="form-label">Season</label><select class="form-input" id="atp-pseason"><option value="">Select season</option><option>SS27</option><option>AW27</option><option>SS26</option><option>AW26</option><option>SS25</option><option>AW25</option><option>Flow</option></select></div>'+
+    '<div class="form-group"><label class="form-label">Shoot Type</label><select class="form-input" id="atp-ptype"><option value="">Select type</option><option value="Reactive">Reactive</option><option value="Capsule">Capsule</option><option value="Campaign">Campaign</option></select></div>'+
     '<div class="form-group"><label class="form-label">Location</label><input class="form-input" id="atp-ploc" placeholder="e.g. Marbella"></div>'+
+    '<div class="form-group"><label class="form-label">Shoot Date</label><input class="form-input" type="date" id="atp-pdate"></div>'+
+    '<div class="form-group"><label class="form-label">Trade Deadline</label><input class="form-input" type="date" id="atp-ptrade"></div>'+
+    '<div class="form-group"><label class="form-label">Samples Ready By</label><input class="form-input" type="date" id="atp-psamples"></div>'+
     '</div>';
   foot.innerHTML='<button class="btn btn-ghost" onclick="atpShowStep1()">Back</button><button class="btn btn-primary" onclick="atpCreatePackAndAdd()">Create Pack &amp; Add</button>';
   setTimeout(function(){var n=document.getElementById('atp-pname');if(n)n.focus();},100);
@@ -2936,8 +2939,11 @@ async function atpCreatePackAndAdd(){
     name:name,
     brand:document.getElementById('atp-pbrand').value||null,
     season:document.getElementById('atp-pseason').value||null,
-    shootDate:document.getElementById('atp-pdate').value||null,
+    shootType:document.getElementById('atp-ptype').value||null,
     location:document.getElementById('atp-ploc').value.trim()||null,
+    shootDate:document.getElementById('atp-pdate').value||null,
+    tradeDeadline:document.getElementById('atp-ptrade').value||null,
+    samplesReadyBy:document.getElementById('atp-psamples').value||null,
     looks:[newLook]
   });
   if(r&&r.pack){
@@ -3117,53 +3123,58 @@ function exportPackPDF(packId){
       '</div>'+itemsHtml+'</div>';
   });
 
-  var html='<!DOCTYPE html><html><head><meta charset="UTF-8"><title>'+pack.name+'</title>'+
-    '<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">'+
-    '<style>*{box-sizing:border-box;margin:0;padding:0;}body{font-family:"DM Sans",Arial,sans-serif;background:white;color:#0c0f14;-webkit-print-color-adjust:exact;print-color-adjust:exact;}'+
-    '.page{max-width:794px;margin:0 auto;padding:28px;}@media print{@page{margin:10mm;size:A4;}.no-print{display:none;}}</style>'+
-    '</head><body><div class="page">'+
-    '<div style="display:flex;justify-content:space-between;align-items:flex-start;padding-bottom:16px;border-bottom:2px solid #0c0f14;margin-bottom:16px;">'+
-    '<div><div style="font-size:20px;font-weight:800;letter-spacing:-0.5px;">Tender<span style="color:#6366f1;">able</span></div><div style="font-size:9px;color:#9ca3af;">Shoot Pack</div></div>'+
-    '<div style="text-align:right;"><div style="font-size:18px;font-weight:800;">'+pack.name+'</div><div style="font-size:10px;color:#6b7280;">'+(pack.brand?pack.brand+' &bull; ':'')+( pack.season?pack.season+' &bull; ':'')+(pack.shoot_date?new Date(pack.shoot_date).toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'}):today)+'</div></div></div>'+
-    '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:20px;">'+
-    (pack.location?'<div style="background:#f8f9fb;border-radius:8px;padding:10px;"><div style="font-size:9px;color:#9ca3af;font-weight:700;text-transform:uppercase;margin-bottom:3px;">Location</div><div style="font-size:12px;font-weight:700;">'+pack.location+'</div></div>':'')+
-    (pack.photographer?'<div style="background:#f8f9fb;border-radius:8px;padding:10px;"><div style="font-size:9px;color:#9ca3af;font-weight:700;text-transform:uppercase;margin-bottom:3px;">Photographer</div><div style="font-size:12px;font-weight:700;">'+pack.photographer+'</div></div>':'')+
-    '<div style="background:#f8f9fb;border-radius:8px;padding:10px;"><div style="font-size:9px;color:#9ca3af;font-weight:700;text-transform:uppercase;margin-bottom:3px;">Looks</div><div style="font-size:12px;font-weight:700;">'+(pack.looks?pack.looks.length:0)+'</div></div>'+
-    '<div style="background:#f8f9fb;border-radius:8px;padding:10px;"><div style="font-size:9px;color:#9ca3af;font-weight:700;text-transform:uppercase;margin-bottom:3px;">Total Items</div><div style="font-size:12px;font-weight:700;">'+totalItems+'</div></div>'+
-    (function(){var rt=0;(pack.looks||[]).forEach(function(l){(l.items||[]).forEach(function(it){var r=parseFloat((it.retailPrice+'').replace(/[^0-9.]/g,'')||0);var q=parseInt(it.qty||0);rt+=r*q;});});return rt>0?'<div style="background:#d1fae5;border-radius:8px;padding:10px;"><div style="font-size:9px;color:#065f46;font-weight:700;text-transform:uppercase;margin-bottom:3px;">Shoot Retail Value</div><div style="font-size:12px;font-weight:800;color:#065f46;">&pound;'+rt.toLocaleString('en-GB',{minimumFractionDigits:2})+'</div></div>':'';})()+
-    '</div>'+looksHtml+
-    '<div style="border-top:1px solid #e5e7eb;padding-top:10px;margin-top:16px;display:flex;justify-content:space-between;font-size:9px;color:#9ca3af;">'+
-    '<span>'+pack.name+' &bull; Generated '+today+'</span><span>CONFIDENTIAL</span></div>'+
-    '</div>'+
-    '<div class="no-print" style="position:fixed;bottom:20px;right:20px;display:flex;gap:8px;">'+
-    '<button onclick="window.print()" style="background:#0c0f14;color:white;border:none;padding:10px 20px;border-radius:8px;font-weight:700;cursor:pointer;font-family:inherit;">&#128424; Print</button>'+
-    '<button id="pdf-dl-btn" onclick="dlPackPDF()" style="background:#6366f1;color:white;border:none;padding:10px 20px;border-radius:8px;font-weight:700;cursor:pointer;font-family:inherit;">&#128190; Save PDF</button>'+
-    '</div></body></html>';
+  var packFilename=pack.name.replace(/[^a-z0-9]/gi,'-')+'-Shoot-Pack.pdf';
+  var retailTotal=0;
+  (pack.looks||[]).forEach(function(l){(l.items||[]).forEach(function(it){var rv=parseFloat((it.retailPrice+'').replace(/[^0-9.]/g,'')||0);var qv=parseInt(it.qty||0);retailTotal+=rv*qv;});});
+  var retailBox=retailTotal>0?'<div style="background:#d1fae5;border-radius:8px;padding:10px;"><div style="font-size:9px;color:#065f46;font-weight:700;text-transform:uppercase;margin-bottom:3px;">Shoot Retail Value</div><div style="font-size:12px;font-weight:800;color:#065f46;">&pound;'+retailTotal.toLocaleString('en-GB',{minimumFractionDigits:2})+'</div></div>':'';
+
+  var html='<!DOCTYPE html><html><head><meta charset="UTF-8"><title>'+pack.name+'</title>'
+    +'<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">'
+    +'<style>*{box-sizing:border-box;margin:0;padding:0;}body{font-family:"DM Sans",Arial,sans-serif;background:white;color:#0c0f14;-webkit-print-color-adjust:exact;print-color-adjust:exact;}.page{max-width:794px;margin:0 auto;padding:28px;}@media print{@page{margin:10mm;size:A4;}.no-print{display:none;}}</style>'
+    +'<'+'script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"><'+'/script>'
+    +'</head><body><div class="page">'
+    +'<div style="display:flex;justify-content:space-between;align-items:flex-start;padding-bottom:16px;border-bottom:2px solid #0c0f14;margin-bottom:16px;">'
+    +'<div><div style="font-size:20px;font-weight:800;letter-spacing:-0.5px;">Tender<span style="color:#6366f1;">able</span></div><div style="font-size:9px;color:#9ca3af;">Shoot Pack</div></div>'
+    +'<div style="text-align:right;"><div style="font-size:18px;font-weight:800;">'+pack.name+'</div>'
+    +'<div style="font-size:10px;color:#6b7280;">'+(pack.brand?pack.brand+' &bull; ':'')+( pack.season?pack.season+' &bull; ':'')+(pack.shoot_date?new Date(pack.shoot_date).toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'}):today)+'</div></div></div>'
+    +'<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;margin-bottom:20px;">'
+    +(pack.location?'<div style="background:#f8f9fb;border-radius:8px;padding:10px;"><div style="font-size:9px;color:#9ca3af;font-weight:700;text-transform:uppercase;margin-bottom:3px;">Location</div><div style="font-size:12px;font-weight:700;">'+pack.location+'</div></div>':'')
+    +'<div style="background:#f8f9fb;border-radius:8px;padding:10px;"><div style="font-size:9px;color:#9ca3af;font-weight:700;text-transform:uppercase;margin-bottom:3px;">Looks</div><div style="font-size:12px;font-weight:700;">'+(pack.looks?pack.looks.length:0)+'</div></div>'
+    +'<div style="background:#f8f9fb;border-radius:8px;padding:10px;"><div style="font-size:9px;color:#9ca3af;font-weight:700;text-transform:uppercase;margin-bottom:3px;">Total Items</div><div style="font-size:12px;font-weight:700;">'+totalItems+'</div></div>'
+    +retailBox
+    +'</div>'+looksHtml
+    +'<div style="border-top:1px solid #e5e7eb;padding-top:10px;margin-top:16px;display:flex;justify-content:space-between;font-size:9px;color:#9ca3af;">'
+    +'<span>'+pack.name+' &bull; Generated '+today+'</span><span>CONFIDENTIAL</span></div>'
+    +'</div>'
+    +'<div class="no-print" style="position:fixed;bottom:20px;right:20px;display:flex;gap:8px;">'
+    +'<button onclick="window.print()" style="background:#0c0f14;color:white;border:none;padding:10px 20px;border-radius:8px;font-weight:700;cursor:pointer;font-family:inherit;">&#128424; Print</button>'
+    +'<button id="pdf-dl-btn" onclick="dlPackPDF()" style="background:#6366f1;color:white;border:none;padding:10px 20px;border-radius:8px;font-weight:700;cursor:pointer;font-family:inherit;">&#128190; Save PDF</button>'
+    +'</div>'
+    +'<'+'script>'
+    +'function dlPackPDF(){'
+    +'  var btn=document.getElementById("pdf-dl-btn");'
+    +'  if(!btn)return;'
+    +'  btn.textContent="Generating...";btn.disabled=true;'
+    +'  var fname="'+packFilename+'";'
+    +'  var el=document.querySelector(".page");'
+    +'  var opt={margin:[8,8,8,8],filename:fname,image:{type:"jpeg",quality:0.95},html2canvas:{scale:2,useCORS:true,allowTaint:true,logging:false,imageTimeout:0},jsPDF:{unit:"mm",format:"a4",orientation:"portrait"}};'
+    +'  var imgs=Array.from(el.querySelectorAll("img"));'
+    +'  var done=0;var total=imgs.length;'
+    +'  function go(){html2pdf().set(opt).from(el).save().then(function(){btn.textContent="Save PDF";btn.disabled=false;});}'
+    +'  if(!total){go();return;}'
+    +'  imgs.forEach(function(img){'
+    +'    if(img.complete&&img.naturalHeight!==0){done++;if(done===total)go();}'
+    +'    else{img.onload=function(){done++;if(done===total)go();};img.onerror=function(){done++;if(done===total)go();};}'
+    +'  });'
+    +'}'
+    +'<'+'/script>'
+    +'</body></html>';
 
   var w=window.open('','_blank');
+  if(!w){toast('Please allow popups to export PDF','error');return;}
   w.document.write(html);
   w.document.close();
-  var s1=w.document.createElement('script');
-  s1.src='https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js';
-  s1.onload=function(){
-    var s2=w.document.createElement('script');
-    var packFilename=pack.name.replace(/[^a-z0-9]/gi,'-')+'-Shoot-Pack.pdf';
-    s2.textContent='function dlPackPDF(){'
-      +'var btn=document.getElementById("pdf-dl-btn");'
-      +'btn.textContent="Generating...";btn.disabled=true;'
-      +'var fname="'+packFilename+'";'
-      +'var el=document.querySelector(".page");'
-      +'var opt={margin:[8,8,8,8],filename:fname,image:{type:"jpeg",quality:0.95},html2canvas:{scale:2,useCORS:true,allowTaint:true,logging:false,imageTimeout:0},jsPDF:{unit:"mm",format:"a4",orientation:"portrait"}};'
-      +'var imgs=Array.from(el.querySelectorAll("img"));var done=0;var total=imgs.length;'
-      +'function go(){html2pdf().set(opt).from(el).save().then(function(){btn.textContent="Save PDF";btn.disabled=false;});}'
-      +'if(!total){go();return;}'
-      +'imgs.forEach(function(img){'
-      +'if(img.complete&&img.naturalHeight!==0){done++;if(done===total)go();}'
-      +'else{img.onload=function(){done++;if(done===total)go();};img.onerror=function(){done++;if(done===total)go();};}});'
-      +'}';
-    w.document.head.appendChild(s2);
 }
-
 window.quickAddToPack=quickAddToPack;
 window.deleteLook=deleteLook;
 window.deletePackItem=deletePackItem;
@@ -3436,7 +3447,6 @@ function userRow(u, showActions){
 async function adminApprove(uid){ var r=await api('POST','/admin/approve/'+uid); if(r) toast('User approved','success'); else toast('Approve failed','error'); renderAdmin($('main-content')); }
 async function adminReject(uid){ var r=await api('POST','/admin/reject/'+uid); if(r) toast('User rejected'); else toast('Reject failed','error'); renderAdmin($('main-content')); }
 window.adminApprove=adminApprove; window.adminReject=adminReject;
-} // close missing brace
 </script>
 </body>
 </html>
