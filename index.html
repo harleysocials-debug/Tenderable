@@ -1943,7 +1943,7 @@ function supplierBrief(devId){
     '<div class="sum-box"><div class="sum-label">Total Units</div><div class="sum-val">'+totalQty.toLocaleString()+'</div></div>'+
     '</div>'+
     // Fabric
-    (d.fabric?'<div class="section-title">Fabric &amp; Construction</div><div class="notes-box"><div class="notes-text">'+d.fabric+'</div></div>':'')+
+    (d.fabric||d.block?'<div class="section-title">Fabric &amp; Construction</div><div class="notes-box"><div class="notes-text">'+(d.fabric||'')+(d.fabric&&d.block?' &bull; ':'')+( d.block?'<strong>Block:</strong> '+d.block:'')+'</div></div>':'')+
     // Styles
     '<div class="section-title">Styles &amp; Quantities ('+prods.length+')</div>'+
     '<div class="styles-grid">'+styleCards+'</div>'+
