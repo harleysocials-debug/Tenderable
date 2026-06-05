@@ -815,7 +815,7 @@ function buildFilters(){
   buildChips('filter-supplier', sups, 'supplier', 'Supplier');
 }
 function buildChips(containerId, items, filterKey, label){
-  var el=$(containerId); el.innerHTML='<span class="filter-chip" style="background:none;border:none;color:var(--ink4);font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;padding-left:0;">'+label+'</span>';
+  var el=$(containerId); el.innerHTML='<span style="background:#0c0f14;color:white;font-size:0.68rem;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;padding:0.25rem 0.6rem;border-radius:20px;white-space:nowrap;">'+label+'</span>';
   var activeArr=G.filters[filterKey]||[];
   items.forEach(function(item){
     var val = typeof item==='object' ? item.val : item;
