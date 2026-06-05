@@ -477,40 +477,40 @@ input, select, textarea { font-family: inherit; }
 
 /* Pack detail */
 .pack-detail { display:flex; flex-direction:column; flex:1; overflow:hidden; }
-.pack-detail-head { padding:1rem 1.5rem; border-bottom:1px solid var(--line); display:flex; align-items:center; gap:1rem; flex-wrap:wrap; background:white; position:sticky; top:58px; z-index:80; }
+.pack-detail-head { padding:0.85rem 1.5rem; border-bottom:1px solid var(--line); display:flex; align-items:center; gap:0.75rem; flex-wrap:wrap; background:white; position:sticky; top:58px; z-index:80; }
 .pack-detail-title { font-size:1.2rem; font-weight:800; flex:1; }
 .pack-detail-meta { display:flex; gap:0.5rem; flex-wrap:wrap; align-items:center; }
 .pack-back-btn { background:none; border:1px solid var(--line); padding:0.4rem 0.85rem; border-radius:8px; font-size:0.8rem; cursor:pointer; color:var(--ink3); }
 .pack-back-btn:hover { background:var(--line2); }
 
 /* Looks */
-.looks-wrap { padding:1.25rem 1.5rem; flex:1; overflow-y:auto; }
-.look-card { background:white; border:1px solid var(--line); border-radius:12px; margin-bottom:0.85rem; overflow:hidden; transition:box-shadow 0.15s; }
+.looks-wrap { padding:1.25rem 1.5rem; flex:1; overflow-y:auto; max-width:1100px; width:100%; margin:0 auto; align-self:center; }
+.look-card { background:white; border:1px solid var(--line); border-radius:10px; margin-bottom:0.6rem; overflow:hidden; }
 .look-card.drag-over-look { border:2px dashed #6366f1; background:#eef2ff; }
 .look-card.dragging-look { opacity:0.4; }
-.look-header { padding:0.75rem 1rem; display:flex; align-items:center; gap:0.75rem; background:var(--surface); border-bottom:1px solid var(--line); cursor:grab; }
+.look-header { padding:0.5rem 0.85rem; display:flex; align-items:center; gap:0.65rem; background:var(--surface); border-bottom:1px solid var(--line); cursor:grab; }
 .look-header:active { cursor:grabbing; }
-.look-num { width:28px; height:28px; border-radius:50%; background:#6366f1; color:white; display:flex; align-items:center; justify-content:center; font-size:0.75rem; font-weight:800; flex-shrink:0; }
+.look-num { width:24px; height:24px; border-radius:50%; background:#6366f1; color:white; display:flex; align-items:center; justify-content:center; font-size:0.7rem; font-weight:800; flex-shrink:0; }
 .look-title { font-size:0.875rem; font-weight:700; flex:1; }
 .look-item-count { font-size:0.7rem; color:var(--ink3); }
 .look-del-btn { background:none; border:none; color:var(--ink4); cursor:pointer; font-size:0.85rem; padding:0.2rem; }
 .look-del-btn:hover { color:#ef4444; }
 .look-body { padding:0.75rem; display:flex; flex-direction:column; gap:0.5rem; }
-.look-item { display:flex; gap:0.75rem; align-items:flex-start; background:var(--line2); border-radius:9px; padding:0.65rem 0.85rem; }
+.look-item { display:flex; gap:0.6rem; align-items:center; background:var(--line2); border-radius:8px; padding:0.5rem 0.75rem; }
 .look-item-img { width:52px; height:52px; border-radius:7px; object-fit:cover; flex-shrink:0; }
-.look-item-img-ph { width:80px; height:80px; border-radius:8px; background:var(--line2); display:flex; align-items:center; justify-content:center; font-size:1.5rem; flex-shrink:0; }
+.look-item-img-ph { width:56px; height:56px; border-radius:7px; background:var(--line); display:flex; align-items:center; justify-content:center; font-size:1.1rem; flex-shrink:0; }
 .look-item-info { flex:1; min-width:0; }
 .look-item-name { font-size:0.82rem; font-weight:700; }
 .look-item-sub { font-size:0.7rem; color:var(--ink3); margin-bottom:0.35rem; }
 .look-item-badges { display:flex; gap:0.3rem; flex-wrap:wrap; margin-bottom:0.4rem; }
 .look-badge { font-size:0.65rem; background:white; border:1px solid var(--line); padding:0.1rem 0.45rem; border-radius:10px; color:var(--ink2); font-weight:600; }
-.look-item-notes { width:100%; padding:0.4rem 0.6rem; border:1px solid var(--line); border-radius:7px; font-size:0.8rem; font-family:inherit; background:white; resize:none; min-height:34px; }
+.look-item-notes { width:100%; padding:0.3rem 0.55rem; border:1px solid var(--line); border-radius:6px; font-size:0.78rem; font-family:inherit; background:white; resize:none; min-height:28px; max-height:60px; overflow-y:auto; }
 .look-item-notes:focus { outline:none; border-color:#6366f1; }
 .look-item-actions { display:flex; flex-direction:column; gap:0.25rem; flex-shrink:0; }
 .look-item-del { background:none; border:none; color:var(--ink4); cursor:pointer; font-size:0.75rem; padding:0.2rem; }
 .look-item-del:hover { color:#ef4444; }
-.look-add-row { display:flex; gap:0.5rem; padding:0.5rem 0.75rem; border-top:1px solid var(--line); background:var(--surface); }
-.look-add-btn { background:none; border:1px dashed var(--line); border-radius:7px; padding:0.4rem 0.75rem; font-size:0.75rem; color:var(--ink3); cursor:pointer; font-weight:600; }
+.look-add-row { display:flex; gap:0.4rem; padding:0.4rem 0.6rem; border-top:1px solid var(--line); background:var(--surface); }
+.look-add-btn { background:none; border:1px dashed var(--line); border-radius:6px; padding:0.3rem 0.65rem; font-size:0.72rem; color:var(--ink3); cursor:pointer; font-weight:600; }
 .look-add-btn:hover { border-color:#6366f1; color:#6366f1; background:#eef2ff; }
 .add-look-btn { border:2px dashed var(--line); border-radius:10px; padding:0.85rem; text-align:center; font-size:0.85rem; color:var(--ink3); cursor:pointer; font-weight:600; background:none; width:100%; margin-top:0.5rem; }
 .add-look-btn:hover { border-color:#6366f1; color:#6366f1; background:#eef2ff; }
@@ -2446,16 +2446,16 @@ function buildLookCard(pack, look, li){
   body.style.cssText='display:grid;grid-template-columns:1fr 1fr;gap:0;';
   
   var keyCol=document.createElement('div');
-  keyCol.style.cssText='padding:0.75rem;display:flex;flex-direction:column;gap:0.5rem;border-right:1px solid var(--line);';
+  keyCol.style.cssText='padding:0.6rem 0.75rem;display:flex;flex-direction:column;gap:0.4rem;border-right:1px solid var(--line);min-width:0;';
   var keyHead=document.createElement('div');
-  keyHead.style.cssText='font-size:0.65rem;font-weight:800;text-transform:uppercase;letter-spacing:0.07em;color:var(--ink4);margin-bottom:0.35rem;';
+  keyHead.style.cssText='font-size:0.62rem;font-weight:800;text-transform:uppercase;letter-spacing:0.06em;color:var(--ink4);margin-bottom:0.25rem;';
   keyHead.textContent='Key Pieces';
   keyCol.appendChild(keyHead);
 
   var styleCol=document.createElement('div');
-  styleCol.style.cssText='padding:0.75rem;display:flex;flex-direction:column;gap:0.5rem;background:#fffbeb;';
+  styleCol.style.cssText='padding:0.6rem 0.75rem;display:flex;flex-direction:column;gap:0.4rem;background:#fffbeb;min-width:0;';
   var styleHead=document.createElement('div');
-  styleHead.style.cssText='font-size:0.65rem;font-weight:800;text-transform:uppercase;letter-spacing:0.07em;color:#b45309;margin-bottom:0.35rem;';
+  styleHead.style.cssText='font-size:0.62rem;font-weight:800;text-transform:uppercase;letter-spacing:0.06em;color:#b45309;margin-bottom:0.25rem;';
   styleHead.textContent='✦ Styling Pieces';
   styleCol.appendChild(styleHead);
 
@@ -2500,7 +2500,7 @@ function buildLookItemEl(pack, look, item, ii){
   var el=document.createElement('div');
   el.className='look-item';
   var img='';
-  if(item.image) img='<img class="look-item-img" src="'+item.image+'" style="width:80px;height:80px;object-fit:cover;border-radius:8px;flex-shrink:0;display:block;">';
+  if(item.image) img='<img class="look-item-img" src="'+item.image+'" style="width:56px;height:56px;object-fit:cover;border-radius:7px;flex-shrink:0;display:block;">';
   else img='<div class="look-item-img-ph">&#127912;</div>';
 
   var badges='';
