@@ -665,9 +665,11 @@ input, select, textarea { font-family: inherit; }
         <div class="form-group full"><label class="form-label">Pack Name</label><input class="form-input" id="pf-name" placeholder="e.g. SS27 Beach Shoot"></div>
         <div class="form-group"><label class="form-label">Brand</label><select class="form-input" id="pf-brand"><option value="">Select brand</option><option>BadRhino</option><option>Evan's</option><option>Long Tall Sally</option><option>Pixie Girl</option><option>M&Co</option><option>Star x JM</option></select></div>
         <div class="form-group"><label class="form-label">Season</label><select class="form-input" id="pf-season"><option value="">Select season</option><option>SS27</option><option>AW27</option><option>SS26</option><option>AW26</option><option>SS25</option><option>AW25</option><option>Flow</option></select></div>
-        <div class="form-group"><label class="form-label">Shoot Date</label><input class="form-input" type="date" id="pf-date"></div>
+        <div class="form-group"><label class="form-label">Shoot Type</label><select class="form-input" id="pf-type"><option value="">Select type</option><option value="Reactive">Reactive</option><option value="Capsule">Capsule</option><option value="Campaign">Campaign</option></select></div>
         <div class="form-group"><label class="form-label">Location</label><input class="form-input" id="pf-location" placeholder="e.g. Marbella, Spain"></div>
-        <div class="form-group full"><label class="form-label">Photographer</label><input class="form-input" id="pf-photographer" placeholder="Photographer name"></div>
+        <div class="form-group"><label class="form-label">Shoot Date</label><input class="form-input" type="date" id="pf-date"></div>
+        <div class="form-group"><label class="form-label">Trade Deadline</label><input class="form-input" type="date" id="pf-trade"></div>
+        <div class="form-group"><label class="form-label">Samples Ready By</label><input class="form-input" type="date" id="pf-samples"></div>
         <div class="form-group full"><label class="form-label">Notes</label><textarea class="form-input" id="pf-notes" rows="2" placeholder="Shoot brief, mood, direction..."></textarea></div>
       </div>
     </div>
@@ -2350,7 +2352,9 @@ function renderPacksList(mc){
       if(p.shoot_date) html+=new Date(p.shoot_date).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});
       html+='</div>';
       if(p.location) html+='<div style="font-size:0.72rem;color:var(--ink3);margin-bottom:0.6rem;">&#128205; '+p.location+'</div>';
-      if(p.photographer) html+='<div style="font-size:0.72rem;color:var(--ink3);margin-bottom:0.6rem;">&#128247; '+p.photographer+'</div>';
+      if(p.shoot_type) html+='<div style="font-size:0.72rem;font-weight:600;color:#7c3aed;margin-bottom:0.4rem;">'+p.shoot_type+'</div>';
+      if(p.trade_deadline) html+='<div style="font-size:0.7rem;color:var(--ink3);margin-bottom:0.25rem;">Trade deadline: '+new Date(p.trade_deadline).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'})+'</div>';
+      if(p.samples_ready_by) html+='<div style="font-size:0.7rem;color:var(--ink3);margin-bottom:0.4rem;">Samples ready: '+new Date(p.samples_ready_by).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'})+'</div>';
       html+='<div class="pack-card-stats">';
       html+='<span class="pack-stat">'+looks.length+' look'+(looks.length!==1?'s':'')+'</span>';
       html+='<span class="pack-stat">'+styleCount+' item'+(styleCount!==1?'s':'')+'</span>';
@@ -2385,7 +2389,10 @@ function renderPackDetail(mc, pack){
     (pack.season?'<span class="pack-stat">'+pack.season+'</span>':'')+
     (pack.shoot_date?'<span class="pack-stat">'+new Date(pack.shoot_date).toLocaleDateString('en-GB',{day:'numeric',month:'short'})+'</span>':'')+
     (pack.location?'<span class="pack-stat">&#128205; '+pack.location+'</span>':'')+
-    (pack.photographer?'<span class="pack-stat">&#128247; '+pack.photographer+'</span>':'')+
+    (pack.shoot_type?'<span class="pack-stat" style="background:#ede9fe;color:#7c3aed;">'+pack.shoot_type+'</span>':'')+
+    (pack.trade_deadline?'<span class="pack-stat" style="background:#fee2e2;color:#991b1b;">&#128197; Trade: '+new Date(pack.trade_deadline).toLocaleDateString("en-GB",{day:"numeric",month:"short"})+'</span>':'')+
+    (pack.samples_ready_by?'<span class="pack-stat" style="background:#dbeafe;color:#1e40af;">&#10003; Samples: '+new Date(pack.samples_ready_by).toLocaleDateString("en-GB",{day:"numeric",month:"short"})+'</span>':'')+
+    
     '<span class="pack-stat" style="background:'+statusBg+';color:'+statusColor+';">'+( pack.status==='confirmed'?'Confirmed':'Draft')+'</span>'+
     '</div>'+
     '<div style="display:flex;gap:0.5rem;">'+
@@ -2887,7 +2894,9 @@ function openNewPackForm(packId){
   document.getElementById('pf-season').value=p?( p.season||''):'';
   document.getElementById('pf-date').value=p&&p.shoot_date?p.shoot_date.split('T')[0]:'';
   document.getElementById('pf-location').value=p?( p.location||''):'';
-  document.getElementById('pf-photographer').value=p?( p.photographer||''):'';
+  document.getElementById('pf-type').value=p?( p.shoot_type||''):'';
+  document.getElementById('pf-trade').value=p&&p.trade_deadline?p.trade_deadline.split('T')[0]:'';
+  document.getElementById('pf-samples').value=p&&p.samples_ready_by?p.samples_ready_by.split('T')[0]:'';
   document.getElementById('pf-notes').value=p?( p.notes||''):'';
   document.getElementById('pack-form-overlay').dataset.editid=packId||'';
   document.getElementById('pack-form-overlay').classList.add('open');
@@ -2904,7 +2913,9 @@ async function submitPackForm(){
     season:document.getElementById('pf-season').value||null,
     shootDate:document.getElementById('pf-date').value||null,
     location:document.getElementById('pf-location').value.trim()||null,
-    photographer:document.getElementById('pf-photographer').value.trim()||null,
+    shootType:document.getElementById('pf-type').value||null,
+    tradeDeadline:document.getElementById('pf-trade').value||null,
+    samplesReadyBy:document.getElementById('pf-samples').value||null,
     notes:document.getElementById('pf-notes').value.trim()||null
   };
   var editId=document.getElementById('pack-form-overlay').dataset.editid;
