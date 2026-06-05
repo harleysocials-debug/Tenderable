@@ -562,6 +562,21 @@ input, select, textarea { font-family: inherit; }
 
 <script>
 const API = 'https://tenderable-production.up.railway.app';
+
+// Restore session on page load
+(async function restoreSession(){
+  try {
+    var saved = localStorage.getItem('t_user');
+    if(!saved) return;
+    var u = JSON.parse(saved);
+    if(!u||!u.id) return;
+    G.user = u;
+    await loadData();
+    startApp();
+  } catch(e) {
+    localStorage.removeItem('t_user');
+  }
+})();
 const STAGES = ['inspiration','development','sampling','rangeplan','signedoff','ordersent','dropped'];
 const STAGE_LABELS = {inspiration:'Inspiration',development:'Development',sampling:'Sampling',rangeplan:'Range Plan',signedoff:'Signed Off',ordersent:'Order Sent',dropped:'Dropped'};
 const CATS = ['OUTERWEAR','TOPS','BOTTOMS','UNDERWEAR','NIGHTWEAR','SWIMWEAR','ACCESSORIES','FOOTWEAR'];
@@ -632,6 +647,7 @@ async function doLogin(){
   if(u.status==='pending'){ $('login-msg').innerHTML='<div class="pending-msg">Your account is awaiting approval.</div>'; return; }
   if(u.status==='rejected'){ $('login-msg').innerHTML='<div class="error-msg">Your account has been rejected.</div>'; return; }
   G.user = Object.assign({}, u, { type: u.type || u.role });
+  localStorage.setItem('t_user', JSON.stringify(G.user));
   await loadData();
   startApp();
 }
@@ -647,11 +663,13 @@ async function doRegister(){
   var u = r.user || r;
   if(!u.id){ $('login-msg').innerHTML='<div class="pending-msg">Account created! Waiting for Harley to approve.</div>'; showLogin(); return; }
   G.user = Object.assign({}, u, { type: u.type || u.role });
+  localStorage.setItem('t_user', JSON.stringify(G.user));
   await loadData();
   startApp();
 }
 function doLogout(){
   stopPolling();
+  localStorage.removeItem('t_user');
   G.user=null;
   $('app').classList.remove('active');
   $('login-page').style.display='';
