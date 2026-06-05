@@ -462,6 +462,76 @@ input, select, textarea { font-family: inherit; }
 .msg-compose-input:focus { outline:none; border-color:#6366f1; }
 .msg-send-btn { background:#6366f1; color:white; border:none; padding:0.65rem 1.1rem; border-radius:20px; font-weight:700; font-size:0.85rem; cursor:pointer; white-space:nowrap; }
 .msg-new-btn { padding:0.5rem 0.85rem; background:#6366f1; color:white; border:none; border-radius:8px; font-size:0.78rem; font-weight:700; cursor:pointer; margin:0.75rem; }
+
+/* ── PACKS ───────────────────────────────────────── */
+.packs-wrap { padding:1.5rem; }
+.packs-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); gap:1rem; margin-top:1.25rem; }
+.pack-card { background:white; border:1px solid var(--line); border-radius:var(--card-radius); padding:1.25rem; cursor:pointer; transition:all 0.2s; }
+.pack-card:hover { transform:translateY(-2px); box-shadow:var(--shadow-lg); border-color:#6366f1; }
+.pack-card-name { font-size:1rem; font-weight:800; margin-bottom:0.3rem; }
+.pack-card-meta { font-size:0.75rem; color:var(--ink3); margin-bottom:0.75rem; }
+.pack-card-stats { display:flex; gap:0.75rem; flex-wrap:wrap; }
+.pack-stat { font-size:0.72rem; background:var(--line2); padding:0.2rem 0.6rem; border-radius:20px; color:var(--ink2); font-weight:600; }
+.pack-status-draft { background:#fef3c7; color:#b45309; }
+.pack-status-confirmed { background:#d1fae5; color:#065f46; }
+
+/* Pack detail */
+.pack-detail { display:flex; flex-direction:column; flex:1; overflow:hidden; }
+.pack-detail-head { padding:1rem 1.5rem; border-bottom:1px solid var(--line); display:flex; align-items:center; gap:1rem; flex-wrap:wrap; background:white; position:sticky; top:58px; z-index:80; }
+.pack-detail-title { font-size:1.2rem; font-weight:800; flex:1; }
+.pack-detail-meta { display:flex; gap:0.5rem; flex-wrap:wrap; align-items:center; }
+.pack-back-btn { background:none; border:1px solid var(--line); padding:0.4rem 0.85rem; border-radius:8px; font-size:0.8rem; cursor:pointer; color:var(--ink3); }
+.pack-back-btn:hover { background:var(--line2); }
+
+/* Looks */
+.looks-wrap { padding:1.25rem 1.5rem; flex:1; overflow-y:auto; }
+.look-card { background:white; border:1px solid var(--line); border-radius:12px; margin-bottom:0.85rem; overflow:hidden; transition:box-shadow 0.15s; }
+.look-card.drag-over-look { border:2px dashed #6366f1; background:#eef2ff; }
+.look-card.dragging-look { opacity:0.4; }
+.look-header { padding:0.75rem 1rem; display:flex; align-items:center; gap:0.75rem; background:var(--surface); border-bottom:1px solid var(--line); cursor:grab; }
+.look-header:active { cursor:grabbing; }
+.look-num { width:28px; height:28px; border-radius:50%; background:#6366f1; color:white; display:flex; align-items:center; justify-content:center; font-size:0.75rem; font-weight:800; flex-shrink:0; }
+.look-title { font-size:0.875rem; font-weight:700; flex:1; }
+.look-item-count { font-size:0.7rem; color:var(--ink3); }
+.look-del-btn { background:none; border:none; color:var(--ink4); cursor:pointer; font-size:0.85rem; padding:0.2rem; }
+.look-del-btn:hover { color:#ef4444; }
+.look-body { padding:0.75rem; display:flex; flex-direction:column; gap:0.5rem; }
+.look-item { display:flex; gap:0.75rem; align-items:flex-start; background:var(--line2); border-radius:9px; padding:0.65rem 0.85rem; }
+.look-item-img { width:52px; height:52px; border-radius:7px; object-fit:cover; flex-shrink:0; }
+.look-item-img-ph { width:52px; height:52px; border-radius:7px; background:var(--line); display:flex; align-items:center; justify-content:center; font-size:1.2rem; flex-shrink:0; }
+.look-item-info { flex:1; min-width:0; }
+.look-item-name { font-size:0.82rem; font-weight:700; }
+.look-item-sub { font-size:0.7rem; color:var(--ink3); margin-bottom:0.35rem; }
+.look-item-badges { display:flex; gap:0.3rem; flex-wrap:wrap; margin-bottom:0.4rem; }
+.look-badge { font-size:0.65rem; background:white; border:1px solid var(--line); padding:0.1rem 0.45rem; border-radius:10px; color:var(--ink2); font-weight:600; }
+.look-item-notes { width:100%; padding:0.4rem 0.6rem; border:1px solid var(--line); border-radius:7px; font-size:0.8rem; font-family:inherit; background:white; resize:none; min-height:34px; }
+.look-item-notes:focus { outline:none; border-color:#6366f1; }
+.look-item-actions { display:flex; flex-direction:column; gap:0.25rem; flex-shrink:0; }
+.look-item-del { background:none; border:none; color:var(--ink4); cursor:pointer; font-size:0.75rem; padding:0.2rem; }
+.look-item-del:hover { color:#ef4444; }
+.look-add-row { display:flex; gap:0.5rem; padding:0.5rem 0.75rem; border-top:1px solid var(--line); background:var(--surface); }
+.look-add-btn { background:none; border:1px dashed var(--line); border-radius:7px; padding:0.4rem 0.75rem; font-size:0.75rem; color:var(--ink3); cursor:pointer; font-weight:600; }
+.look-add-btn:hover { border-color:#6366f1; color:#6366f1; background:#eef2ff; }
+.add-look-btn { border:2px dashed var(--line); border-radius:10px; padding:0.85rem; text-align:center; font-size:0.85rem; color:var(--ink3); cursor:pointer; font-weight:600; background:none; width:100%; margin-top:0.5rem; }
+.add-look-btn:hover { border-color:#6366f1; color:#6366f1; background:#eef2ff; }
+
+/* Style picker modal */
+.style-picker-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:400; display:none; align-items:center; justify-content:center; padding:1rem; }
+.style-picker-overlay.open { display:flex; }
+.style-picker-box { background:white; border-radius:16px; width:100%; max-width:860px; max-height:85vh; display:flex; flex-direction:column; overflow:hidden; }
+.style-picker-head { padding:1.25rem 1.5rem; border-bottom:1px solid var(--line); display:flex; align-items:center; justify-content:space-between; flex-shrink:0; }
+.style-picker-search { padding:0.75rem 1rem; border-bottom:1px solid var(--line); flex-shrink:0; }
+.style-picker-search input { width:100%; padding:0.6rem 0.9rem; border:1px solid var(--line); border-radius:9px; font-size:0.875rem; font-family:inherit; }
+.style-picker-search input:focus { outline:none; border-color:#6366f1; }
+.style-picker-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(140px,1fr)); gap:0.75rem; padding:1rem; overflow-y:auto; flex:1; }
+.style-picker-card { border:2px solid var(--line); border-radius:10px; overflow:hidden; cursor:pointer; transition:all 0.15s; }
+.style-picker-card:hover { border-color:#6366f1; }
+.style-picker-card.selected { border-color:#6366f1; background:#eef2ff; }
+.style-picker-card img,.style-picker-card-ph { width:100%; aspect-ratio:1; object-fit:cover; display:block; background:var(--line2); display:flex; align-items:center; justify-content:center; font-size:1.5rem; }
+.style-picker-card-info { padding:0.5rem; }
+.style-picker-card-name { font-size:0.72rem; font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.style-picker-card-sub { font-size:0.65rem; color:var(--ink3); }
+.style-picker-foot { padding:1rem 1.5rem; border-top:1px solid var(--line); display:flex; gap:0.75rem; justify-content:flex-end; flex-shrink:0; }
 /* Toast */
 .toast { position: fixed; bottom: 1.5rem; right: 1.5rem; background: var(--ink); color: white; padding: 0.85rem 1.25rem; border-radius: 12px; font-size: 0.875rem; font-weight: 600; z-index: 9999; transform: translateY(100px); opacity: 0; transition: all 0.25s; }
 .toast.show { transform: translateY(0); opacity: 1; }
@@ -571,6 +641,24 @@ input, select, textarea { font-family: inherit; }
   <div class="main" id="main-content"></div>
 </div>
 
+<!-- Style picker -->
+<div class="style-picker-overlay" id="style-picker-overlay">
+  <div class="style-picker-box">
+    <div class="style-picker-head">
+      <div style="font-size:1rem;font-weight:800;">Add Styles to Look</div>
+      <button class="detail-close" onclick="closeStylePicker()">&#10005;</button>
+    </div>
+    <div class="style-picker-search">
+      <input id="sp-search" placeholder="Search styles..." oninput="renderStylePicker()">
+    </div>
+    <div class="style-picker-grid" id="sp-grid"></div>
+    <div class="style-picker-foot">
+      <button class="btn btn-ghost" onclick="closeStylePicker()">Cancel</button>
+      <button class="btn btn-primary" onclick="confirmStylePicker()">Add Selected</button>
+    </div>
+  </div>
+</div>
+
 <!-- Messaging overlay -->
 <div class="msg-overlay" id="msg-overlay" onclick="closeMsgIfBg(event)">
   <div class="msg-panel" id="msg-panel">
@@ -655,7 +743,8 @@ var G = {
   uploadedFiles: [], editUploadedFiles: [],
   invitedSuppliers: [], formProducts: [],
   _modalImgs: [], _modalIdx: 0,
-  _pollTimer: null
+  _pollTimer: null,
+  packs: [], activePack: null, activePackView: 'list'
 };
 
 // ── UTILS ──────────────────────────────────────────────────────────────────
@@ -757,6 +846,7 @@ async function loadData(){
   ]);
   if(dRes&&dRes.developments&&dRes.developments.length>=0) G.devs=dRes.developments;
   try { await loadDirectMessages(); } catch(e) { console.warn('Messages not loaded:', e.message); }
+  try { var pRes=await api('GET','/packs'); if(pRes&&pRes.packs) G.packs=pRes.packs; } catch(e){}
   if(dRes&&dRes.devComments) G.devComments=dRes.devComments;
   if(tRes&&tRes.tenders) G.tenders=tRes.tenders.map(function(t){ return Object.assign({},t,{deadlineDate:new Date(t.deadlineDate)}); });
   if(bRes&&bRes.bids) G.bids=bRes.bids;
@@ -796,7 +886,7 @@ function startApp(){
 function buildTopbarNav(){
   var u=G.user; var nav=$('topbar-nav'); nav.innerHTML='';
   var tabs = u.type==='buyer'||u.type==='stakeholder'
-    ? [{id:'board',label:'Range Board'},{id:'pipeline',label:'Pipeline'},{id:'admin',label:'Admin',admin:true}]
+    ? [{id:'board',label:'Range Board'},{id:'pipeline',label:'Pipeline'},{id:'packs',label:'Packs'},{id:'admin',label:'Admin',admin:true}]
     : [{id:'available',label:'Available'},{id:'active',label:'Active'},{id:'accepted',label:'Accepted'}];
   tabs.forEach(function(t){
     if(t.admin && u.name!=='Harley Killingsworth') return;
@@ -942,6 +1032,7 @@ function renderMainContent(){
   if(G.view==='board') renderBoard(mc);
   else if(G.view==='pipeline') renderPipeline(mc);
   else if(G.view==='tenders') renderTenders(mc);
+  else if(G.view==='packs') renderPacksPage(mc);
   else if(G.view==='admin') renderAdmin(mc);
 }
 
@@ -1029,6 +1120,7 @@ function styleCard(s){
     stagePillHtml+gradeHtml+
     '</div>'+
     '<div class="card-body">'+
+    '<button onclick="event.stopPropagation();quickAddToPack(this)" data-devid="'+dev.id+'" data-pidx="'+allStyles.indexOf(s)+'" style="position:absolute;bottom:6px;right:6px;background:rgba(99,102,241,0.85);color:white;border:none;border-radius:6px;padding:0.2rem 0.5rem;font-size:0.65rem;font-weight:700;cursor:pointer;z-index:3;">+ Pack</button>'+
     '<div class="card-name">'+s.description+'</div>'+
     '<div class="card-sub">'+( s.colour||'')+( s.category||dev.category?' &bull; '+(s.category||dev.category):'')+( dev.brand?' &bull; '+dev.brand:'')+( (s.seasonCode||dev.seasonCode)?' &bull; '+(s.seasonCode||dev.seasonCode):'')+( s.intakeMonth?' &bull; '+s.intakeMonth:'')+'</div>'+
     '<div class="card-meta" style="display:flex;flex-wrap:wrap;gap:0.3rem 0.6rem;align-items:center;margin-top:0.35rem;">'+costHtml+retailHtml+qtyHtml+gradeBodyHtml+confirmedHtml+'</div>'+
@@ -2188,6 +2280,535 @@ async function newMessage(){
 window.deleteDM=deleteDM;
 window.newMessage=newMessage;
 
+
+// ── PACKS ─────────────────────────────────────────────────────────────────────
+
+function renderPacksPage(mc){
+  if(G.activePackView==='detail'&&G.activePack){
+    renderPackDetail(mc, G.activePack);
+  } else {
+    renderPacksList(mc);
+  }
+}
+
+function renderPacksList(mc){
+  var html='<div class="packs-wrap">';
+  html+='<div style="display:flex;align-items:center;justify-content:space-between;"><h2 style="font-size:1.2rem;font-weight:800;">Shoot Packs</h2>';
+  html+='<button class="btn btn-primary" onclick="openNewPackForm()">+ New Pack</button></div>';
+  if(!G.packs.length){
+    html+='<div class="empty-state" style="margin-top:3rem;"><div class="empty-state-icon">&#127909;</div><h3>No packs yet</h3><p>Create your first shoot pack to start curating looks.</p></div>';
+  } else {
+    html+='<div class="packs-grid">';
+    G.packs.forEach(function(p){
+      var looks=p.looks||[];
+      var styleCount=looks.reduce(function(s,l){return s+(l.items?l.items.length:0);},0);
+      html+='<div class="pack-card" onclick="openPackDetail(\''+p.id+'\')">';
+      html+='<div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:0.5rem;">';
+      html+='<div class="pack-card-name">'+p.name+'</div>';
+      html+='<span class="pack-stat pack-status-'+( p.status||'draft')+'">'+( p.status==='confirmed'?'Confirmed':'Draft')+'</span>';
+      html+='</div>';
+      html+='<div class="pack-card-meta">';
+      if(p.brand) html+=p.brand+' &bull; ';
+      if(p.season) html+=p.season+' &bull; ';
+      if(p.shoot_date) html+=new Date(p.shoot_date).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});
+      html+='</div>';
+      if(p.location) html+='<div style="font-size:0.72rem;color:var(--ink3);margin-bottom:0.6rem;">&#128205; '+p.location+'</div>';
+      if(p.photographer) html+='<div style="font-size:0.72rem;color:var(--ink3);margin-bottom:0.6rem;">&#128247; '+p.photographer+'</div>';
+      html+='<div class="pack-card-stats">';
+      html+='<span class="pack-stat">'+looks.length+' look'+(looks.length!==1?'s':'')+'</span>';
+      html+='<span class="pack-stat">'+styleCount+' item'+(styleCount!==1?'s':'')+'</span>';
+      html+='</div></div>';
+    });
+    html+='</div>';
+  }
+  html+='</div>';
+  mc.innerHTML=html;
+}
+
+function openPackDetail(packId){
+  G.activePack=G.packs.find(function(p){return p.id===packId;});
+  if(!G.activePack) return;
+  G.activePackView='detail';
+  renderMainContent();
+}
+
+function renderPackDetail(mc, pack){
+  mc.innerHTML='';
+
+  // Sticky header
+  var head=document.createElement('div');
+  head.className='pack-detail-head';
+  var statusColor=pack.status==='confirmed'?'#065f46':'#b45309';
+  var statusBg=pack.status==='confirmed'?'#d1fae5':'#fef3c7';
+  head.innerHTML=
+    '<button class="pack-back-btn" onclick="backToPacks()">&#8592; Packs</button>'+
+    '<div class="pack-detail-title">'+pack.name+'</div>'+
+    '<div class="pack-detail-meta">'+
+    (pack.brand?'<span class="pack-stat">'+pack.brand+'</span>':'')+
+    (pack.season?'<span class="pack-stat">'+pack.season+'</span>':'')+
+    (pack.shoot_date?'<span class="pack-stat">'+new Date(pack.shoot_date).toLocaleDateString('en-GB',{day:'numeric',month:'short'})+'</span>':'')+
+    (pack.location?'<span class="pack-stat">&#128205; '+pack.location+'</span>':'')+
+    (pack.photographer?'<span class="pack-stat">&#128247; '+pack.photographer+'</span>':'')+
+    '<span class="pack-stat" style="background:'+statusBg+';color:'+statusColor+';">'+( pack.status==='confirmed'?'Confirmed':'Draft')+'</span>'+
+    '</div>'+
+    '<div style="display:flex;gap:0.5rem;">'+
+    '<button class="btn btn-ghost btn-sm" onclick="editPackHeader(\''+pack.id+'\')">&#9999; Edit</button>'+
+    (pack.status!=='confirmed'?'<button class="btn btn-green btn-sm" onclick="confirmPack(\''+pack.id+'\')">&#10003; Confirm</button>':'')+
+    '<button class="btn btn-ghost btn-sm" onclick="exportPackPDF(\''+pack.id+'\')">&#128196; PDF</button>'+
+    '<button class="btn btn-danger btn-sm" onclick="deletePack(\''+pack.id+'\')">&#128465;</button>'+
+    '</div>';
+  mc.appendChild(head);
+
+  // Looks area
+  var looksWrap=document.createElement('div');
+  looksWrap.className='looks-wrap';
+  looksWrap.id='looks-wrap';
+  mc.appendChild(looksWrap);
+
+  renderLooks(pack);
+
+  // Add look button
+  var addLookBtn=document.createElement('button');
+  addLookBtn.className='add-look-btn';
+  addLookBtn.innerHTML='+ Add Look';
+  addLookBtn.onclick=function(){ addLook(pack.id); };
+  looksWrap.appendChild(addLookBtn);
+}
+
+function renderLooks(pack){
+  var wrap=document.getElementById('looks-wrap'); if(!wrap) return;
+  // Remove old look cards (keep add-look-btn)
+  Array.from(wrap.children).forEach(function(c){ if(c.classList.contains('look-card')) c.remove(); });
+  var addBtn=wrap.querySelector('.add-look-btn');
+
+  var looks=pack.looks||[];
+  looks.forEach(function(look,li){
+    var card=buildLookCard(pack, look, li);
+    wrap.insertBefore(card, addBtn);
+  });
+  initLookDrag(pack);
+}
+
+function buildLookCard(pack, look, li){
+  var card=document.createElement('div');
+  card.className='look-card';
+  card.dataset.lookid=look.id;
+
+  // Header
+  var hd=document.createElement('div');
+  hd.className='look-header';
+  hd.innerHTML=
+    '<div class="look-num">'+(li+1)+'</div>'+
+    '<div class="look-title">Look '+(li+1)+(look.name?' — '+look.name:'')+'</div>'+
+    '<span class="look-item-count">'+( look.items?look.items.length:0)+' item'+(( look.items&&look.items.length!==1)?'s':'')+'</span>'+
+    '<button class="look-del-btn" data-lookid="'+look.id+'" data-packid="'+pack.id+'" onclick="deleteLook(this.dataset.packid,this.dataset.lookid)">&#10005;</button>';
+  card.appendChild(hd);
+
+  // Items
+  var body=document.createElement('div');
+  body.className='look-body';
+  (look.items||[]).forEach(function(item,ii){
+    body.appendChild(buildLookItemEl(pack, look, item, ii));
+  });
+  card.appendChild(body);
+
+  // Add row
+  var addRow=document.createElement('div');
+  addRow.className='look-add-row';
+  addRow.innerHTML=
+    '<button class="look-add-btn" data-packid="'+pack.id+'" data-lookid="'+look.id+'" onclick="openStylePicker(this.dataset.packid,this.dataset.lookid)">+ Add from Range Board</button>'+
+    '<button class="look-add-btn" data-packid="'+pack.id+'" data-lookid="'+look.id+'" onclick="addFreeTextItem(this.dataset.packid,this.dataset.lookid)">+ Add Styling Item</button>';
+  card.appendChild(addRow);
+  return card;
+}
+
+function buildLookItemEl(pack, look, item, ii){
+  var el=document.createElement('div');
+  el.className='look-item';
+  var img='';
+  if(item.image) img='<img class="look-item-img" src="'+item.image+'">';
+  else img='<div class="look-item-img-ph">&#127912;</div>';
+
+  var badges='';
+  if(item.type==='range_style'){
+    if(item.colour) badges+='<span class="look-badge">'+item.colour+'</span>';
+    if(item.storeGrade) badges+='<span class="look-badge">Grade '+item.storeGrade+'</span>';
+    if(item.seasonCode) badges+='<span class="look-badge">'+item.seasonCode+'</span>';
+    if(item.intakeMonth) badges+='<span class="look-badge">'+item.intakeMonth+'</span>';
+  } else {
+    badges+='<span class="look-badge" style="background:#fef3c7;color:#b45309;">Styling</span>';
+    if(item.source) badges+='<span class="look-badge">'+item.source+'</span>';
+  }
+
+  var priceQty='';
+  if(item.retailPrice) priceQty+='<span class="look-badge" style="color:#10b981;">£'+parseFloat(item.retailPrice).toFixed(2)+'</span>';
+  if(item.qty) priceQty+='<span class="look-badge">'+parseInt(item.qty).toLocaleString()+' units</span>';
+
+  var notesId='notes-'+pack.id+'-'+look.id+'-'+ii;
+  el.innerHTML=img+
+    '<div class="look-item-info">'+
+    '<div class="look-item-name">'+( item.description||'Unnamed')+'</div>'+
+    '<div class="look-item-sub">'+(item.devName||item.source||'')+'</div>'+
+    '<div class="look-item-badges">'+badges+priceQty+'</div>'+
+    '<textarea class="look-item-notes" id="'+notesId+'" placeholder="Styling notes for this piece..." rows="2">'+( item.stylingNotes||'')+'</textarea>'+
+    '</div>'+
+    '<div class="look-item-actions">'+
+    '<button class="look-item-del" data-packid="'+pack.id+'" data-lookid="'+look.id+'" data-itemidx="'+ii+'" onclick="deletePackItem(this.dataset.packid,this.dataset.lookid,parseInt(this.dataset.itemidx))">&#10005;</button>'+
+    '</div>';
+
+  // Save notes on blur
+  var ta=el.querySelector('textarea');
+  ta.addEventListener('blur',function(){
+    var p=G.packs.find(function(x){return x.id===pack.id;});
+    if(!p) return;
+    var l=(p.looks||[]).find(function(x){return x.id===look.id;});
+    if(!l||!l.items) return;
+    l.items[ii].stylingNotes=ta.value;
+    api('PUT','/packs/'+pack.id,{looks:p.looks});
+  });
+  return el;
+}
+
+function initLookDrag(pack){
+  var wrap=document.getElementById('looks-wrap'); if(!wrap) return;
+  var cards=Array.from(wrap.querySelectorAll('.look-card'));
+  var dragSrc=null;
+  cards.forEach(function(card){
+    var hd=card.querySelector('.look-header');
+    hd.addEventListener('mousedown',function(){ card.setAttribute('draggable','true'); });
+    card.addEventListener('dragstart',function(e){
+      e.dataTransfer.effectAllowed='move';
+      dragSrc=card;
+      setTimeout(function(){card.classList.add('dragging-look');},0);
+    });
+    card.addEventListener('dragend',function(){
+      card.classList.remove('dragging-look');
+      card.removeAttribute('draggable');
+      wrap.querySelectorAll('.look-card').forEach(function(c){c.classList.remove('drag-over-look');});
+      // Save new order
+      var newOrder=Array.from(wrap.querySelectorAll('.look-card')).map(function(c){return c.dataset.lookid;});
+      var p=G.packs.find(function(x){return x.id===pack.id;});
+      if(p){
+        var sorted=newOrder.map(function(id){ return (p.looks||[]).find(function(l){return l.id===id;});}).filter(Boolean);
+        p.looks=sorted;
+        api('PUT','/packs/'+pack.id,{looks:p.looks});
+        renderLooks(p);
+      }
+    });
+    card.addEventListener('dragover',function(e){
+      e.preventDefault();
+      if(dragSrc&&dragSrc!==card) card.classList.add('drag-over-look');
+    });
+    card.addEventListener('dragleave',function(){ card.classList.remove('drag-over-look'); });
+    card.addEventListener('drop',function(e){
+      e.preventDefault();
+      card.classList.remove('drag-over-look');
+      if(dragSrc&&dragSrc!==card){
+        var addBtn=wrap.querySelector('.add-look-btn');
+        var cards2=Array.from(wrap.querySelectorAll('.look-card'));
+        var fromIdx=cards2.indexOf(dragSrc);
+        var toIdx=cards2.indexOf(card);
+        if(fromIdx<toIdx) wrap.insertBefore(dragSrc,card.nextSibling);
+        else wrap.insertBefore(dragSrc,card);
+      }
+    });
+  });
+}
+
+// ── LOOK ACTIONS ──────────────────────────────────────────────────────────────
+async function addLook(packId){
+  var p=G.packs.find(function(x){return x.id===packId;}); if(!p) return;
+  if(!p.looks) p.looks=[];
+  p.looks.push({id:'look-'+Date.now(),name:'',items:[]});
+  await api('PUT','/packs/'+packId,{looks:p.looks});
+  renderLooks(p);
+  // Add button still in DOM, scroll to it
+  var wrap=document.getElementById('looks-wrap');
+  if(wrap) wrap.scrollTop=wrap.scrollHeight;
+}
+
+async function deleteLook(packId, lookId){
+  if(!confirm('Remove this look?')) return;
+  var p=G.packs.find(function(x){return x.id===packId;}); if(!p) return;
+  p.looks=(p.looks||[]).filter(function(l){return l.id!==lookId;});
+  await api('PUT','/packs/'+packId,{looks:p.looks});
+  renderLooks(p);
+}
+
+async function deletePackItem(packId, lookId, itemIdx){
+  var p=G.packs.find(function(x){return x.id===packId;}); if(!p) return;
+  var look=(p.looks||[]).find(function(l){return l.id===lookId;}); if(!look) return;
+  look.items=look.items.filter(function(_,i){return i!==itemIdx;});
+  await api('PUT','/packs/'+packId,{looks:p.looks});
+  renderLooks(p);
+}
+
+async function addFreeTextItem(packId, lookId){
+  var desc=prompt('Styling item description (e.g. Wide leg linen trousers):'); if(!desc) return;
+  var source=prompt('Source (e.g. Zara, Props, Borrowed):');
+  var p=G.packs.find(function(x){return x.id===packId;}); if(!p) return;
+  var look=(p.looks||[]).find(function(l){return l.id===lookId;}); if(!look) return;
+  if(!look.items) look.items=[];
+  look.items.push({type:'free_text',description:desc.trim(),source:source||'',stylingNotes:''});
+  await api('PUT','/packs/'+packId,{looks:p.looks});
+  renderLooks(p);
+}
+
+// ── STYLE PICKER ──────────────────────────────────────────────────────────────
+var _pickerPackId=null, _pickerLookId=null, _pickerSelected=[];
+
+function openStylePicker(packId, lookId){
+  _pickerPackId=packId; _pickerLookId=lookId; _pickerSelected=[];
+  renderStylePicker();
+  document.getElementById('style-picker-overlay').classList.add('open');
+}
+function closeStylePicker(){
+  document.getElementById('style-picker-overlay').classList.remove('open');
+  _pickerSelected=[];
+}
+
+function renderStylePicker(){
+  var q=(document.getElementById('sp-search')||{}).value||'';
+  var grid=document.getElementById('sp-grid'); if(!grid) return;
+  grid.innerHTML='';
+  var allStyles=[];
+  G.devs.forEach(function(dev){
+    (dev.products||[]).filter(function(p){return p.description;}).forEach(function(p){
+      allStyles.push(Object.assign({},p,{_dev:dev}));
+    });
+  });
+  allStyles.filter(function(s){ return !q||s.description.toLowerCase().includes(q.toLowerCase())||( s.colour||'').toLowerCase().includes(q.toLowerCase()); })
+  .forEach(function(s,i){
+    var dev=s._dev;
+    var imgSrc=s.image||((dev.files||[]).find(function(f){return f.isImage&&f.dataUrl;})||{}).dataUrl;
+    var card=document.createElement('div');
+    card.className='style-picker-card'+( _pickerSelected.indexOf(i)>=0?' selected':'');
+    card.innerHTML=(imgSrc?'<img src="'+imgSrc+'" style="width:100%;aspect-ratio:1;object-fit:cover;">':'<div style="width:100%;aspect-ratio:1;background:var(--line2);display:flex;align-items:center;justify-content:center;font-size:1.5rem;">&#127912;</div>')+
+      '<div class="style-picker-card-info"><div class="style-picker-card-name">'+s.description+'</div><div class="style-picker-card-sub">'+(s.colour||'')+' &bull; '+(dev.brand||'')+'</div></div>';
+    card.dataset.idx=i;
+    card.onclick=function(){
+      var idx=_pickerSelected.indexOf(i);
+      if(idx>=0) _pickerSelected.splice(idx,1); else _pickerSelected.push(i);
+      card.classList.toggle('selected',_pickerSelected.indexOf(i)>=0);
+    };
+    // Store style data on card
+    card._style=s;
+    grid._styles=grid._styles||[];
+    grid._styles[i]=s;
+    grid.appendChild(card);
+  });
+}
+
+async function confirmStylePicker(){
+  if(!_pickerSelected.length){closeStylePicker();return;}
+  var grid=document.getElementById('sp-grid'); if(!grid) return;
+  var p=G.packs.find(function(x){return x.id===_pickerPackId;}); if(!p) return;
+  var look=(p.looks||[]).find(function(l){return l.id===_pickerLookId;}); if(!look) return;
+  if(!look.items) look.items=[];
+  var allStyles=[];
+  G.devs.forEach(function(dev){
+    (dev.products||[]).filter(function(p){return p.description;}).forEach(function(p){
+      allStyles.push(Object.assign({},p,{_dev:dev}));
+    });
+  });
+  _pickerSelected.forEach(function(i){
+    var s=allStyles[i]; if(!s) return;
+    look.items.push({
+      type:'range_style', devId:s._dev.id, devName:s._dev.description,
+      description:s.description, colour:s.colour||'', storeGrade:s.storeGrade||'',
+      seasonCode:s.seasonCode||s._dev.seasonCode||'', intakeMonth:s.intakeMonth||'',
+      retailPrice:s.retailPrice||'', qty:s.qty||'', targetCost:s.targetCost||'',
+      image:s.image||((s._dev.files||[]).find(function(f){return f.isImage&&f.dataUrl;})||{}).dataUrl||'',
+      stylingNotes:''
+    });
+  });
+  await api('PUT','/packs/'+_pickerPackId,{looks:p.looks});
+  closeStylePicker();
+  renderLooks(p);
+}
+
+// Quick add from board card
+function quickAddToPack(btn){
+  if(!G.packs.length){ toast('Create a pack first','error'); return; }
+  // Find the style
+  var card=btn.closest('.dev-card'); if(!card) return;
+  var devId=card.getAttribute('onclick')&&card.getAttribute('onclick').match(/'([^']+)'/)?card.getAttribute('onclick').match(/'([^']+)'/)[1]:null;
+  if(!devId) return;
+  var dev=G.devs.find(function(d){return d.id===devId;}); if(!dev) return;
+  // Find which style (by position in board)
+  var allStyles=[];
+  G.devs.forEach(function(d){
+    (d.products||[]).filter(function(p){return p.description;}).forEach(function(p){ allStyles.push(Object.assign({},p,{_dev:d})); });
+  });
+  var styleIdx=parseInt(btn.dataset.pidx);
+  var s=allStyles[styleIdx]||allStyles[0]; if(!s) return;
+
+  // Pick pack
+  var packNames=G.packs.map(function(p,i){return (i+1)+'. '+p.name;}).join('\n');
+  var pick=prompt('Add to which pack?\n\n'+packNames+'\n\nEnter number:');
+  if(!pick) return;
+  var p=G.packs[parseInt(pick)-1]; if(!p) return;
+  if(!p.looks||!p.looks.length){ alert('This pack has no looks yet. Open the pack and add a look first.'); return; }
+  var lookNames=(p.looks||[]).map(function(l,i){return (i+1)+'. Look '+(i+1)+(l.name?' — '+l.name:'');}).join('\n');
+  var lookPick=prompt('Add to which look?\n\n'+lookNames+'\n\nEnter number:');
+  if(!lookPick) return;
+  var look=p.looks[parseInt(lookPick)-1]; if(!look) return;
+  if(!look.items) look.items=[];
+  look.items.push({
+    type:'range_style', devId:dev.id, devName:dev.description,
+    description:s.description, colour:s.colour||'', storeGrade:s.storeGrade||'',
+    seasonCode:s.seasonCode||dev.seasonCode||'', intakeMonth:s.intakeMonth||'',
+    retailPrice:s.retailPrice||'', qty:s.qty||'', targetCost:s.targetCost||'',
+    image:s.image||((dev.files||[]).find(function(f){return f.isImage&&f.dataUrl;})||{}).dataUrl||'',
+    stylingNotes:''
+  });
+  api('PUT','/packs/'+p.id,{looks:p.looks});
+  toast('Added to '+p.name+' — Look '+(parseInt(lookPick)),'success');
+}
+
+// ── PACK FORMS ────────────────────────────────────────────────────────────────
+var PACK_SEASONS=['SS27','AW27','SS26','AW26','SS25','AW25','Flow'];
+function openNewPackForm(){
+  var name=prompt('Pack name (e.g. SS27 Beach Shoot):'); if(!name) return;
+  var date=prompt('Shoot date (YYYY-MM-DD):');
+  var location=prompt('Location (e.g. Marbella):');
+  var photographer=prompt('Photographer:');
+  var season=prompt('Season ('+PACK_SEASONS.join(', ')+'):');
+  var brand=prompt('Brand:');
+  createPack({name:name.trim(),shootDate:date||null,location:location||null,photographer:photographer||null,season:season||null,brand:brand||null});
+}
+
+async function createPack(data){
+  var r=await api('POST','/packs',data);
+  if(r&&r.pack){
+    G.packs.unshift(r.pack);
+    toast('Pack created!','success');
+    openPackDetail(r.pack.id);
+  } else toast('Failed to create pack','error');
+}
+
+async function confirmPack(packId){
+  var p=G.packs.find(function(x){return x.id===packId;}); if(!p) return;
+  p.status='confirmed';
+  await api('PUT','/packs/'+packId,{status:'confirmed'});
+  toast('Pack confirmed ✓','success');
+  G.activePack=p;
+  renderMainContent();
+}
+
+async function deletePack(packId){
+  if(!confirm('Delete this pack permanently?')) return;
+  await api('DELETE','/packs/'+packId);
+  G.packs=G.packs.filter(function(p){return p.id!==packId;});
+  backToPacks();
+  toast('Pack deleted');
+}
+
+async function editPackHeader(packId){
+  var p=G.packs.find(function(x){return x.id===packId;}); if(!p) return;
+  var name=prompt('Pack name:',p.name)||p.name;
+  var date=prompt('Shoot date (YYYY-MM-DD):',p.shoot_date||'');
+  var location=prompt('Location:',p.location||'');
+  var photographer=prompt('Photographer:',p.photographer||'');
+  p.name=name; p.shoot_date=date||null; p.location=location||null; p.photographer=photographer||null;
+  await api('PUT','/packs/'+packId,{name:name,shootDate:date||null,location:location||null,photographer:photographer||null});
+  toast('Pack updated','success');
+  renderMainContent();
+}
+
+function backToPacks(){
+  G.activePack=null; G.activePackView='list';
+  renderMainContent();
+}
+
+// ── PDF EXPORT ────────────────────────────────────────────────────────────────
+function exportPackPDF(packId){
+  var pack=G.packs.find(function(x){return x.id===packId;}); if(!pack) return;
+  var today=new Date().toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'});
+  var totalItems=(pack.looks||[]).reduce(function(s,l){return s+(l.items?l.items.length:0);},0);
+
+  var looksHtml='';
+  (pack.looks||[]).forEach(function(look,li){
+    var items=look.items||[];
+    var itemsHtml='';
+    items.forEach(function(item){
+      var imgHtml=item.image
+        ?'<img src="'+item.image+'" style="width:70px;height:70px;border-radius:8px;object-fit:cover;flex-shrink:0;">'
+        :'<div style="width:70px;height:70px;border-radius:8px;background:#f3f4f6;display:flex;align-items:center;justify-content:center;font-size:1.5rem;flex-shrink:0;">&#127912;</div>';
+      var badges='';
+      if(item.colour) badges+='<span style="background:#f3f4f6;padding:1px 6px;border-radius:10px;font-size:8px;margin-right:3px;">'+item.colour+'</span>';
+      if(item.storeGrade) badges+='<span style="background:#f3f4f6;padding:1px 6px;border-radius:10px;font-size:8px;margin-right:3px;">Grade '+item.storeGrade+'</span>';
+      if(item.seasonCode) badges+='<span style="background:#f3f4f6;padding:1px 6px;border-radius:10px;font-size:8px;margin-right:3px;">'+item.seasonCode+'</span>';
+      if(item.intakeMonth) badges+='<span style="background:#f3f4f6;padding:1px 6px;border-radius:10px;font-size:8px;margin-right:3px;">'+item.intakeMonth+'</span>';
+      if(item.retailPrice) badges+='<span style="background:#d1fae5;color:#065f46;padding:1px 6px;border-radius:10px;font-size:8px;margin-right:3px;">£'+parseFloat(item.retailPrice).toFixed(2)+'</span>';
+      if(item.qty) badges+='<span style="background:#dbeafe;color:#1e40af;padding:1px 6px;border-radius:10px;font-size:8px;margin-right:3px;">'+parseInt(item.qty).toLocaleString()+' units</span>';
+      if(item.type==='free_text') badges+='<span style="background:#fef3c7;color:#b45309;padding:1px 6px;border-radius:10px;font-size:8px;margin-right:3px;">Styling</span>';
+      if(item.source) badges+='<span style="background:#f3f4f6;padding:1px 6px;border-radius:10px;font-size:8px;margin-right:3px;">'+item.source+'</span>';
+      itemsHtml+='<div style="display:flex;gap:10px;align-items:flex-start;padding:8px;background:white;border-radius:8px;margin-bottom:6px;border:1px solid #e5e7eb;">'+
+        imgHtml+
+        '<div style="flex:1;"><div style="font-size:10px;font-weight:700;margin-bottom:2px;">'+( item.description||'')+'</div>'+
+        '<div style="font-size:9px;color:#6b7280;margin-bottom:4px;">'+(item.devName||item.source||'')+'</div>'+
+        '<div style="margin-bottom:5px;">'+badges+'</div>'+
+        (item.stylingNotes?'<div style="background:#fffbeb;border-left:3px solid #f59e0b;padding:4px 6px;font-size:9px;line-height:1.5;border-radius:0 4px 4px 0;">'+item.stylingNotes+'</div>':'')+'</div></div>';
+    });
+    looksHtml+='<div style="break-inside:avoid;page-break-inside:avoid;margin-bottom:16px;">'+
+      '<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;padding:8px 12px;background:#0c0f14;border-radius:8px;">'+
+      '<div style="width:24px;height:24px;border-radius:50%;background:#6366f1;color:white;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;flex-shrink:0;">'+(li+1)+'</div>'+
+      '<div style="font-size:11px;font-weight:700;color:white;">Look '+(li+1)+(look.name?' — '+look.name:'')+'</div>'+
+      '<div style="margin-left:auto;font-size:9px;color:rgba(255,255,255,0.5);">'+items.length+' item'+(items.length!==1?'s':'')+'</div>'+
+      '</div>'+itemsHtml+'</div>';
+  });
+
+  var html='<!DOCTYPE html><html><head><meta charset="UTF-8"><title>'+pack.name+'</title>'+
+    '<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">'+
+    '<style>*{box-sizing:border-box;margin:0;padding:0;}body{font-family:"DM Sans",Arial,sans-serif;background:white;color:#0c0f14;-webkit-print-color-adjust:exact;print-color-adjust:exact;}'+
+    '.page{max-width:794px;margin:0 auto;padding:28px;}@media print{@page{margin:10mm;size:A4;}.no-print{display:none;}}</style>'+
+    '</head><body><div class="page">'+
+    '<div style="display:flex;justify-content:space-between;align-items:flex-start;padding-bottom:16px;border-bottom:2px solid #0c0f14;margin-bottom:16px;">'+
+    '<div><div style="font-size:20px;font-weight:800;letter-spacing:-0.5px;">Tender<span style="color:#6366f1;">able</span></div><div style="font-size:9px;color:#9ca3af;">Shoot Pack</div></div>'+
+    '<div style="text-align:right;"><div style="font-size:18px;font-weight:800;">'+pack.name+'</div><div style="font-size:10px;color:#6b7280;">'+(pack.brand?pack.brand+' &bull; ':'')+( pack.season?pack.season+' &bull; ':'')+(pack.shoot_date?new Date(pack.shoot_date).toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'}):today)+'</div></div></div>'+
+    '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:20px;">'+
+    (pack.location?'<div style="background:#f8f9fb;border-radius:8px;padding:10px;"><div style="font-size:9px;color:#9ca3af;font-weight:700;text-transform:uppercase;margin-bottom:3px;">Location</div><div style="font-size:12px;font-weight:700;">'+pack.location+'</div></div>':'')+
+    (pack.photographer?'<div style="background:#f8f9fb;border-radius:8px;padding:10px;"><div style="font-size:9px;color:#9ca3af;font-weight:700;text-transform:uppercase;margin-bottom:3px;">Photographer</div><div style="font-size:12px;font-weight:700;">'+pack.photographer+'</div></div>':'')+
+    '<div style="background:#f8f9fb;border-radius:8px;padding:10px;"><div style="font-size:9px;color:#9ca3af;font-weight:700;text-transform:uppercase;margin-bottom:3px;">Looks</div><div style="font-size:12px;font-weight:700;">'+(pack.looks?pack.looks.length:0)+'</div></div>'+
+    '<div style="background:#f8f9fb;border-radius:8px;padding:10px;"><div style="font-size:9px;color:#9ca3af;font-weight:700;text-transform:uppercase;margin-bottom:3px;">Total Items</div><div style="font-size:12px;font-weight:700;">'+totalItems+'</div></div>'+
+    '</div>'+looksHtml+
+    '<div style="border-top:1px solid #e5e7eb;padding-top:10px;margin-top:16px;display:flex;justify-content:space-between;font-size:9px;color:#9ca3af;">'+
+    '<span>'+pack.name+' &bull; Generated '+today+'</span><span>CONFIDENTIAL</span></div>'+
+    '</div>'+
+    '<div class="no-print" style="position:fixed;bottom:20px;right:20px;display:flex;gap:8px;">'+
+    '<button onclick="window.print()" style="background:#0c0f14;color:white;border:none;padding:10px 20px;border-radius:8px;font-weight:700;cursor:pointer;font-family:inherit;">&#128424; Print</button>'+
+    '<button id="pdf-dl-btn" onclick="dlPackPDF()" style="background:#6366f1;color:white;border:none;padding:10px 20px;border-radius:8px;font-weight:700;cursor:pointer;font-family:inherit;">&#128190; Save PDF</button>'+
+    '</div></body></html>';
+
+  var w=window.open('','_blank');
+  w.document.write(html);
+  w.document.close();
+  var s1=w.document.createElement('script');
+  s1.src='https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js';
+  s1.onload=function(){
+    var s2=w.document.createElement('script');
+    s2.textContent=['function dlPackPDF(){',
+      'var btn=document.getElementById("pdf-dl-btn");btn.textContent="Generating...";btn.disabled=true;',
+      'var fname="'+pack.name.replace(/[^a-z0-9]/gi,'-')+'-Shoot-Pack.pdf";',
+      'var opt={margin:[8,8,8,8],filename:fname,image:{type:"jpeg",quality:0.95},html2canvas:{scale:2,useCORS:true,allowTaint:true},jsPDF:{unit:"mm",format:"a4",orientation:"portrait"}};',
+      'html2pdf().set(opt).from(document.querySelector(".page")).save().then(function(){btn.textContent="Save PDF";btn.disabled=false;});',
+    '}'].join('\n');
+    w.document.head.appendChild(s2);
+  };
+  w.document.head.appendChild(s1);
+}
+
+window.quickAddToPack=quickAddToPack;
+window.deleteLook=deleteLook;
+window.deletePackItem=deletePackItem;
+window.addFreeTextItem=addFreeTextItem;
+window.openStylePicker=openStylePicker;
+window.confirmPack=confirmPack;
+window.deletePack=deletePack;
+window.editPackHeader=editPackHeader;
+window.exportPackPDF=exportPackPDF;
+window.backToPacks=backToPacks;
 async function deleteDev(devId){
   if(!confirm('Delete this development? This cannot be undone.')) return;
   await api('DELETE','/developments/'+devId);
