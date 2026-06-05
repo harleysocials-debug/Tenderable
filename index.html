@@ -2412,11 +2412,29 @@ function renderPackDetail(mc, pack){
   // Sticky header
   var head=document.createElement('div');
   head.className='pack-detail-head';
-  var _sLabels={draft:'Draft',readyforsignoff:'Ready For Sign Off',signedoff:'Signed Off',confirmed:'Confirmed'};
-  var _sBgs={draft:'#fef3c7',readyforsignoff:'#dbeafe',signedoff:'#ede9fe',confirmed:'#d1fae5'};
-  var _sCols={draft:'#b45309',readyforsignoff:'#1e40af',signedoff:'#7c3aed',confirmed:'#065f46'};
-  var statusColor=_sCols[pack.status]||'#b45309';
-  var statusBg=_sBgs[pack.status]||'#fef3c7';
+
+  // Calc retail value
+  var retailTotal=0;
+  (pack.looks||[]).forEach(function(l){
+    (l.items||[]).forEach(function(it){
+      var r=parseFloat((it.retailPrice+'').replace(/[^0-9.]/g,'')||0);
+      var q=parseInt(it.qty||0);
+      retailTotal+=r*q;
+    });
+  });
+  var retailStr=retailTotal>0?'&#163;'+retailTotal.toLocaleString('en-GB',{minimumFractionDigits:2,maximumFractionDigits:2}):'';
+
+  // Stage progress bar HTML
+  var stages=['draft','readyforsignoff','signedoff'];
+  var stageLabels={draft:'Draft',readyforsignoff:'Ready For Sign Off',signedoff:'Signed Off'};
+  var cur=pack.status||'draft';
+  var stageBarHtml='<div class="pack-stage-bar">';
+  stages.forEach(function(s){
+    var isOn=stages.indexOf(cur)>=stages.indexOf(s);
+    stageBarHtml+='<div class="pack-stage-step'+(isOn?' on '+s:'')+'" data-packid="'+pack.id+'" data-status="'+s+'" onclick="window.setPackStatus(this.dataset.packid,this.dataset.status)">'+stageLabels[s]+'</div>';
+  });
+  stageBarHtml+='</div>';
+
   head.innerHTML=
     '<button class="pack-back-btn" onclick="backToPacks()">&#8592; Packs</button>'+
     '<div class="pack-detail-title">'+pack.name+'</div>'+
@@ -2428,11 +2446,11 @@ function renderPackDetail(mc, pack){
     (pack.shoot_type?'<span class="pack-stat" style="background:#ede9fe;color:#7c3aed;">'+pack.shoot_type+'</span>':'')+
     (pack.trade_deadline?'<span class="pack-stat" style="background:#fee2e2;color:#991b1b;">&#128197; Trade: '+new Date(pack.trade_deadline).toLocaleDateString("en-GB",{day:"numeric",month:"short"})+'</span>':'')+
     (pack.samples_ready_by?'<span class="pack-stat" style="background:#dbeafe;color:#1e40af;">&#10003; Samples: '+new Date(pack.samples_ready_by).toLocaleDateString("en-GB",{day:"numeric",month:"short"})+'</span>':'')+
-    
-    '<span class="pack-stat" style="background:'+statusBg+';color:'+statusColor+';">'+(_sLabels[pack.status]||'Draft')+'</span>'+
+    (retailStr?'<span class="pack-stat" style="background:#d1fae5;color:#065f46;font-weight:800;">&#127907; Shoot Retail: '+retailStr+'</span>':'')+
     '</div>'+
+    stageBarHtml+
     '<div style="display:flex;gap:0.5rem;">'+
-    '<button class="btn btn-ghost btn-sm" onclick="editPackHeader(\''+pack.id+'\')">&#9999; Edit</button>'+
+    '<button class="btn btn-ghost btn-sm" onclick="openNewPackForm(\''+pack.id+'\')">&#9999; Edit</button>'+
     '<button class="btn btn-ghost btn-sm" onclick="exportPackPDF(\''+pack.id+'\')">&#128196; PDF</button>'+
     '<button class="btn btn-danger btn-sm" onclick="deletePack(\''+pack.id+'\')">&#128465;</button>'+
     '</div>';
@@ -3097,6 +3115,7 @@ function exportPackPDF(packId){
     (pack.photographer?'<div style="background:#f8f9fb;border-radius:8px;padding:10px;"><div style="font-size:9px;color:#9ca3af;font-weight:700;text-transform:uppercase;margin-bottom:3px;">Photographer</div><div style="font-size:12px;font-weight:700;">'+pack.photographer+'</div></div>':'')+
     '<div style="background:#f8f9fb;border-radius:8px;padding:10px;"><div style="font-size:9px;color:#9ca3af;font-weight:700;text-transform:uppercase;margin-bottom:3px;">Looks</div><div style="font-size:12px;font-weight:700;">'+(pack.looks?pack.looks.length:0)+'</div></div>'+
     '<div style="background:#f8f9fb;border-radius:8px;padding:10px;"><div style="font-size:9px;color:#9ca3af;font-weight:700;text-transform:uppercase;margin-bottom:3px;">Total Items</div><div style="font-size:12px;font-weight:700;">'+totalItems+'</div></div>'+
+    (function(){var rt=0;(pack.looks||[]).forEach(function(l){(l.items||[]).forEach(function(it){var r=parseFloat((it.retailPrice+'').replace(/[^0-9.]/g,'')||0);var q=parseInt(it.qty||0);rt+=r*q;});});return rt>0?'<div style="background:#d1fae5;border-radius:8px;padding:10px;"><div style="font-size:9px;color:#065f46;font-weight:700;text-transform:uppercase;margin-bottom:3px;">Shoot Retail Value</div><div style="font-size:12px;font-weight:800;color:#065f46;">&pound;'+rt.toLocaleString('en-GB',{minimumFractionDigits:2})+'</div></div>':'';})()
     '</div>'+looksHtml+
     '<div style="border-top:1px solid #e5e7eb;padding-top:10px;margin-top:16px;display:flex;justify-content:space-between;font-size:9px;color:#9ca3af;">'+
     '<span>'+pack.name+' &bull; Generated '+today+'</span><span>CONFIDENTIAL</span></div>'+
