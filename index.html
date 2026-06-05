@@ -1264,13 +1264,19 @@ function renderFormBody(d){
   var gradeOptions = [''].concat(GRADES);
   // Store grade moved to individual style rows
 
+  var seasons=['SS27','AW27','SS26','AW26','SS25','AW25'];
+  var seasonSelect='<select class="form-input" id="f-season"><option value="">Season</option>';
+  seasons.forEach(function(s){seasonSelect+='<option value="'+s+'"'+(d&&d.seasonCode===s?' selected':'')+'>'+s+'</option>';});
+  seasonSelect+='</select>';
+
   var stageOptions=STAGES.map(function(s){return{v:s,l:STAGE_LABELS[s]};});
   var stageSelect='<select class="form-input" id="f-stage">';
-  stageOptions.forEach(function(o){stageSelect+='<option value="'+o.v+'"'+((d?(d.stage||'inspiration'):'concept')===o.v?' selected':'')+'>'+o.l+'</option>';});
+  stageOptions.forEach(function(o){stageSelect+='<option value="'+o.v+'"'+((d?(d.stage||'inspiration'):'inspiration')===o.v?' selected':'')+'>'+o.l+'</option>';});
   stageSelect+='</select>';
 
-  // Department removed from dev level — style level only
-  // (dept select removed)
+  html += '<div class="form-group"><label class="form-label">Season</label>'+seasonSelect+'</div>';
+  html += '<div class="form-group"><label class="form-label">Stage</label>'+stageSelect+'</div>';
+
   html += '<div class="form-group"><label class="form-label">Supplier Allocation</label>'+inp('f-supplier',d?esc(d.supplierAllocation||''):'','Supplier name')+'</div>';
   // price moved to product level
   // Order Qty removed - calculated dynamically from styles
@@ -1406,9 +1412,11 @@ function addProductRow(data){
   gradeInp.className='form-input product-grade';
   gradeInp.style.cssText='padding:0.5rem 0.5rem;font-size:0.82rem;';
   ['','A','B','C','D','E','F','Web Only'].forEach(function(g){ var o=document.createElement('option'); o.value=g; o.textContent=g||'Grade'; gradeInp.appendChild(o); });
-  gradeInp.value=d.storeGrade||'';
   gradeInp.addEventListener('change',function(){G.formProducts[pidx].storeGrade=this.value;});
   row1.appendChild(gradeInp);
+
+  // Set select values after appending
+  setTimeout(function(){ colourSel.value=d.colour||''; gradeInp.value=d.storeGrade||''; },0);
   // Category + Dept row
   var rowCatDept=document.createElement('div');
   rowCatDept.style.cssText='display:grid;grid-template-columns:1fr 1fr;gap:0.4rem;';
@@ -1425,9 +1433,11 @@ function addProductRow(data){
   deptSel.className='form-input product-dept';
   deptSel.style.cssText='padding:0.5rem 0.65rem;font-size:0.82rem;';
   deptSel.innerHTML='<option value="">Dept</option><option value="Mens Accessories">Mens Accessories</option><option value="Mens Branded Stock Buy">Mens Branded Stock Buy</option><option value="Mens Golfwear">Mens Golfwear</option><option value="Mens Jackets">Mens Jackets</option><option value="Mens Jeans">Mens Jeans</option><option value="Mens Joggers">Mens Joggers</option><option value="Mens Knitwear">Mens Knitwear</option><option value="Mens Loungewear">Mens Loungewear</option><option value="Mens Marketing & Events">Mens Marketing & Events</option><option value="Mens Polo Shirts">Mens Polo Shirts</option><option value="Mens Shirts">Mens Shirts</option><option value="Mens Shorts">Mens Shorts</option><option value="Mens Smart/Formal Trousers">Mens Smart/Formal Trousers</option><option value="Mens Socks">Mens Socks</option><option value="Mens Sportswear">Mens Sportswear</option><option value="Mens Sweatshirts">Mens Sweatshirts</option><option value="Mens Swim Shorts">Mens Swim Shorts</option><option value="Mens Tailoring">Mens Tailoring</option><option value="Mens Trousers">Mens Trousers</option><option value="Mens T Shirts/Vests">Mens T Shirts/Vests</option><option value="Mens Underwear">Mens Underwear</option><option value="Mens Workwear">Mens Workwear</option><option value="SB Mens">SB Mens</option>';
-  deptSel.value=d.department||'';
   deptSel.addEventListener('change',function(){G.formProducts[pidx].department=this.value;});
   rowCatDept.appendChild(deptSel);
+
+  // Set values AFTER appending to DOM so browser registers them correctly
+  setTimeout(function(){ catSel.value=d.category||''; deptSel.value=d.department||''; },0);
 
   row2.style.cssText='display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:0.4rem;';
   row2.appendChild(mkInput('product-qty','Qty','qty',true,'1'));
@@ -1439,9 +1449,11 @@ function addProductRow(data){
   monthSel.className='form-input product-intake';
   monthSel.style.cssText='padding:0.5rem 0.5rem;font-size:0.82rem;';
   monthSel.innerHTML='<option value="">Intake</option><option value="Jan">Jan</option><option value="Feb">Feb</option><option value="Mar">Mar</option><option value="Apr">Apr</option><option value="May">May</option><option value="Jun">Jun</option><option value="Jul">Jul</option><option value="Aug">Aug</option><option value="Sep">Sep</option><option value="Oct">Oct</option><option value="Nov">Nov</option><option value="Dec">Dec</option>';
-  monthSel.value=d.intakeMonth||'';
   monthSel.addEventListener('change',function(){G.formProducts[pidx].intakeMonth=this.value;});
   row2.appendChild(monthSel);
+
+  // Set intake value after appending
+  setTimeout(function(){ monthSel.value=d.intakeMonth||''; },0);
 
   fields.appendChild(row1);
   fields.appendChild(rowCatDept);
