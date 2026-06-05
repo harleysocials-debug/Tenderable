@@ -2455,18 +2455,20 @@ function renderPackDetail(mc, pack){
     '</div>';
   mc.appendChild(head);
 
-  // Looks area
-  // Shoot Notes + Attachments section
-  var notesSection=document.createElement('div');
-  notesSection.style.cssText='max-width:1100px;width:100%;margin:0 auto;padding:0.85rem 1.5rem 0;';
-  notesSection.innerHTML=buildPackNotesSection(pack);
-  mc.appendChild(notesSection);
-
+  // Always create looksWrap first so renderLooks can always find it
   var looksWrap=document.createElement('div');
   looksWrap.className='looks-wrap';
   looksWrap.id='looks-wrap';
-  mc.appendChild(looksWrap);
 
+  // Shoot Notes + Attachments section (wrapped in try-catch so it can never block looks)
+  try {
+    var notesSection=document.createElement('div');
+    notesSection.style.cssText='max-width:1100px;width:100%;margin:0 auto;padding:0.85rem 1.5rem 0;';
+    notesSection.innerHTML=buildPackNotesSection(pack);
+    mc.appendChild(notesSection);
+  } catch(e){ console.warn('Notes section error:',e.message); }
+
+  mc.appendChild(looksWrap);
   renderLooks(pack);
 
   // Add look button
