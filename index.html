@@ -518,17 +518,17 @@ input, select, textarea { font-family: inherit; }
 /* Style picker modal */
 .style-picker-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:400; display:none; align-items:center; justify-content:center; padding:1rem; }
 .style-picker-overlay.open { display:flex; }
-.style-picker-box { background:white; border-radius:16px; width:100%; max-width:860px; max-height:85vh; display:flex; flex-direction:column; overflow:hidden; }
+.style-picker-box { background:white; border-radius:16px; width:100%; max-width:860px; height:85vh; display:flex; flex-direction:column; overflow:hidden; }
 .style-picker-head { padding:1.25rem 1.5rem; border-bottom:1px solid var(--line); display:flex; align-items:center; justify-content:space-between; flex-shrink:0; }
 .style-picker-search { padding:0.75rem 1rem; border-bottom:1px solid var(--line); flex-shrink:0; }
 .style-picker-search input { width:100%; padding:0.6rem 0.9rem; border:1px solid var(--line); border-radius:9px; font-size:0.875rem; font-family:inherit; }
 .style-picker-search input:focus { outline:none; border-color:#6366f1; }
-.style-picker-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(160px,1fr)); gap:0.75rem; padding:1rem; overflow-y:auto; flex:1; }
-.style-picker-card { border:2px solid var(--line); border-radius:10px; overflow:hidden; cursor:pointer; transition:all 0.15s; }
+.style-picker-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(160px,1fr)); grid-auto-rows:200px; gap:0.75rem; padding:1rem; overflow-y:scroll; flex:1; min-height:0; }
+.style-picker-card { border:2px solid var(--line); border-radius:10px; overflow:hidden; cursor:pointer; transition:all 0.15s; display:flex; flex-direction:column; height:100%; }
 .style-picker-card:hover { border-color:#6366f1; }
 .style-picker-card.selected { border-color:#6366f1; background:#eef2ff; }
 .style-picker-card img,.style-picker-card-ph { width:100%; aspect-ratio:1; object-fit:cover; display:block; background:var(--line2); display:flex; align-items:center; justify-content:center; font-size:1.5rem; }
-.style-picker-card-info { padding:0.5rem; }
+.style-picker-card-info { padding:0.5rem; flex:1; }
 .style-picker-card-name { font-size:0.72rem; font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 .style-picker-card-sub { font-size:0.65rem; color:var(--ink3); }
 .style-picker-foot { padding:1rem 1.5rem; border-top:1px solid var(--line); display:flex; gap:0.75rem; justify-content:flex-end; flex-shrink:0; }
@@ -2644,7 +2644,7 @@ function renderStylePicker(){
     var imgSrc=s.image||((dev.files||[]).find(function(f){return f.isImage&&f.dataUrl;})||{}).dataUrl;
     var card=document.createElement('div');
     card.className='style-picker-card'+( _pickerSelected.indexOf(i)>=0?' selected':'');
-    card.innerHTML=(imgSrc?'<div class="style-picker-card-imgwrap"><img src="'+imgSrc+'"></div>':'<div class="style-picker-card-imgwrap-ph">&#127912;</div>')+
+    card.innerHTML=(imgSrc?'<div style="width:100%;height:140px;overflow:hidden;background:#f3f4f6;"><img src="'+imgSrc+'" style="width:100%;height:140px;object-fit:cover;display:block;"></div>':'<div style="width:100%;height:140px;background:#f3f4f6;display:flex;align-items:center;justify-content:center;font-size:2rem;">&#127912;</div>')+
       '<div class="style-picker-card-info"><div class="style-picker-card-name">'+s.description+'</div><div class="style-picker-card-sub">'+(s.colour||'')+' &bull; '+(dev.brand||'')+'</div></div>';
     card.dataset.idx=i;
     card.onclick=function(){
