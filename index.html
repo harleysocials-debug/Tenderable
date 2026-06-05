@@ -694,6 +694,7 @@ input, select, textarea { font-family: inherit; }
         <div class="form-group"><label class="form-label">Shoot Date</label><input class="form-input" type="date" id="pf-date"></div>
         <div class="form-group"><label class="form-label">Trade Deadline</label><input class="form-input" type="date" id="pf-trade"></div>
         <div class="form-group"><label class="form-label">Samples Ready By</label><input class="form-input" type="date" id="pf-samples"></div>
+        <div class="form-group"><label class="form-label">Stage</label><select class="form-input" id="pf-status"><option value="draft">Draft</option><option value="readyforsignoff">Ready For Sign Off</option><option value="signedoff">Signed Off</option></select></div>
         <div class="form-group"><label class="form-label">Number of Looks</label><input class="form-input" type="number" id="pf-looks" min="1" max="100" placeholder="e.g. 20" value=""></div>
         <div class="form-group full"><label class="form-label">Notes</label><textarea class="form-input" id="pf-notes" rows="2" placeholder="Shoot brief, mood, direction..."></textarea></div>
       </div>
@@ -2404,8 +2405,11 @@ function renderPackDetail(mc, pack){
   // Sticky header
   var head=document.createElement('div');
   head.className='pack-detail-head';
-  var statusColor=pack.status==='confirmed'?'#065f46':'#b45309';
-  var statusBg=pack.status==='confirmed'?'#d1fae5':'#fef3c7';
+  var _sLabels={draft:'Draft',readyforsignoff:'Ready For Sign Off',signedoff:'Signed Off',confirmed:'Confirmed'};
+  var _sBgs={draft:'#fef3c7',readyforsignoff:'#dbeafe',signedoff:'#ede9fe',confirmed:'#d1fae5'};
+  var _sCols={draft:'#b45309',readyforsignoff:'#1e40af',signedoff:'#7c3aed',confirmed:'#065f46'};
+  var statusColor=_sCols[pack.status]||'#b45309';
+  var statusBg=_sBgs[pack.status]||'#fef3c7';
   head.innerHTML=
     '<button class="pack-back-btn" onclick="backToPacks()">&#8592; Packs</button>'+
     '<div class="pack-detail-title">'+pack.name+'</div>'+
@@ -2418,7 +2422,7 @@ function renderPackDetail(mc, pack){
     (pack.trade_deadline?'<span class="pack-stat" style="background:#fee2e2;color:#991b1b;">&#128197; Trade: '+new Date(pack.trade_deadline).toLocaleDateString("en-GB",{day:"numeric",month:"short"})+'</span>':'')+
     (pack.samples_ready_by?'<span class="pack-stat" style="background:#dbeafe;color:#1e40af;">&#10003; Samples: '+new Date(pack.samples_ready_by).toLocaleDateString("en-GB",{day:"numeric",month:"short"})+'</span>':'')+
     
-    '<span class="pack-stat" style="background:'+statusBg+';color:'+statusColor+';">'+( pack.status==='confirmed'?'Confirmed':'Draft')+'</span>'+
+    '<span class="pack-stat" style="background:'+statusBg+';color:'+statusColor+';">'+(_sLabels[pack.status]||'Draft')+'</span>'+
     '</div>'+
     '<div style="display:flex;gap:0.5rem;">'+
     '<button class="btn btn-ghost btn-sm" onclick="editPackHeader(\''+pack.id+'\')">&#9999; Edit</button>'+
@@ -2929,6 +2933,7 @@ function openNewPackForm(packId){
   document.getElementById('pf-trade').value=p&&p.trade_deadline?p.trade_deadline.split('T')[0]:'';
   document.getElementById('pf-samples').value=p&&p.samples_ready_by?p.samples_ready_by.split('T')[0]:'';
   document.getElementById('pf-notes').value=p?( p.notes||''):'';
+  document.getElementById('pf-status').value=p?(p.status||'draft'):'draft';
   document.getElementById('pf-looks').value=''; // blank on edit — don't overwrite
   document.getElementById('pack-form-overlay').dataset.editid=packId||'';
   document.getElementById('pack-form-overlay').classList.add('open');
@@ -2948,7 +2953,8 @@ async function submitPackForm(){
     shootType:document.getElementById('pf-type').value||null,
     tradeDeadline:document.getElementById('pf-trade').value||null,
     samplesReadyBy:document.getElementById('pf-samples').value||null,
-    notes:document.getElementById('pf-notes').value.trim()||null
+    notes:document.getElementById('pf-notes').value.trim()||null,
+    status:document.getElementById('pf-status').value||'draft'
   };
   var lookCount=parseInt(document.getElementById('pf-looks').value)||0;
   if(lookCount>0){
@@ -2976,6 +2982,17 @@ async function createPack(data){
     toast('Pack created!','success');
     openPackDetail(r.pack.id);
   } else toast('Failed to create pack','error');
+}
+
+async function cyclePackStatus(packId){
+  var p=G.packs.find(function(x){return x.id===packId;}); if(!p) return;
+  var next={draft:'readyforsignoff',readyforsignoff:'signedoff',signedoff:'readyforsignoff'};
+  p.status=next[p.status||'draft']||'draft';
+  await api('PUT','/packs/'+packId,{status:p.status});
+  G.activePack=p;
+  renderMainContent();
+  var labels={readyforsignoff:'Marked Ready For Sign Off',signedoff:'Signed Off ✓',draft:'Reset to Draft'};
+  toast(labels[p.status]||'Status updated','success');
 }
 
 async function confirmPack(packId){
