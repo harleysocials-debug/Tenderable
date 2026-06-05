@@ -336,7 +336,7 @@ input, select, textarea { font-family: inherit; }
 .move-btns { display:flex; flex-direction:column; gap:2px; flex-shrink:0; align-self:center; }
 .move-btn { background:none; border:1px solid var(--line); border-radius:5px; width:22px; height:22px; display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:0.65rem; color:var(--ink3); padding:0; transition:all 0.15s; }
 .move-btn:hover { background:var(--line2); color:var(--ink); border-color:var(--ink3); }
-.dup-btn { background:none; border:1px solid var(--line); border-radius:5px; width:22px; height:22px; display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:0.65rem; color:var(--ink3); padding:0; transition:all 0.15s; }
+.dup-btn { background:none; border:1px dashed var(--line); border-radius:7px; padding:0.3rem 0.65rem; font-size:0.75rem; font-weight:600; color:var(--ink3); cursor:pointer; transition:all 0.15s; white-space:nowrap; align-self:flex-end; }
 .dup-btn:hover { background:#eef2ff; color:#6366f1; border-color:#6366f1; }
 .add-row-btn:hover { border-color: #6366f1; color: #6366f1; background: #eef2ff; }
 
@@ -1359,7 +1359,7 @@ function addProductRow(data){
 
   // Fields: 2 rows inside a flex column
   var fields=document.createElement('div');
-  fields.style.cssText='flex:1;display:flex;flex-direction:column;gap:0.4rem;';
+  fields.style.cssText='display:contents;'; // children moved to fieldsWrap later
 
   var row1=document.createElement('div');
   row1.style.cssText='display:grid;grid-template-columns:1fr 1fr;gap:0.4rem;';
@@ -1494,7 +1494,16 @@ function addProductRow(data){
     if(colSel) colSel.value='';
   };
 
-  row.appendChild(moveBtns); row.appendChild(imgWrap); row.appendChild(fields); row.appendChild(dupBtn); row.appendChild(del);
+  // Wrap fields + dup button in a column
+  var fieldsWrap=document.createElement('div');
+  fieldsWrap.style.cssText='flex:1;display:flex;flex-direction:column;gap:0.4rem;min-width:0;';
+  // Move fields children into fieldsWrap
+  while(fields.firstChild) fieldsWrap.appendChild(fields.firstChild);
+  dupBtn.innerHTML='&#x2398; Duplicate style';
+  dupBtn.style.cssText='margin-top:0.15rem;align-self:flex-start;';
+  fieldsWrap.appendChild(dupBtn);
+
+  row.appendChild(moveBtns); row.appendChild(imgWrap); row.appendChild(fieldsWrap); row.appendChild(del);
   $('f-products').appendChild(row);
 }
 function syncProductOrder(){
