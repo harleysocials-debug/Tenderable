@@ -1516,8 +1516,17 @@ function renderFormProducts(){ $('f-products').innerHTML=''; G.formProducts.forE
 
 
 async function submitDev(){
+  // Guard against double-submit
+  var btn=$('form-submit-btn');
+  if(btn&&btn.disabled) return;
+  if(btn){ btn.disabled=true; btn.style.opacity='0.6'; }
+
   var desc=$('f-desc').value.trim();
-  if(!desc){toast('Please enter a description','error');return;}
+  if(!desc){
+    toast('Please enter a description','error');
+    if(btn){ btn.disabled=false; btn.style.opacity=''; }
+    return;
+  }
   var products=[]; $('f-products').querySelectorAll('.product-row').forEach(function(row){
     var d=row.querySelector('.product-desc'); var c=row.querySelector('.product-colour');
     var q=row.querySelector('.product-qty');
@@ -1539,6 +1548,7 @@ async function submitDev(){
     leadTimeTarget:parseInt($('f-lead').value)||null,labellingReqs:$('f-notes').value.trim(),
     files:G.uploadedFiles,products:products
   };
+  stopPolling(); // pause poll during save to avoid race condition
   loading(true);
   var r;
   if(G.editId){
@@ -1547,13 +1557,14 @@ async function submitDev(){
     r=await api('POST','/developments',body);
   }
   // Always reload from server after save to guarantee fresh state
+  await loadData();
+  loading(false);
+  startPolling(); // resume polling after save
+  if(btn){ btn.disabled=false; btn.style.opacity=''; }
   if(r){
-    await loadData();
-    loading(false);
     closeForm();buildFilters();renderMainContent();
     toast(G.editId?'Development updated':'Development created','success');
   } else {
-    loading(false);
     toast('Save failed — please try again','error');
   }
 }
