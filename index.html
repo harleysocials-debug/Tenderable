@@ -523,7 +523,7 @@ input, select, textarea { font-family: inherit; }
 .style-picker-search { padding:0.75rem 1rem; border-bottom:1px solid var(--line); flex-shrink:0; }
 .style-picker-search input { width:100%; padding:0.6rem 0.9rem; border:1px solid var(--line); border-radius:9px; font-size:0.875rem; font-family:inherit; }
 .style-picker-search input:focus { outline:none; border-color:#6366f1; }
-.style-picker-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(140px,1fr)); gap:0.75rem; padding:1rem; overflow-y:auto; flex:1; }
+.style-picker-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(160px,1fr)); gap:0.75rem; padding:1rem; overflow-y:auto; flex:1; }
 .style-picker-card { border:2px solid var(--line); border-radius:10px; overflow:hidden; cursor:pointer; transition:all 0.15s; }
 .style-picker-card:hover { border-color:#6366f1; }
 .style-picker-card.selected { border-color:#6366f1; background:#eef2ff; }
@@ -2607,7 +2607,7 @@ function renderStylePicker(){
     var imgSrc=s.image||((dev.files||[]).find(function(f){return f.isImage&&f.dataUrl;})||{}).dataUrl;
     var card=document.createElement('div');
     card.className='style-picker-card'+( _pickerSelected.indexOf(i)>=0?' selected':'');
-    card.innerHTML=(imgSrc?'<img src="'+imgSrc+'" style="width:100%;aspect-ratio:1;object-fit:cover;">':'<div style="width:100%;aspect-ratio:1;background:var(--line2);display:flex;align-items:center;justify-content:center;font-size:1.5rem;">&#127912;</div>')+
+    card.innerHTML=(imgSrc?'<img src="'+imgSrc+'" style="width:100%;aspect-ratio:1/1;object-fit:cover;display:block;">':'<div style="width:100%;aspect-ratio:1/1;background:var(--line2);display:flex;align-items:center;justify-content:center;font-size:1.5rem;">&#127912;</div>')+
       '<div class="style-picker-card-info"><div class="style-picker-card-name">'+s.description+'</div><div class="style-picker-card-sub">'+(s.colour||'')+' &bull; '+(dev.brand||'')+'</div></div>';
     card.dataset.idx=i;
     card.onclick=function(){
