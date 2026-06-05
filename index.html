@@ -425,6 +425,43 @@ input, select, textarea { font-family: inherit; }
 .confirm-btn:hover { border-color: #10b981; color: #10b981; }
 .confirm-btn.confirmed { background: #10b981; border-color: #10b981; color: white; }
 
+
+/* ── MESSAGING ───────────────────────────────────── */
+.msg-btn { position:relative; background:none; border:1px solid var(--line); padding:0.45rem 0.75rem; border-radius:8px; font-size:0.8rem; color:var(--ink3); cursor:pointer; display:flex; align-items:center; gap:0.4rem; }
+.msg-btn:hover { background:var(--line2); }
+.msg-badge { position:absolute; top:-5px; right:-5px; background:#ef4444; color:white; font-size:0.6rem; font-weight:800; width:16px; height:16px; border-radius:50%; display:flex; align-items:center; justify-content:center; }
+.msg-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.4); z-index:250; display:none; }
+.msg-overlay.open { display:flex; align-items:stretch; justify-content:flex-end; }
+.msg-panel { width:min(700px,100vw); background:white; display:flex; flex-direction:column; animation:slideIn 0.25s ease; }
+.msg-panel-head { padding:1.25rem 1.5rem; border-bottom:1px solid var(--line); display:flex; align-items:center; justify-content:space-between; flex-shrink:0; }
+.msg-panel-title { font-size:1rem; font-weight:800; }
+.msg-body { display:flex; flex:1; min-height:0; overflow:hidden; }
+.msg-sidebar { width:220px; flex-shrink:0; border-right:1px solid var(--line); display:flex; flex-direction:column; overflow-y:auto; }
+.msg-user-item { padding:0.85rem 1rem; cursor:pointer; border-bottom:1px solid var(--line2); transition:background 0.15s; display:flex; align-items:center; gap:0.75rem; }
+.msg-user-item:hover { background:var(--line2); }
+.msg-user-item.active { background:#eef2ff; }
+.msg-user-avatar { width:34px; height:34px; border-radius:50%; background:#e0e7ff; display:flex; align-items:center; justify-content:center; font-size:0.75rem; font-weight:700; color:#6366f1; flex-shrink:0; }
+.msg-user-name { font-size:0.82rem; font-weight:700; }
+.msg-user-preview { font-size:0.7rem; color:var(--ink3); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:120px; }
+.msg-unread-dot { width:8px; height:8px; border-radius:50%; background:#ef4444; flex-shrink:0; margin-left:auto; }
+.msg-thread { flex:1; display:flex; flex-direction:column; min-width:0; }
+.msg-thread-head { padding:0.85rem 1.25rem; border-bottom:1px solid var(--line); font-size:0.875rem; font-weight:700; flex-shrink:0; background:var(--surface); }
+.msg-thread-messages { flex:1; overflow-y:auto; padding:1rem; display:flex; flex-direction:column; gap:0.6rem; }
+.msg-empty { display:flex; align-items:center; justify-content:center; flex:1; font-size:0.875rem; color:var(--ink4); flex-direction:column; gap:0.5rem; }
+.msg-bubble-wrap { display:flex; flex-direction:column; max-width:75%; }
+.msg-bubble-wrap.mine { align-self:flex-end; align-items:flex-end; }
+.msg-bubble-wrap.theirs { align-self:flex-start; align-items:flex-start; }
+.msg-bubble { padding:0.6rem 0.9rem; border-radius:14px; font-size:0.875rem; line-height:1.5; position:relative; }
+.msg-bubble-wrap.mine .msg-bubble { background:#6366f1; color:white; border-bottom-right-radius:4px; }
+.msg-bubble-wrap.theirs .msg-bubble { background:var(--line2); color:var(--ink); border-bottom-left-radius:4px; }
+.msg-meta { font-size:0.65rem; color:var(--ink4); margin-top:0.2rem; display:flex; align-items:center; gap:0.4rem; }
+.msg-del { background:none; border:none; color:rgba(255,255,255,0.5); cursor:pointer; font-size:0.7rem; padding:0; }
+.msg-del:hover { color:white; }
+.msg-compose { padding:0.85rem 1rem; border-top:1px solid var(--line); display:flex; gap:0.5rem; flex-shrink:0; }
+.msg-compose-input { flex:1; padding:0.65rem 0.9rem; border:1px solid var(--line); border-radius:20px; font-size:0.875rem; font-family:inherit; resize:none; }
+.msg-compose-input:focus { outline:none; border-color:#6366f1; }
+.msg-send-btn { background:#6366f1; color:white; border:none; padding:0.65rem 1.1rem; border-radius:20px; font-weight:700; font-size:0.85rem; cursor:pointer; white-space:nowrap; }
+.msg-new-btn { padding:0.5rem 0.85rem; background:#6366f1; color:white; border:none; border-radius:8px; font-size:0.78rem; font-weight:700; cursor:pointer; margin:0.75rem; }
 /* Toast */
 .toast { position: fixed; bottom: 1.5rem; right: 1.5rem; background: var(--ink); color: white; padding: 0.85rem 1.25rem; border-radius: 12px; font-size: 0.875rem; font-weight: 600; z-index: 9999; transform: translateY(100px); opacity: 0; transition: all 0.25s; }
 .toast.show { transform: translateY(0); opacity: 1; }
@@ -496,6 +533,7 @@ input, select, textarea { font-family: inherit; }
     <div class="topbar-nav" id="topbar-nav"></div>
     <div class="topbar-right">
       <span class="topbar-user" id="topbar-user"></span>
+      <button class="msg-btn hidden" id="msg-topbar-btn" onclick="openMessages()">&#128172; Messages<span class="msg-badge hidden" id="msg-badge">0</span></button>
       <button class="topbar-new hidden" id="new-dev-btn" onclick="openCreateDev()">+ New Development</button>
       <button class="logout-btn" onclick="doLogout()">Sign out</button>
     </div>
@@ -531,6 +569,25 @@ input, select, textarea { font-family: inherit; }
   </div>
 
   <div class="main" id="main-content"></div>
+</div>
+
+<!-- Messaging overlay -->
+<div class="msg-overlay" id="msg-overlay" onclick="closeMsgIfBg(event)">
+  <div class="msg-panel" id="msg-panel">
+    <div class="msg-panel-head">
+      <div class="msg-panel-title">&#128172; Messages</div>
+      <button class="detail-close" onclick="closeMessages()">&#10005;</button>
+    </div>
+    <div class="msg-body">
+      <div class="msg-sidebar" id="msg-sidebar">
+        <button class="msg-new-btn" onclick="newMessage()">+ New Message</button>
+        <div id="msg-user-list"></div>
+      </div>
+      <div class="msg-thread" id="msg-thread">
+        <div class="msg-empty"><span style="font-size:2rem;">&#128172;</span><span>Select a conversation</span></div>
+      </div>
+    </div>
+  </div>
 </div>
 
 <!-- Detail slide-over -->
@@ -699,6 +756,7 @@ async function loadData(){
     api('GET','/messages')
   ]);
   if(dRes&&dRes.developments&&dRes.developments.length>=0) G.devs=dRes.developments;
+  await loadDirectMessages();
   if(dRes&&dRes.devComments) G.devComments=dRes.devComments;
   if(tRes&&tRes.tenders) G.tenders=tRes.tenders.map(function(t){ return Object.assign({},t,{deadlineDate:new Date(t.deadlineDate)}); });
   if(bRes&&bRes.bids) G.bids=bRes.bids;
@@ -723,6 +781,7 @@ function startApp(){
   $('topbar-user').textContent=u.name+' &bull; '+(u.company||u.type);
   $('topbar-user').innerHTML=u.name+' <span style="color:var(--ink4);">&bull; '+(u.company||u.type)+'</span>';
   buildTopbarNav();
+  $('msg-topbar-btn').classList.remove('hidden');
   if(u.type==='buyer'||u.type==='stakeholder'){
     $('filter-bar').classList.remove('hidden');
     $('new-dev-btn').classList.remove('hidden');
@@ -1991,6 +2050,140 @@ function supplierBrief(devId){
   w.document.head.appendChild(s1);
 }
 window.supplierBrief=supplierBrief;
+
+
+// ── DIRECT MESSAGING ──────────────────────────────────────────────────────────
+var G_msgs = [];
+var G_activeConvo = null;
+
+async function loadDirectMessages(){
+  var r = await api('GET', '/direct-messages');
+  if(r&&r.messages){ G_msgs=r.messages; updateMsgBadge(); }
+}
+
+function updateMsgBadge(){
+  var u=G.user; if(!u) return;
+  var unread=G_msgs.filter(function(m){return m.to_user_id===u.id&&!m.read_at;}).length;
+  var badge=$('msg-badge');
+  if(badge){ badge.textContent=unread; badge.classList.toggle('hidden',unread===0); }
+}
+
+function openMessages(){
+  $('msg-overlay').classList.add('open');
+  renderMsgSidebar();
+  if(G_activeConvo) openConvo(G_activeConvo.id, G_activeConvo.name);
+}
+function closeMessages(){ $('msg-overlay').classList.remove('open'); }
+function closeMsgIfBg(e){ if(e.target===$('msg-overlay')) closeMessages(); }
+
+function renderMsgSidebar(){
+  var u=G.user; if(!u) return;
+  // Build conversation list from all messages
+  var convos={};
+  G_msgs.forEach(function(m){
+    var otherId = m.from_user_id===u.id ? m.to_user_id : m.from_user_id;
+    var otherName = m.from_user_id===u.id ? m.to_user_name : m.from_user_name;
+    if(!convos[otherId]) convos[otherId]={id:otherId,name:otherName,messages:[],unread:0};
+    convos[otherId].messages.push(m);
+    if(m.to_user_id===u.id&&!m.read_at) convos[otherId].unread++;
+  });
+  var list=$('msg-user-list'); list.innerHTML='';
+  Object.values(convos).sort(function(a,b){
+    var aLast=a.messages[a.messages.length-1].created_at;
+    var bLast=b.messages[b.messages.length-1].created_at;
+    return new Date(bLast)-new Date(aLast);
+  }).forEach(function(c){
+    var last=c.messages[c.messages.length-1];
+    var item=document.createElement('div');
+    item.className='msg-user-item'+(G_activeConvo&&G_activeConvo.id===c.id?' active':'');
+    item.innerHTML='<div class="msg-user-avatar">'+initials(c.name)+'</div>'+
+      '<div style="flex:1;min-width:0;"><div class="msg-user-name">'+c.name+'</div>'+
+      '<div class="msg-user-preview">'+(last.message||'')+'</div></div>'+
+      (c.unread>0?'<div class="msg-unread-dot"></div>':'');
+    item.onclick=function(){ openConvo(c.id,c.name); };
+    list.appendChild(item);
+  });
+}
+
+function openConvo(userId, userName){
+  G_activeConvo={id:userId,name:userName};
+  renderMsgSidebar();
+  // Mark as read
+  api('PUT','/direct-messages/read',{fromUserId:userId}).then(function(){
+    G_msgs.forEach(function(m){ if(m.from_user_id===userId&&m.to_user_id===G.user.id) m.read_at=new Date().toISOString(); });
+    updateMsgBadge();
+  });
+  renderConvo(userId, userName);
+}
+
+function renderConvo(userId, userName){
+  var u=G.user;
+  var thread=$('msg-thread'); thread.innerHTML='';
+  var head=document.createElement('div'); head.className='msg-thread-head'; head.textContent=userName; thread.appendChild(head);
+  var msgs=document.createElement('div'); msgs.className='msg-thread-messages'; thread.appendChild(msgs);
+  var convoMsgs=G_msgs.filter(function(m){
+    return (m.from_user_id===u.id&&m.to_user_id===userId)||(m.from_user_id===userId&&m.to_user_id===u.id);
+  }).sort(function(a,b){return new Date(a.created_at)-new Date(b.created_at);});
+  if(!convoMsgs.length){
+    msgs.innerHTML='<div style="text-align:center;color:var(--ink4);font-size:0.82rem;padding:2rem;">No messages yet. Say hello!</div>';
+  } else {
+    convoMsgs.forEach(function(m){
+      var isMine=m.from_user_id===u.id;
+      var wrap=document.createElement('div');
+      wrap.className='msg-bubble-wrap '+(isMine?'mine':'theirs');
+      var delBtn=isMine?'<button class="msg-del" data-id="'+m.id+'" onclick="deleteDM(this.dataset.id)">&#10005;</button>':'';
+      wrap.innerHTML='<div class="msg-bubble">'+m.message+(isMine?' '+delBtn:'')+'</div>'+
+        '<div class="msg-meta">'+new Date(m.created_at).toLocaleString('en-GB',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})+
+        (isMine&&m.read_at?' &bull; <span style="color:#10b981;">✓ Read</span>':'')+'</div>';
+      msgs.appendChild(wrap);
+    });
+    msgs.scrollTop=msgs.scrollHeight;
+  }
+  // Compose box
+  var compose=document.createElement('div'); compose.className='msg-compose';
+  var inp=document.createElement('textarea'); inp.className='msg-compose-input'; inp.placeholder='Message '+userName+'...'; inp.rows=1;
+  inp.addEventListener('keydown',function(e){ if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendDM(userId,userName,inp);} });
+  var btn=document.createElement('button'); btn.className='msg-send-btn'; btn.textContent='Send';
+  btn.onclick=function(){ sendDM(userId,userName,inp); };
+  compose.appendChild(inp); compose.appendChild(btn); thread.appendChild(compose);
+}
+
+async function sendDM(toUserId, toUserName, inp){
+  var msg=inp.value.trim(); if(!msg) return;
+  inp.value='';
+  var r=await api('POST','/direct-messages',{toUserId:toUserId,toUserName:toUserName,message:msg});
+  if(r){
+    G_msgs.push({id:r.id,from_user_id:G.user.id,from_user_name:G.user.name,to_user_id:toUserId,to_user_name:toUserName,message:msg,created_at:new Date().toISOString(),read_at:null});
+    renderConvo(toUserId,toUserName);
+    renderMsgSidebar();
+  }
+}
+
+async function deleteDM(msgId){
+  var r=await api('DELETE','/direct-messages/'+msgId);
+  if(r){
+    G_msgs=G_msgs.filter(function(m){return m.id!==msgId;});
+    if(G_activeConvo) renderConvo(G_activeConvo.id,G_activeConvo.name);
+    renderMsgSidebar();
+    updateMsgBadge();
+  }
+}
+
+async function newMessage(){
+  // Pick a user to message
+  var r=await api('GET','/admin/users');
+  if(!r||!r.users) return;
+  var others=r.users.filter(function(u){return u.id!==G.user.id&&u.status==='approved';});
+  if(!others.length){toast('No other users to message','error');return;}
+  var names=others.map(function(u,i){return (i+1)+'. '+u.name;}).join('\n');
+  var pick=prompt('Who do you want to message?\n\n'+names+'\n\nEnter the number:');
+  if(!pick) return;
+  var idx=parseInt(pick)-1;
+  if(isNaN(idx)||idx<0||idx>=others.length) return;
+  openConvo(others[idx].id, others[idx].name);
+}
+window.deleteDM=deleteDM;
+window.newMessage=newMessage;
 
 async function deleteDev(devId){
   if(!confirm('Delete this development? This cannot be undone.')) return;
