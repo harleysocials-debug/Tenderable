@@ -751,11 +751,13 @@ function buildFilters(){
   // Stage - fixed
   buildChips('filter-stage', ['All'].concat(STAGES.map(function(s){return {val:s,label:STAGE_LABELS[s]};})), 'stage', 'Stage');
 
-  // Category - fixed
-  buildChips('filter-cat', ['All'].concat(CATS), 'cat', 'Category');
+  // Category - from style-level products
+  var liveCats=['All']; G.devs.forEach(function(d){ (d.products||[]).forEach(function(p){ var c=p.category||d.category; if(c&&!liveCats.includes(c)) liveCats.push(c); }); });
+  if(liveCats.length<=1) liveCats=['All'].concat(CATS);
+  buildChips('filter-cat', liveCats, 'cat', 'Category');
 
-  // Department - from devs
-  var depts=['All']; G.devs.forEach(function(d){ if(d.department&&!depts.includes(d.department)) depts.push(d.department); });
+  // Department - from style-level products
+  var depts=['All']; G.devs.forEach(function(d){ (d.products||[]).forEach(function(p){ var dep=p.department||d.department; if(dep&&!depts.includes(dep)) depts.push(dep); }); });
   buildChips('filter-dept', depts, 'dept', 'Dept');
 
   // Colour - from style-level products
@@ -813,8 +815,9 @@ function filteredDevs(){
     // Dev-level filters
     if(G.filters.season&&d.seasonCode!==G.filters.season) return false;
     if(G.filters.stage&&(d.stage||'inspiration')!==G.filters.stage) return false;
-    if(G.filters.cat&&d.category!==G.filters.cat) return false;
-    if(G.filters.dept&&(d.department||'')!==G.filters.dept) return false;
+    // Category + dept now style-level: dev passes if any style matches
+    if(G.filters.cat&&!(d.products||[]).some(function(p){return (p.category||d.category)===G.filters.cat;})) return false;
+    if(G.filters.dept&&!(d.products||[]).some(function(p){return (p.department||d.department||'')===G.filters.dept;})) return false;
     if(G.filters.supplier&&(d.supplierAllocation||'').toLowerCase()!==G.filters.supplier.toLowerCase()) return false;
     if(G.filters.theme&&(d.theme||'').toLowerCase()!==G.filters.theme.toLowerCase()) return false;
     // Style-level filters — dev passes if ANY style matches
@@ -858,9 +861,9 @@ function renderBoard(mc){
       prods=prods.filter(function(p){var r=parseFloat(p.retailPrice||0);return r>=lo&&r<hi;});
     }
     if(prods.length===0 && dev.description && dev.description!=='null' && !G.filters.colour && !G.filters.intake && !G.filters.stylegrade && !G.filters.retail){
-      allStyles.push({_dev:dev,_isPlaceholder:true,category:dev.category||'Other'});
+      allStyles.push({_dev:dev,_isPlaceholder:true,category:dev.category||'Other'}); // placeholder uses dev-level
     } else {
-      prods.forEach(function(p){ allStyles.push(Object.assign({},p,{_dev:dev,category:dev.category||'Other'})); });
+      prods.forEach(function(p){ allStyles.push(Object.assign({},p,{_dev:dev,category:p.category||dev.category||'Other'})); });
     }
   });
 
@@ -868,7 +871,7 @@ function renderBoard(mc){
 
   // Group by category
   var grouped={}; CATS.forEach(function(c){grouped[c]=[];}); grouped.__other=[];
-  allStyles.forEach(function(s){ if(grouped[s.category]) grouped[s.category].push(s); else grouped.__other.push(s); });
+  allStyles.forEach(function(s){ var cat=s.category||s._dev.category||'Other'; if(grouped[cat]) grouped[cat].push(s); else grouped.__other.push(s); });
 
   var html='<div class="range-board">';
   CATS.concat(['__other']).forEach(function(cat){
@@ -919,7 +922,7 @@ function styleCard(s){
     '</div>'+
     '<div class="card-body">'+
     '<div class="card-name">'+s.description+'</div>'+
-    '<div class="card-sub">'+( s.colour||'')+( dev.brand?' &bull; '+dev.brand:'')+( dev.seasonCode?' &bull; '+dev.seasonCode:'')+( s.intakeMonth?' &bull; '+s.intakeMonth:'')+( dev.theme?' &bull; '+dev.theme:'')+'</div>'+
+    '<div class="card-sub">'+( s.colour||'')+( s.category||dev.category?' &bull; '+(s.category||dev.category):'')+( dev.brand?' &bull; '+dev.brand:'')+( dev.seasonCode?' &bull; '+dev.seasonCode:'')+( s.intakeMonth?' &bull; '+s.intakeMonth:'')+'</div>'+
     '<div class="card-meta" style="display:flex;flex-wrap:wrap;gap:0.3rem 0.6rem;align-items:center;margin-top:0.35rem;">'+costHtml+retailHtml+qtyHtml+gradeBodyHtml+confirmedHtml+'</div>'+
     '</div></div>';
 }
@@ -1223,7 +1226,7 @@ function renderFormBody(d){
   html += '<div class="form-group"><label class="form-label">Description</label>'+inp('f-desc',d?esc(d.description):'','e.g. License Tee Package')+'</div>';
   html += '<div class="form-group"><label class="form-label">Theme</label><input class="form-input" id="f-theme" value="'+(d?esc(d.theme||''):'')+'" placeholder="e.g. Japanese, Vintage Sport, Floral"></div>';
   html += '<div class="form-group"><label class="form-label">Brand</label>'+sel('f-brand',BRANDS,d?d.brand:'',false)+'</div>';
-  html += '<div class="form-group"><label class="form-label">Category</label>'+sel('f-cat',CATS,d?d.category:'',true)+'</div>';
+  // Category moved to style level
   var gradeOptions = [''].concat(GRADES);
   // Store grade moved to individual style rows
 
@@ -1310,7 +1313,7 @@ function addProductRow(data){
   var row=document.createElement('div');
   row.className='product-row';
   var pidx=G.formProducts.length;
-  G.formProducts.push({description:d.description||'',colour:d.colour||'',qty:d.qty||'',targetCost:d.targetCost||d.price||'',retailPrice:d.retailPrice||'',storeGrade:d.storeGrade||'',intakeMonth:d.intakeMonth||'',image:d.image||null});
+  G.formProducts.push({description:d.description||'',colour:d.colour||'',qty:d.qty||'',targetCost:d.targetCost||d.price||'',retailPrice:d.retailPrice||'',storeGrade:d.storeGrade||'',intakeMonth:d.intakeMonth||'',category:d.category||'',department:d.department||'',image:d.image||null});
 
   // Image thumbnail
   var imgWrap=document.createElement('div');
@@ -1375,6 +1378,26 @@ function addProductRow(data){
   gradeInp.value=d.storeGrade||'';
   gradeInp.addEventListener('change',function(){G.formProducts[pidx].storeGrade=this.value;});
   row1.appendChild(gradeInp);
+  // Category + Dept row
+  var rowCatDept=document.createElement('div');
+  rowCatDept.style.cssText='display:grid;grid-template-columns:1fr 1fr;gap:0.4rem;';
+
+  var catSel=document.createElement('select');
+  catSel.className='form-input product-cat';
+  catSel.style.cssText='padding:0.5rem 0.65rem;font-size:0.82rem;';
+  catSel.innerHTML='<option value="">Category</option><option value="OUTERWEAR">OUTERWEAR</option><option value="TOPS">TOPS</option><option value="BOTTOMS">BOTTOMS</option><option value="UNDERWEAR">UNDERWEAR</option><option value="NIGHTWEAR">NIGHTWEAR</option><option value="SWIMWEAR">SWIMWEAR</option><option value="ACCESSORIES">ACCESSORIES</option><option value="FOOTWEAR">FOOTWEAR</option>';
+  catSel.value=d.category||'';
+  catSel.addEventListener('change',function(){G.formProducts[pidx].category=this.value;});
+  rowCatDept.appendChild(catSel);
+
+  var deptSel=document.createElement('select');
+  deptSel.className='form-input product-dept';
+  deptSel.style.cssText='padding:0.5rem 0.65rem;font-size:0.82rem;';
+  deptSel.innerHTML='<option value="">Dept</option><option value="Mens Accessories">Mens Accessories</option><option value="Mens Branded Stock Buy">Mens Branded Stock Buy</option><option value="Mens Golfwear">Mens Golfwear</option><option value="Mens Jackets">Mens Jackets</option><option value="Mens Jeans">Mens Jeans</option><option value="Mens Joggers">Mens Joggers</option><option value="Mens Knitwear">Mens Knitwear</option><option value="Mens Loungewear">Mens Loungewear</option><option value="Mens Marketing & Events">Mens Marketing & Events</option><option value="Mens Polo Shirts">Mens Polo Shirts</option><option value="Mens Shirts">Mens Shirts</option><option value="Mens Shorts">Mens Shorts</option><option value="Mens Smart/Formal Trousers">Mens Smart/Formal Trousers</option><option value="Mens Socks">Mens Socks</option><option value="Mens Sportswear">Mens Sportswear</option><option value="Mens Sweatshirts">Mens Sweatshirts</option><option value="Mens Swim Shorts">Mens Swim Shorts</option><option value="Mens Tailoring">Mens Tailoring</option><option value="Mens Trousers">Mens Trousers</option><option value="Mens T Shirts/Vests">Mens T Shirts/Vests</option><option value="Mens Underwear">Mens Underwear</option><option value="Mens Workwear">Mens Workwear</option><option value="SB Mens">SB Mens</option>';
+  deptSel.value=d.department||'';
+  deptSel.addEventListener('change',function(){G.formProducts[pidx].department=this.value;});
+  rowCatDept.appendChild(deptSel);
+
   row2.style.cssText='display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:0.4rem;';
   row2.appendChild(mkInput('product-qty','Qty','qty',true,'1'));
   row2.appendChild(mkInput('product-cost','£ Cost','targetCost',true,'0.01'));
@@ -1390,6 +1413,7 @@ function addProductRow(data){
   row2.appendChild(monthSel);
 
   fields.appendChild(row1);
+  fields.appendChild(rowCatDept);
   fields.appendChild(row2);
 
   var del=document.createElement('button');
@@ -1415,11 +1439,13 @@ async function submitDev(){
     var gr=row.querySelector('.product-grade');
     var im=row.querySelector('.product-intake');
     var co=row.querySelector('.product-colour');
-    products.push({description:name,colour:co?co.value:'',qty:parseInt(q?q.value:0)||0,targetCost:parseFloat(tc?tc.value:0)||0,retailPrice:parseFloat(rp?rp.value:0)||0,storeGrade:gr?gr.value:'',intakeMonth:im?im.value:'',image:imgWrap?imgWrap.getAttribute('data-imgurl')||null:null});
+    var pc=row.querySelector('.product-cat');
+    var pd=row.querySelector('.product-dept');
+    products.push({description:name,colour:co?co.value:'',qty:parseInt(q?q.value:0)||0,targetCost:parseFloat(tc?tc.value:0)||0,retailPrice:parseFloat(rp?rp.value:0)||0,storeGrade:gr?gr.value:'',intakeMonth:im?im.value:'',category:pc?pc.value:'',department:pd?pd.value:'',image:imgWrap?imgWrap.getAttribute('data-imgurl')||null:null});
   });
   var body={
     description:desc,brand:$('f-brand').value,category:$('f-cat').value,seasonCode:$('f-season').value,theme:$('f-theme')?$('f-theme').value.trim():'',
-    stage:$('f-stage').value||'inspiration',storeGrade:null,department:$('f-dept').value||null,
+    stage:$('f-stage').value||'inspiration',storeGrade:null,department:null,category:null,
     supplierAllocation:$('f-supplier').value.trim()||null,fabric:$('f-fabric').value.trim(),
     priceTarget: products.length>0 ? products.reduce(function(s,p){return s+parseFloat(p.targetCost||0);},0)/products.length : 0, orderQty:0,
     leadTimeTarget:parseInt($('f-lead').value)||null,labellingReqs:$('f-notes').value.trim(),
@@ -1513,15 +1539,15 @@ function exportRangePDF(){
       prods=prods.filter(function(p){var r=parseFloat(p.retailPrice||0);return r>=lo&&r<hi;});
     }
     if(prods.length===0&&!G.filters.colour&&!G.filters.intake&&!G.filters.stylegrade&&!G.filters.retail){
-      allStyles.push({_dev:dev,_isPlaceholder:true,category:dev.category||'Other'});
+      allStyles.push({_dev:dev,_isPlaceholder:true,category:dev.category||'Other'}); // placeholder uses dev-level
     } else {
-      prods.forEach(function(p){ allStyles.push(Object.assign({},p,{_dev:dev,category:dev.category||'Other'})); });
+      prods.forEach(function(p){ allStyles.push(Object.assign({},p,{_dev:dev,category:p.category||dev.category||'Other'})); });
     }
   });
 
   // Group by category
   var grouped={}; CATS.forEach(function(c){grouped[c]=[];}); grouped.__other=[];
-  allStyles.forEach(function(s){ if(grouped[s.category]) grouped[s.category].push(s); else grouped.__other.push(s); });
+  allStyles.forEach(function(s){ var cat=s.category||s._dev.category||'Other'; if(grouped[cat]) grouped[cat].push(s); else grouped.__other.push(s); });
 
   // Build active filter summary
   var filterSummary=[];
