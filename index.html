@@ -532,6 +532,30 @@ input, select, textarea { font-family: inherit; }
 .style-picker-card-name { font-size:0.72rem; font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 .style-picker-card-sub { font-size:0.65rem; color:var(--ink3); }
 .style-picker-foot { padding:1rem 1.5rem; border-top:1px solid var(--line); display:flex; gap:0.75rem; justify-content:flex-end; flex-shrink:0; }
+
+/* ── PACK ATTACHMENTS ────────────────────────────────── */
+.pack-attach-zone { border:2px dashed var(--line); border-radius:10px; padding:1.25rem; text-align:center; cursor:pointer; background:white; transition:all 0.2s; margin-bottom:0.75rem; }
+.pack-attach-zone:hover,.pack-attach-zone.drag { border-color:#6366f1; background:#eef2ff; }
+.pack-attach-zone p { font-size:0.82rem; color:var(--ink3); }
+.pack-attach-zone strong { color:#6366f1; }
+.pack-attach-list { display:flex; flex-direction:column; gap:0.4rem; margin-bottom:0.75rem; }
+.pack-attach-item { display:flex; align-items:center; gap:0.65rem; background:var(--line2); border-radius:8px; padding:0.55rem 0.75rem; }
+.pack-attach-icon { font-size:1.2rem; flex-shrink:0; }
+.pack-attach-name { font-size:0.82rem; font-weight:600; flex:1; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.pack-attach-size { font-size:0.7rem; color:var(--ink4); flex-shrink:0; }
+.pack-attach-open { background:none; border:1px solid var(--line); border-radius:6px; padding:0.2rem 0.55rem; font-size:0.72rem; color:var(--ink3); cursor:pointer; flex-shrink:0; }
+.pack-attach-open:hover { background:white; color:var(--ink); }
+.pack-attach-del { background:none; border:none; color:var(--ink4); cursor:pointer; font-size:0.85rem; flex-shrink:0; padding:0 0.1rem; }
+.pack-attach-del:hover { color:#ef4444; }
+.pack-attach-img-thumb { width:36px; height:36px; border-radius:5px; object-fit:cover; flex-shrink:0; }
+.pack-link-row { display:flex; gap:0.5rem; margin-bottom:0.5rem; }
+.pack-link-input { flex:1; padding:0.5rem 0.75rem; border:1px solid var(--line); border-radius:8px; font-size:0.82rem; font-family:inherit; }
+.pack-link-input:focus { outline:none; border-color:#6366f1; }
+.pack-link-btn { padding:0.5rem 0.85rem; background:#6366f1; color:white; border:none; border-radius:8px; font-size:0.78rem; font-weight:700; cursor:pointer; white-space:nowrap; }
+.pack-notes-section { background:white; border:1px solid var(--line); border-radius:10px; padding:0.85rem 1rem; margin-bottom:0.75rem; }
+.pack-notes-label { font-size:0.65rem; font-weight:800; text-transform:uppercase; letter-spacing:0.06em; color:var(--ink4); margin-bottom:0.5rem; }
+.pack-notes-textarea { width:100%; border:1px solid var(--line); border-radius:7px; padding:0.5rem 0.75rem; font-size:0.82rem; font-family:inherit; resize:none; background:var(--line2); min-height:60px; }
+.pack-notes-textarea:focus { outline:none; border-color:#6366f1; background:white; }
 /* Toast */
 .toast { position: fixed; bottom: 1.5rem; right: 1.5rem; background: var(--ink); color: white; padding: 0.85rem 1.25rem; border-radius: 12px; font-size: 0.875rem; font-weight: 600; z-index: 9999; transform: translateY(100px); opacity: 0; transition: all 0.25s; }
 .toast.show { transform: translateY(0); opacity: 1; }
@@ -670,6 +694,7 @@ input, select, textarea { font-family: inherit; }
         <div class="form-group"><label class="form-label">Shoot Date</label><input class="form-input" type="date" id="pf-date"></div>
         <div class="form-group"><label class="form-label">Trade Deadline</label><input class="form-input" type="date" id="pf-trade"></div>
         <div class="form-group"><label class="form-label">Samples Ready By</label><input class="form-input" type="date" id="pf-samples"></div>
+        <div class="form-group"><label class="form-label">Number of Looks</label><input class="form-input" type="number" id="pf-looks" min="1" max="100" placeholder="e.g. 20" value=""></div>
         <div class="form-group full"><label class="form-label">Notes</label><textarea class="form-input" id="pf-notes" rows="2" placeholder="Shoot brief, mood, direction..."></textarea></div>
       </div>
     </div>
@@ -2404,6 +2429,12 @@ function renderPackDetail(mc, pack){
   mc.appendChild(head);
 
   // Looks area
+  // Shoot Notes + Attachments section
+  var notesSection=document.createElement('div');
+  notesSection.style.cssText='max-width:1100px;width:100%;margin:0 auto;padding:0.85rem 1.5rem 0;';
+  notesSection.innerHTML=buildPackNotesSection(pack);
+  mc.appendChild(notesSection);
+
   var looksWrap=document.createElement('div');
   looksWrap.className='looks-wrap';
   looksWrap.id='looks-wrap';
@@ -2898,6 +2929,7 @@ function openNewPackForm(packId){
   document.getElementById('pf-trade').value=p&&p.trade_deadline?p.trade_deadline.split('T')[0]:'';
   document.getElementById('pf-samples').value=p&&p.samples_ready_by?p.samples_ready_by.split('T')[0]:'';
   document.getElementById('pf-notes').value=p?( p.notes||''):'';
+  document.getElementById('pf-looks').value=''; // blank on edit — don't overwrite
   document.getElementById('pack-form-overlay').dataset.editid=packId||'';
   document.getElementById('pack-form-overlay').classList.add('open');
   setTimeout(function(){document.getElementById('pf-name').focus();},100);
@@ -2918,6 +2950,11 @@ async function submitPackForm(){
     samplesReadyBy:document.getElementById('pf-samples').value||null,
     notes:document.getElementById('pf-notes').value.trim()||null
   };
+  var lookCount=parseInt(document.getElementById('pf-looks').value)||0;
+  if(lookCount>0){
+    data.looks=[];
+    for(var i=0;i<lookCount;i++) data.looks.push({id:'look-'+Date.now()+'-'+i,name:'',items:[]});
+  }
   var editId=document.getElementById('pack-form-overlay').dataset.editid;
   closePackForm();
   if(editId){
@@ -3063,6 +3100,143 @@ window.deletePack=deletePack;
 window.editPackHeader=editPackHeader;
 window.exportPackPDF=exportPackPDF;
 window.backToPacks=backToPacks;
+
+// ── PACK NOTES & ATTACHMENTS ──────────────────────────────────────────────────
+
+function buildPackNotesSection(pack){
+  var atts=pack.attachments||[];
+  var attHtml='';
+  atts.forEach(function(a,i){
+    var icon=getAttachIcon(a);
+    var thumb=a.type==='file'&&a.mimeType&&a.mimeType.startsWith('image/')
+      ?'<img class="pack-attach-img-thumb" src="'+a.dataUrl+'">'
+      :'<span class="pack-attach-icon">'+icon+'</span>';
+    var sizeStr=a.size?formatBytes(a.size):'';
+    attHtml+='<div class="pack-attach-item">'+thumb+
+      '<span class="pack-attach-name">'+( a.name||a.url||'')+'</span>'+
+      '<span class="pack-attach-size">'+sizeStr+'</span>'+
+      '<button class="pack-attach-open" onclick="openAttachment(\''+pack.id+'\','+i+')">Open</button>'+
+      '<button class="pack-attach-del" onclick="deleteAttachment(\''+pack.id+'\','+i+')" title="Remove">&#10005;</button>'+
+      '</div>';
+  });
+
+  return '<div class="pack-notes-section">'+
+    '<div class="pack-notes-label">Shoot Notes &amp; Attachments</div>'+
+    '<textarea class="pack-notes-textarea" id="pack-notes-ta" placeholder="Shoot direction, mood, references..." rows="3" onblur="savePackNotes(\''+pack.id+'\',this.value)">'+( pack.notes||'')+'</textarea>'+
+    '<div class="pack-attach-list" id="pack-att-list">'+attHtml+'</div>'+
+    '<div class="pack-link-row">'+
+    '<input class="pack-link-input" id="pack-link-inp" placeholder="Paste a link (YouTube, Drive, Dropbox...)" onkeydown="if(event.key===\'Enter\')addPackLink(\''+pack.id+'\')">'+
+    '<button class="pack-link-btn" onclick="addPackLink(\''+pack.id+'\')">+ Add Link</button>'+
+    '</div>'+
+    '<div class="pack-attach-zone" id="pack-drop-zone" '+
+    'ondragover="event.preventDefault();this.classList.add(\'drag\')" '+
+    'ondragleave="this.classList.remove(\'drag\')" '+
+    'ondrop="packDropFiles(event,\''+pack.id+'\')" '+
+    'onclick="document.getElementById(\'pack-file-inp\').click()">'+
+    '<p>&#128206; <strong>Drop files here</strong> or click to browse &bull; Images, PDFs, PowerPoints, Videos</p>'+
+    '</div>'+
+    '<input type="file" id="pack-file-inp" multiple accept="image/*,.pdf,.ppt,.pptx,.mp4,.mov,.avi,.wmv" style="display:none" onchange="packHandleFiles(event,\''+pack.id+'\')">'+
+    '</div>';
+}
+
+function getAttachIcon(a){
+  if(a.type==='link') return '&#128279;';
+  if(!a.mimeType) return '&#128462;';
+  if(a.mimeType.startsWith('image/')) return '&#128247;';
+  if(a.mimeType==='application/pdf') return '&#128196;';
+  if(a.mimeType.includes('powerpoint')||a.mimeType.includes('presentation')) return '&#128202;';
+  if(a.mimeType.startsWith('video/')) return '&#127909;';
+  return '&#128462;';
+}
+
+function formatBytes(bytes){
+  if(bytes<1024) return bytes+'B';
+  if(bytes<1024*1024) return (bytes/1024).toFixed(1)+'KB';
+  return (bytes/(1024*1024)).toFixed(1)+'MB';
+}
+
+async function savePackNotes(packId, val){
+  var p=G.packs.find(function(x){return x.id===packId;}); if(!p) return;
+  p.notes=val;
+  await api('PUT','/packs/'+packId,{notes:val});
+}
+
+async function addPackLink(packId){
+  var inp=document.getElementById('pack-link-inp'); if(!inp) return;
+  var url=inp.value.trim(); if(!url) return;
+  if(!/^https?:\/\//i.test(url)) url='https://'+url;
+  inp.value='';
+  var p=G.packs.find(function(x){return x.id===packId;}); if(!p) return;
+  if(!p.attachments) p.attachments=[];
+  p.attachments.push({type:'link',url:url,name:url,addedAt:new Date().toISOString()});
+  await api('PUT','/packs/'+packId,{attachments:p.attachments});
+  refreshPackNotes(packId);
+  toast('Link added','success');
+}
+
+function packDropFiles(e,packId){ e.preventDefault(); document.getElementById('pack-drop-zone').classList.remove('drag'); packProcessFiles(e.dataTransfer.files,packId); }
+function packHandleFiles(e,packId){ packProcessFiles(e.target.files,packId); }
+
+function packProcessFiles(files,packId){
+  var p=G.packs.find(function(x){return x.id===packId;}); if(!p) return;
+  if(!p.attachments) p.attachments=[];
+  var toProcess=Array.from(files);
+  var promises=toProcess.map(function(file){
+    return new Promise(function(resolve){
+      // Videos over 20MB — store as placeholder only (no base64)
+      if(file.type.startsWith('video/')&&file.size>20*1024*1024){
+        p.attachments.push({type:'file',name:file.name,mimeType:file.type,size:file.size,dataUrl:null,note:'File too large to preview — add a link instead'});
+        resolve();
+        return;
+      }
+      var r=new FileReader();
+      r.onload=function(ev){
+        p.attachments.push({type:'file',name:file.name,mimeType:file.type,size:file.size,dataUrl:ev.target.result,addedAt:new Date().toISOString()});
+        resolve();
+      };
+      r.readAsDataURL(file);
+    });
+  });
+  Promise.all(promises).then(function(){
+    api('PUT','/packs/'+packId,{attachments:p.attachments});
+    refreshPackNotes(packId);
+    toast(toProcess.length+' file'+(toProcess.length!==1?'s':'')+' added','success');
+  });
+}
+
+async function deleteAttachment(packId,idx){
+  var p=G.packs.find(function(x){return x.id===packId;}); if(!p) return;
+  p.attachments=p.attachments.filter(function(_,i){return i!==idx;});
+  await api('PUT','/packs/'+packId,{attachments:p.attachments});
+  refreshPackNotes(packId);
+}
+
+function openAttachment(packId,idx){
+  var p=G.packs.find(function(x){return x.id===packId;}); if(!p) return;
+  var a=(p.attachments||[])[idx]; if(!a) return;
+  if(a.type==='link'||!a.dataUrl){ window.open(a.url||a.dataUrl,'_blank'); return; }
+  var w=window.open('');
+  if(a.mimeType&&a.mimeType.startsWith('image/')){
+    w.document.write('<img src="'+a.dataUrl+'" style="max-width:100%;"><\/\script>');
+  } else {
+    // PDF, PPT, video — create object element
+    w.document.write('<object data="'+a.dataUrl+'" type="'+a.mimeType+'" width="100%" height="100%" style="min-height:100vh;"><\/object>');
+  }
+}
+
+function refreshPackNotes(packId){
+  var p=G.packs.find(function(x){return x.id===packId;}); if(!p) return;
+  var section=document.querySelector('.pack-notes-section'); if(!section) return;
+  section.outerHTML=buildPackNotesSection(p);
+}
+
+window.savePackNotes=savePackNotes;
+window.addPackLink=addPackLink;
+window.packDropFiles=packDropFiles;
+window.packHandleFiles=packHandleFiles;
+window.deleteAttachment=deleteAttachment;
+window.openAttachment=openAttachment;
+
 async function deleteDev(devId){
   if(!confirm('Delete this development? This cannot be undone.')) return;
   await api('DELETE','/developments/'+devId);
