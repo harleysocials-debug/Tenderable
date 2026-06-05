@@ -1165,7 +1165,7 @@ function openDetail(devId){
     '<div class="detail-stat"><div class="detail-stat-label">Total Qty</div><div class="detail-stat-val">'+devStats(d).totalQty.toLocaleString()+'</div></div>'+
     '<div class="detail-stat"><div class="detail-stat-label">Lead Time From Order</div><div class="detail-stat-val">'+( d.leadTimeTarget?d.leadTimeTarget+' wks':'&mdash;')+'</div></div>'+
     '<div class="detail-stat"><div class="detail-stat-label">Supplier</div><div class="detail-stat-val" style="font-size:0.9rem;">'+( d.supplierAllocation||'&mdash;')+'</div></div></div>'+
-    (d.fabric?'<div class="detail-section-title">Fabric</div><div style="background:var(--line2);border-radius:9px;padding:0.85rem;font-size:0.9rem;">'+d.fabric+'</div>':'')+
+    (d.fabric?'<div class="detail-section-title">Fabric</div><div style="background:var(--line2);border-radius:9px;padding:0.85rem;font-size:0.9rem;">'+d.fabric+'</div>':'')+(d.block?'<div class="detail-section-title">Block</div><div style="background:var(--line2);border-radius:9px;padding:0.85rem;font-size:0.9rem;">'+d.block+'</div>':'')+
     ((d.products&&d.products.length>0)?'<div class="detail-section-title">Products ('+(d.products.length)+')</div>'+prodHtml:'')+
     (d.labellingReqs?'<div class="detail-section-title">Notes &amp; Requirements</div><div style="background:var(--line2);border-radius:9px;padding:0.85rem;font-size:0.875rem;line-height:1.6;">'+d.labellingReqs+'</div>':'')+
     '<div class="detail-section-title">Team Comments ('+(comments.length)+')</div>'+commHtml+
@@ -1595,7 +1595,7 @@ async function submitDev(){
   var body={
     description:desc,brand:$('f-brand').value,seasonCode:null,theme:$('f-theme')?$('f-theme').value.trim():'',
     stage:$('f-stage').value||'inspiration',storeGrade:null,department:null,category:null,
-    supplierAllocation:$('f-supplier').value.trim()||null,fabric:$('f-fabric').value.trim(),
+    supplierAllocation:$('f-supplier').value.trim()||null,fabric:$('f-fabric').value.trim(),block:$('f-block')?$('f-block').value.trim():'',
     priceTarget: products.length>0 ? products.reduce(function(s,p){return s+parseFloat((p.targetCost+'').replace(/[^0-9.]/g,'')||0);},0)/products.length : 0, orderQty:0,
     leadTimeTarget:parseInt($('f-lead').value)||null,labellingReqs:$('f-notes').value.trim(),
     files:G.uploadedFiles,products:products
