@@ -3148,6 +3148,7 @@ function exportPackPDF(packId){
       +'if(img.complete&&img.naturalHeight!==0){done++;if(done===total)go();}'
       +'else{img.onload=function(){done++;if(done===total)go();};img.onerror=function(){done++;if(done===total)go();};}});'
       +'}';
+    w.document.head.appendChild(s2);
 }
 
 window.quickAddToPack=quickAddToPack;
