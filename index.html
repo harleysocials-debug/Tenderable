@@ -1444,7 +1444,7 @@ async function submitDev(){
     products.push({description:name,colour:co?co.value:'',qty:parseInt(q?q.value:0)||0,targetCost:parseFloat(tc?tc.value:0)||0,retailPrice:parseFloat(rp?rp.value:0)||0,storeGrade:gr?gr.value:'',intakeMonth:im?im.value:'',category:pc?pc.value:'',department:pd?pd.value:'',image:imgWrap?imgWrap.getAttribute('data-imgurl')||null:null});
   });
   var body={
-    description:desc,brand:$('f-brand').value,category:$('f-cat').value,seasonCode:$('f-season').value,theme:$('f-theme')?$('f-theme').value.trim():'',
+    description:desc,brand:$('f-brand').value,seasonCode:$('f-season').value,theme:$('f-theme')?$('f-theme').value.trim():'',
     stage:$('f-stage').value||'inspiration',storeGrade:null,department:null,category:null,
     supplierAllocation:$('f-supplier').value.trim()||null,fabric:$('f-fabric').value.trim(),
     priceTarget: products.length>0 ? products.reduce(function(s,p){return s+parseFloat(p.targetCost||0);},0)/products.length : 0, orderQty:0,
