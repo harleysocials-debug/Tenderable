@@ -1173,7 +1173,8 @@ function openDetail(devId){
 
   var actions='<div class="detail-actions">';
   if(isBuyer){
-    actions+='<button class="btn btn-primary btn-sm" onclick="openEditDev(\''+devId+'\')">&#9999; Edit</button>';
+    actions+='<button class="btn btn-primary btn-sm" onclick="openEditDev(\''+devId+'\')" >&#9999; Edit</button>';
+    actions+='<button class="btn btn-sm" onclick="window.supplierBrief(\''+devId+'\')" style="background:#eef2ff;color:#6366f1;border:1px solid #c7d2fe;font-weight:700;">&#128196; Supplier Brief</button>';
     // Send to Tender and Agreed Offline removed
     actions+='<button class="btn btn-danger btn-sm" onclick="deleteDev(\''+devId+'\')">&#128465; Delete</button>';
   }
