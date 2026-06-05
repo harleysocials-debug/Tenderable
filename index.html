@@ -641,6 +641,18 @@ input, select, textarea { font-family: inherit; }
   <div class="main" id="main-content"></div>
 </div>
 
+<!-- Add to Pack overlay -->
+<div class="form-overlay" id="atp-overlay" onclick="atpCloseBg(event)">
+  <div class="form-sheet" style="max-width:520px;">
+    <div class="form-head">
+      <div class="form-title">Add to Pack</div>
+      <button class="form-close" onclick="atpClose()">&#10005;</button>
+    </div>
+    <div class="form-body" id="atp-body" style="padding:1.25rem 1.5rem;"></div>
+    <div class="form-foot" id="atp-foot"></div>
+  </div>
+</div>
+
 <!-- Pack form overlay -->
 <div class="form-overlay" id="pack-form-overlay" onclick="closePackFormIfBg(event)">
   <div class="form-sheet" style="max-width:620px;">
@@ -2689,31 +2701,91 @@ async function confirmStylePicker(){
 }
 
 // Quick add from board card
+// ── ADD TO PACK MODAL ─────────────────────────────────────────────────────────
+var _atpStyle=null;
+
 function quickAddToPack(btn){
-  if(!G.packs.length){ toast('Create a pack first','error'); return; }
-  // Find the style
   var card=btn.closest('.dev-card'); if(!card) return;
-  var devId=card.getAttribute('onclick')&&card.getAttribute('onclick').match(/'([^']+)'/)?card.getAttribute('onclick').match(/'([^']+)'/)[1]:null;
-  if(!devId) return;
-  var dev=G.devs.find(function(d){return d.id===devId;}); if(!dev) return;
-  // Find which style (by position in board)
+  // Get style data
   var allStyles=[];
   G.devs.forEach(function(d){
-    (d.products||[]).filter(function(p){return p.description;}).forEach(function(p){ allStyles.push(Object.assign({},p,{_dev:d})); });
+    (d.products||[]).filter(function(p){return p.description;}).forEach(function(p){
+      allStyles.push(Object.assign({},p,{_dev:d}));
+    });
   });
   var styleIdx=parseInt(btn.dataset.pidx);
-  var s=allStyles[styleIdx]||allStyles[0]; if(!s) return;
+  _atpStyle=allStyles[styleIdx]; if(!_atpStyle) return;
+  atpShowStep1();
+  document.getElementById('atp-overlay').classList.add('open');
+}
 
-  // Pick pack
-  var packNames=G.packs.map(function(p,i){return (i+1)+'. '+p.name;}).join('\n');
-  var pick=prompt('Add to which pack?\n\n'+packNames+'\n\nEnter number:');
-  if(!pick) return;
-  var p=G.packs[parseInt(pick)-1]; if(!p) return;
-  if(!p.looks||!p.looks.length){ alert('This pack has no looks yet. Open the pack and add a look first.'); return; }
-  var lookNames=(p.looks||[]).map(function(l,i){return (i+1)+'. Look '+(i+1)+(l.name?' — '+l.name:'');}).join('\n');
-  var lookPick=prompt('Add to which look?\n\n'+lookNames+'\n\nEnter number:');
-  if(!lookPick) return;
-  var look=p.looks[parseInt(lookPick)-1]; if(!look) return;
+function atpClose(){ document.getElementById('atp-overlay').classList.remove('open'); _atpStyle=null; }
+function atpCloseBg(e){ if(e.target===document.getElementById('atp-overlay')) atpClose(); }
+
+function atpShowStep1(){
+  var body=document.getElementById('atp-body');
+  var foot=document.getElementById('atp-foot');
+  var s=_atpStyle; var dev=s._dev;
+
+  // Style preview
+  var imgSrc=s.image||((dev.files||[]).find(function(f){return f.isImage&&f.dataUrl;})||{}).dataUrl||'';
+  body.innerHTML=
+    '<div style="display:flex;gap:0.75rem;align-items:center;background:var(--line2);border-radius:10px;padding:0.75rem;margin-bottom:1.25rem;">'+(imgSrc?'<img src="'+imgSrc+'" style="width:50px;height:50px;border-radius:7px;object-fit:cover;flex-shrink:0;">':'<div style="width:50px;height:50px;border-radius:7px;background:var(--line);display:flex;align-items:center;justify-content:center;font-size:1.2rem;">&#127912;</div>')+
+    '<div><div style="font-size:0.875rem;font-weight:700;">'+s.description+'</div><div style="font-size:0.72rem;color:var(--ink3);">'+(s.colour||'')+' &bull; '+(dev.brand||'')+'</div></div></div>'+
+    '<div style="font-size:0.75rem;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:0.75rem;">Choose a pack</div>'+
+    '<div id="atp-pack-list" style="display:flex;flex-direction:column;gap:0.4rem;margin-bottom:0.75rem;">';
+
+  // Pack list
+  var packListHtml='';
+  G.packs.forEach(function(p){
+    packListHtml+='<div class="atp-pack-item" data-packid="'+p.id+'" onclick="atpSelectPack(this)" style="padding:0.75rem 1rem;border:2px solid var(--line);border-radius:9px;cursor:pointer;display:flex;align-items:center;justify-content:space-between;transition:all 0.15s;">'+
+      '<div><div style="font-size:0.875rem;font-weight:700;">'+p.name+'</div><div style="font-size:0.7rem;color:var(--ink3);">'+(p.looks?p.looks.length:0)+' looks &bull; '+(p.status==='confirmed'?'Confirmed':'Draft')+'</div></div>'+
+      '<span style="font-size:0.7rem;color:var(--ink4);">&#10095;</span></div>';
+  });
+  body.innerHTML+=packListHtml+'</div>';
+
+  // New pack option
+  body.innerHTML+='<button onclick="atpNewPack()" style="width:100%;padding:0.75rem;border:2px dashed var(--line);border-radius:9px;background:none;font-size:0.875rem;font-weight:600;color:var(--ink3);cursor:pointer;text-align:center;">+ Create New Pack</button>';
+
+  foot.innerHTML='<button class="btn btn-ghost" onclick="atpClose()">Cancel</button>';
+}
+
+function atpSelectPack(el){
+  var packId=el.dataset.packid;
+  var p=G.packs.find(function(x){return x.id===packId;}); if(!p) return;
+  atpShowStep2(p);
+}
+
+function atpShowStep2(p){
+  var body=document.getElementById('atp-body');
+  var foot=document.getElementById('atp-foot');
+
+  body.innerHTML=
+    '<div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:1.25rem;">'+
+    '<button onclick="atpShowStep1()" style="background:none;border:none;cursor:pointer;color:var(--ink3);font-size:0.8rem;">&#8592; Back</button>'+
+    '<div style="font-size:0.875rem;font-weight:700;">'+p.name+'</div></div>'+
+    '<div style="font-size:0.75rem;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:0.75rem;">Choose a look</div>'+
+    '<div style="display:flex;flex-direction:column;gap:0.4rem;margin-bottom:0.75rem;">';
+
+  var looksHtml='';
+  (p.looks||[]).forEach(function(l,li){
+    looksHtml+='<div class="atp-look-item" data-packid="'+p.id+'" data-lookid="'+l.id+'" onclick="atpAddToLook(this)" style="padding:0.75rem 1rem;border:2px solid var(--line);border-radius:9px;cursor:pointer;display:flex;align-items:center;justify-content:space-between;transition:all 0.15s;">'+
+      '<div><div style="font-size:0.875rem;font-weight:700;">Look '+(li+1)+(l.name?' — '+l.name:'')+'</div><div style="font-size:0.7rem;color:var(--ink3);">'+(l.items?l.items.length:0)+' items</div></div>'+
+      '<span style="font-size:0.7rem;color:var(--ink4);">+ Add</span></div>';
+  });
+  body.innerHTML+=looksHtml+'</div>';
+
+  // New look option
+  body.innerHTML+='<button onclick="atpNewLook(\''+p.id+'\')" style="width:100%;padding:0.75rem;border:2px dashed var(--line);border-radius:9px;background:none;font-size:0.875rem;font-weight:600;color:var(--ink3);cursor:pointer;text-align:center;">+ Create New Look in this Pack</button>';
+
+  foot.innerHTML='<button class="btn btn-ghost" onclick="atpClose()">Cancel</button>';
+}
+
+async function atpAddToLook(el){
+  var packId=el.dataset.packid, lookId=el.dataset.lookid;
+  var p=G.packs.find(function(x){return x.id===packId;}); if(!p) return;
+  var look=(p.looks||[]).find(function(l){return l.id===lookId;}); if(!look) return;
+  var s=_atpStyle; var dev=s._dev;
   if(!look.items) look.items=[];
   look.items.push({
     type:'range_style', devId:dev.id, devName:dev.description,
@@ -2723,9 +2795,85 @@ function quickAddToPack(btn){
     image:s.image||((dev.files||[]).find(function(f){return f.isImage&&f.dataUrl;})||{}).dataUrl||'',
     stylingNotes:''
   });
-  api('PUT','/packs/'+p.id,{looks:p.looks});
-  toast('Added to '+p.name+' — Look '+(parseInt(lookPick)),'success');
+  await api('PUT','/packs/'+packId,{looks:p.looks});
+  atpClose();
+  var lookNum=(p.looks||[]).findIndex(function(l){return l.id===lookId;})+1;
+  toast('Added to '+p.name+' — Look '+lookNum,'success');
 }
+
+async function atpNewLook(packId){
+  var p=G.packs.find(function(x){return x.id===packId;}); if(!p) return;
+  if(!p.looks) p.looks=[];
+  var newLook={id:'look-'+Date.now(),name:'',items:[]};
+  p.looks.push(newLook);
+  var s=_atpStyle; var dev=s._dev;
+  newLook.items=[{
+    type:'range_style', devId:dev.id, devName:dev.description,
+    description:s.description, colour:s.colour||'', storeGrade:s.storeGrade||'',
+    seasonCode:s.seasonCode||dev.seasonCode||'', intakeMonth:s.intakeMonth||'',
+    retailPrice:s.retailPrice||'', qty:s.qty||'', targetCost:s.targetCost||'',
+    image:s.image||((dev.files||[]).find(function(f){return f.isImage&&f.dataUrl;})||{}).dataUrl||'',
+    stylingNotes:''
+  }];
+  await api('PUT','/packs/'+packId,{looks:p.looks});
+  atpClose();
+  toast('New look created in '+p.name,'success');
+}
+
+async function atpNewPack(){
+  // Show pack creation form inline
+  var body=document.getElementById('atp-body');
+  var foot=document.getElementById('atp-foot');
+  body.innerHTML=
+    '<div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:1.25rem;">'+
+    '<button onclick="atpShowStep1()" style="background:none;border:none;cursor:pointer;color:var(--ink3);font-size:0.8rem;">&#8592; Back</button>'+
+    '<div style="font-size:0.875rem;font-weight:700;">New Pack</div></div>'+
+    '<div class="form-grid">'+
+    '<div class="form-group full"><label class="form-label">Pack Name</label><input class="form-input" id="atp-pname" placeholder="e.g. SS27 Beach Shoot" autofocus></div>'+
+    '<div class="form-group"><label class="form-label">Brand</label><select class="form-input" id="atp-pbrand"><option value="">Brand</option><option>BadRhino</option><option>Evan&#39;s</option><option>Long Tall Sally</option><option>Pixie Girl</option><option>M&Co</option><option>Star x JM</option></select></div>'+
+    '<div class="form-group"><label class="form-label">Season</label><select class="form-input" id="atp-pseason"><option value="">Season</option><option>SS27</option><option>AW27</option><option>SS26</option><option>AW26</option><option>SS25</option><option>AW25</option><option>Flow</option></select></div>'+
+    '<div class="form-group"><label class="form-label">Shoot Date</label><input class="form-input" type="date" id="atp-pdate"></div>'+
+    '<div class="form-group"><label class="form-label">Location</label><input class="form-input" id="atp-ploc" placeholder="e.g. Marbella"></div>'+
+    '</div>';
+  foot.innerHTML='<button class="btn btn-ghost" onclick="atpShowStep1()">Back</button><button class="btn btn-primary" onclick="atpCreatePackAndAdd()">Create Pack &amp; Add</button>';
+  setTimeout(function(){var n=document.getElementById('atp-pname');if(n)n.focus();},100);
+}
+
+async function atpCreatePackAndAdd(){
+  var name=(document.getElementById('atp-pname').value||'').trim();
+  if(!name){document.getElementById('atp-pname').focus();return;}
+  var s=_atpStyle; var dev=s._dev;
+  var newLook={id:'look-'+Date.now(),name:'',items:[{
+    type:'range_style', devId:dev.id, devName:dev.description,
+    description:s.description, colour:s.colour||'', storeGrade:s.storeGrade||'',
+    seasonCode:s.seasonCode||dev.seasonCode||'', intakeMonth:s.intakeMonth||'',
+    retailPrice:s.retailPrice||'', qty:s.qty||'', targetCost:s.targetCost||'',
+    image:s.image||((dev.files||[]).find(function(f){return f.isImage&&f.dataUrl;})||{}).dataUrl||'',
+    stylingNotes:''
+  }]};
+  var r=await api('POST','/packs',{
+    name:name,
+    brand:document.getElementById('atp-pbrand').value||null,
+    season:document.getElementById('atp-pseason').value||null,
+    shootDate:document.getElementById('atp-pdate').value||null,
+    location:document.getElementById('atp-ploc').value.trim()||null,
+    looks:[newLook]
+  });
+  if(r&&r.pack){
+    G.packs.unshift(r.pack);
+    atpClose();
+    toast('Pack created with style added!','success');
+  } else toast('Failed to create pack','error');
+}
+
+window.quickAddToPack=quickAddToPack;
+window.atpClose=atpClose;
+window.atpSelectPack=atpSelectPack;
+window.atpShowStep1=atpShowStep1;
+window.atpAddToLook=atpAddToLook;
+window.atpNewLook=atpNewLook;
+window.atpNewPack=atpNewPack;
+window.atpCreatePackAndAdd=atpCreatePackAndAdd;
 
 // ── PACK FORMS ────────────────────────────────────────────────────────────────
 var PACK_SEASONS=['SS27','AW27','SS26','AW26','SS25','AW25','Flow'];
