@@ -333,10 +333,11 @@ input, select, textarea { font-family: inherit; }
 .product-row-del { background: none; border: none; color: var(--ink4); font-size: 1.1rem; padding: 0.25rem; flex-shrink: 0; }
 .product-row-del:hover { color: #ef4444; }
 .add-row-btn { background: none; border: 2px dashed var(--line); border-radius: 9px; padding: 0.65rem; font-size: 0.82rem; color: var(--ink3); width: 100%; font-weight: 600; transition: all 0.15s; }
-.drag-handle { color: var(--ink4); cursor: grab; padding: 0.25rem 0.15rem; font-size: 1rem; flex-shrink: 0; align-self: center; user-select: none; }
-.drag-handle:active { cursor: grabbing; }
-.product-row.drag-over { border: 2px dashed #6366f1; background: #eef2ff; }
-.product-row.dragging { opacity: 0.4; }
+.move-btns { display:flex; flex-direction:column; gap:2px; flex-shrink:0; align-self:center; }
+.move-btn { background:none; border:1px solid var(--line); border-radius:5px; width:22px; height:22px; display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:0.65rem; color:var(--ink3); padding:0; transition:all 0.15s; }
+.move-btn:hover { background:var(--line2); color:var(--ink); border-color:var(--ink3); }
+.dup-btn { background:none; border:1px solid var(--line); border-radius:5px; width:22px; height:22px; display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:0.65rem; color:var(--ink3); padding:0; transition:all 0.15s; }
+.dup-btn:hover { background:#eef2ff; color:#6366f1; border-color:#6366f1; }
 .add-row-btn:hover { border-color: #6366f1; color: #6366f1; background: #eef2ff; }
 
 /* Stage progress bar */
@@ -1443,43 +1444,57 @@ function addProductRow(data){
   del.style.cssText='background:none;border:none;color:var(--ink4);font-size:1.1rem;padding:0.25rem;flex-shrink:0;align-self:flex-start;margin-top:0.15rem;';
   del.onclick=function(){row.remove(); G.formProducts[pidx]={_deleted:true};};
 
-  // Drag handle
-  var handle=document.createElement('div');
-  handle.className='drag-handle'; handle.innerHTML='&#8597;'; handle.title='Drag to reorder';
-  handle.setAttribute('draggable','false'); // only the row is draggable
+  // Up / Down move buttons
+  var moveBtns=document.createElement('div');
+  moveBtns.className='move-btns';
 
-  // Make row draggable
-  row.setAttribute('draggable','true');
-  row.addEventListener('dragstart',function(e){
-    e.dataTransfer.effectAllowed='move';
-    e.dataTransfer.setData('text/plain','');
-    row.classList.add('dragging');
-    window._dragRow=row;
-  });
-  row.addEventListener('dragend',function(){
-    row.classList.remove('dragging');
-    document.querySelectorAll('.product-row').forEach(function(r){r.classList.remove('drag-over');});
-    window._dragRow=null;
-    // Sync G.formProducts order to DOM order
-    syncProductOrder();
-  });
-  row.addEventListener('dragover',function(e){
-    e.preventDefault(); e.dataTransfer.dropEffect='move';
-    if(window._dragRow&&window._dragRow!==row) row.classList.add('drag-over');
-  });
-  row.addEventListener('dragleave',function(){ row.classList.remove('drag-over'); });
-  row.addEventListener('drop',function(e){
-    e.preventDefault(); row.classList.remove('drag-over');
-    if(!window._dragRow||window._dragRow===row) return;
+  var btnUp=document.createElement('button');
+  btnUp.type='button'; btnUp.className='move-btn'; btnUp.innerHTML='&#9650;'; btnUp.title='Move up';
+  btnUp.onclick=function(){
     var wrap=$('f-products');
-    var rows=Array.from(wrap.querySelectorAll('.product-row'));
-    var fromIdx=rows.indexOf(window._dragRow);
-    var toIdx=rows.indexOf(row);
-    if(fromIdx<toIdx) wrap.insertBefore(window._dragRow,row.nextSibling);
-    else wrap.insertBefore(window._dragRow,row);
-  });
+    var prev=row.previousElementSibling;
+    if(prev&&prev.classList.contains('product-row')) wrap.insertBefore(row,prev);
+  };
 
-  row.appendChild(handle); row.appendChild(imgWrap); row.appendChild(fields); row.appendChild(del);
+  var btnDn=document.createElement('button');
+  btnDn.type='button'; btnDn.className='move-btn'; btnDn.innerHTML='&#9660;'; btnDn.title='Move down';
+  btnDn.onclick=function(){
+    var wrap=$('f-products');
+    var next=row.nextElementSibling;
+    if(next&&next.classList.contains('product-row')) wrap.insertBefore(next,row);
+  };
+
+  moveBtns.appendChild(btnUp); moveBtns.appendChild(btnDn);
+
+  // Duplicate button
+  var dupBtn=document.createElement('button');
+  dupBtn.type='button'; dupBtn.className='dup-btn'; dupBtn.innerHTML='&#x2398;'; dupBtn.title='Duplicate style';
+  dupBtn.onclick=function(){
+    // Read current values from this row's inputs/selects
+    var curData={
+      description: row.querySelector('.product-desc')?row.querySelector('.product-desc').value:'',
+      colour: row.querySelector('.product-colour')?row.querySelector('.product-colour').value:'',
+      storeGrade: row.querySelector('.product-grade')?row.querySelector('.product-grade').value:'',
+      category: row.querySelector('.product-cat')?row.querySelector('.product-cat').value:'',
+      department: row.querySelector('.product-dept')?row.querySelector('.product-dept').value:'',
+      qty: row.querySelector('.product-qty')?row.querySelector('.product-qty').value:'',
+      targetCost: row.querySelector('.product-cost')?row.querySelector('.product-cost').value:'',
+      retailPrice: row.querySelector('.product-retail')?row.querySelector('.product-retail').value:'',
+      intakeMonth: row.querySelector('.product-intake')?row.querySelector('.product-intake').value:'',
+      image: row.querySelector('div[data-imgurl]')?row.querySelector('div[data-imgurl]').getAttribute('data-imgurl'):null
+    };
+    // Append new row then move it after current row
+    addProductRow(curData);
+    var wrap=$('f-products');
+    var allRows=wrap.querySelectorAll('.product-row');
+    var newRow=allRows[allRows.length-1];
+    row.after(newRow);
+    // Clear colour to prompt user to pick new colour
+    var colSel=newRow.querySelector('.product-colour');
+    if(colSel) colSel.value='';
+  };
+
+  row.appendChild(moveBtns); row.appendChild(imgWrap); row.appendChild(fields); row.appendChild(dupBtn); row.appendChild(del);
   $('f-products').appendChild(row);
 }
 function syncProductOrder(){
