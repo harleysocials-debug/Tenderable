@@ -843,26 +843,28 @@ function updateClearBtn(){
 function clearFilters(){ G.filters={season:[],stage:[],cat:[],dept:[],colour:[],intake:[],retail:[],stylegrade:[],theme:[],supplier:[]}; buildFilters(); renderMainContent(); $('filter-clear-btn').style.display='none'; }
 
 function filteredDevs(){
+  var f=G.filters;
+  function active(arr){ return Array.isArray(arr)&&arr.length>0; }
   return G.devs.filter(function(d){
-    if(d.description==='null') return false; // skip corrupted devs (allow undefined — they show as placeholder)
-    // Dev-level filters
-    if(G.filters.season&&d.seasonCode!==G.filters.season) return false;
-    if(G.filters.stage&&(d.stage||'inspiration')!==G.filters.stage) return false;
-    // Category + dept now style-level: dev passes if any style matches
-    if(G.filters.cat&&!(d.products||[]).some(function(p){return (p.category||d.category)===G.filters.cat;})) return false;
-    if(G.filters.dept&&!(d.products||[]).some(function(p){return (p.department||d.department||'')===G.filters.dept;})) return false;
-    if(G.filters.supplier&&(d.supplierAllocation||'').toLowerCase()!==G.filters.supplier.toLowerCase()) return false;
-    if(G.filters.theme&&(d.theme||'').toLowerCase()!==G.filters.theme.toLowerCase()) return false;
-    // Style-level filters — dev passes if ANY style matches
+    if(d.description==='null') return false;
+    // Dev-level filters — only apply when array has values
+    if(active(f.season)&&f.season.indexOf(d.seasonCode)<0) return false;
+    if(active(f.stage)&&f.stage.indexOf(d.stage||'inspiration')<0) return false;
+    if(active(f.supplier)&&!f.supplier.some(function(s){return s.toLowerCase()===(d.supplierAllocation||'').toLowerCase();})) return false;
+    if(active(f.theme)&&!f.theme.some(function(s){return s.toLowerCase()===(d.theme||'').toLowerCase();})) return false;
+    // Style-level filters — dev passes if ANY style matches ANY selected value
     var prods=d.products||[];
-    if(G.filters.colour&&!prods.some(function(p){return p.colour===G.filters.colour;})) return false;
-    if(G.filters.intake&&!prods.some(function(p){return p.intakeMonth===G.filters.intake;})) return false;
-    if(G.filters.stylegrade&&!prods.some(function(p){return p.storeGrade===G.filters.stylegrade;})) return false;
-    if(G.filters.retail){
-      var band=G.filters.retail.split('-');
-      var lo=parseFloat(band[0]),hi=parseFloat(band[1]);
-      if(!prods.some(function(p){var r=parseFloat(p.retailPrice||0);return r>=lo&&r<hi;})) return false;
-    }
+    if(active(f.cat)&&!prods.some(function(p){return f.cat.indexOf(p.category||d.category||'')>=0;})) return false;
+    if(active(f.dept)&&!prods.some(function(p){return f.dept.indexOf(p.department||d.department||'')>=0;})) return false;
+    if(active(f.colour)&&!prods.some(function(p){return f.colour.indexOf(p.colour)>=0;})) return false;
+    if(active(f.intake)&&!prods.some(function(p){return f.intake.indexOf(p.intakeMonth)>=0;})) return false;
+    if(active(f.stylegrade)&&!prods.some(function(p){return f.stylegrade.indexOf(p.storeGrade)>=0;})) return false;
+    if(active(f.retail)&&!prods.some(function(p){
+      return f.retail.some(function(band){
+        var b=band.split('-'); var r=parseFloat(p.retailPrice||0);
+        return r>=parseFloat(b[0])&&r<parseFloat(b[1]);
+      });
+    })) return false;
     return true;
   });
 }
