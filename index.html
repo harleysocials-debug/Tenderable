@@ -620,6 +620,42 @@ input, select, textarea { font-family: inherit; }
 .ecom-add-prop button { padding:0.5rem 0.85rem; background:#6366f1; color:white; border:none; border-radius:7px; font-size:0.78rem; font-weight:700; cursor:pointer; white-space:nowrap; }
 .ecom-overlay-bg { position:fixed; inset:0; background:rgba(0,0,0,0.3); z-index:199; display:none; }
 .ecom-overlay-bg.open { display:block; }
+
+/* ── STYLE WITH ──────────────────────────────────── */
+.sw-section { margin-top:1.25rem; border-top:1px solid var(--line); padding-top:1.25rem; }
+.sw-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:0.75rem; }
+.sw-title { font-size:0.65rem; font-weight:800; text-transform:uppercase; letter-spacing:0.06em; color:var(--ink4); }
+.sw-count { font-size:0.65rem; color:var(--ink4); background:var(--line2); padding:0.1rem 0.5rem; border-radius:10px; font-weight:600; }
+.sw-selected-list { display:flex; flex-direction:column; gap:0.35rem; margin-bottom:0.85rem; }
+.sw-selected-item { display:flex; align-items:center; gap:0.6rem; background:#eef2ff; border-radius:8px; padding:0.45rem 0.6rem; border:1px solid #c7d2fe; }
+.sw-selected-img { width:38px; height:38px; border-radius:6px; object-fit:cover; flex-shrink:0; }
+.sw-selected-img-ph { width:38px; height:38px; border-radius:6px; background:#ddd; display:flex; align-items:center; justify-content:center; font-size:0.9rem; flex-shrink:0; }
+.sw-selected-info { flex:1; min-width:0; }
+.sw-selected-name { font-size:0.78rem; font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.sw-selected-sub { font-size:0.68rem; color:#6366f1; }
+.sw-remove { background:none; border:none; color:#6366f1; cursor:pointer; font-size:0.8rem; padding:0.1rem 0.2rem; flex-shrink:0; opacity:0.6; }
+.sw-remove:hover { opacity:1; color:#ef4444; }
+.sw-browser { border:1px solid var(--line); border-radius:10px; overflow:hidden; }
+.sw-browser-filters { display:flex; gap:0.5rem; padding:0.6rem 0.75rem; border-bottom:1px solid var(--line); background:var(--surface); }
+.sw-filter-select { padding:0.35rem 0.6rem; border:1px solid var(--line); border-radius:7px; font-size:0.75rem; background:white; cursor:pointer; font-family:inherit; flex:1; }
+.sw-filter-select:focus { outline:none; border-color:#6366f1; }
+.sw-search-inp { flex:1; padding:0.35rem 0.6rem; border:1px solid var(--line); border-radius:7px; font-size:0.75rem; font-family:inherit; }
+.sw-search-inp:focus { outline:none; border-color:#6366f1; }
+.sw-grid-wrap { height:280px; overflow-y:scroll; padding:0.6rem; background:var(--line2); }
+.sw-grid-wrap::-webkit-scrollbar { width:5px; }
+.sw-grid-wrap::-webkit-scrollbar-track { background:transparent; }
+.sw-grid-wrap::-webkit-scrollbar-thumb { background:#d1d5db; border-radius:10px; }
+.sw-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(90px,1fr)); gap:0.5rem; }
+.sw-card { background:white; border:2px solid transparent; border-radius:8px; overflow:hidden; cursor:pointer; transition:all 0.15s; }
+.sw-card:hover { border-color:#6366f1; transform:translateY(-1px); box-shadow:0 2px 8px rgba(99,102,241,0.15); }
+.sw-card.selected { border-color:#6366f1; background:#eef2ff; }
+.sw-card-img-wrap { width:100%; height:80px; overflow:hidden; background:#f3f4f6; position:relative; }
+.sw-card-img-wrap img { width:100%; height:100%; object-fit:cover; display:block; }
+.sw-card-img-ph { width:100%; height:80px; background:#f3f4f6; display:flex; align-items:center; justify-content:center; font-size:1.2rem; }
+.sw-card-info { padding:0.3rem 0.35rem; }
+.sw-card-name { font-size:0.62rem; font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; color:var(--ink); }
+.sw-card-sub { font-size:0.58rem; color:var(--ink3); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.sw-tick { position:absolute; top:3px; right:3px; width:16px; height:16px; background:#6366f1; border-radius:50%; display:flex; align-items:center; justify-content:center; color:white; font-size:0.55rem; font-weight:800; }
 /* Toast */
 .toast { position: fixed; bottom: 1.5rem; right: 1.5rem; background: var(--ink); color: white; padding: 0.85rem 1.25rem; border-radius: 12px; font-size: 0.875rem; font-weight: 600; z-index: 9999; transform: translateY(100px); opacity: 0; transition: all 0.25s; }
 .toast.show { transform: translateY(0); opacity: 1; }
@@ -3415,13 +3451,198 @@ function updatePackRetailValue(packId){
   }
 }
 
+
+// ── STYLE WITH ────────────────────────────────────────────────────────────────
+
+var _swFilters = { cat:'', search:'' };
+
+function buildStyleWithSection(es){
+  var stylingWith = es.styling_with || [];
+  var cats = [];
+  G.devs.forEach(function(d){
+    (d.products||[]).forEach(function(p){
+      if(p.description && p.category && cats.indexOf(p.category)<0) cats.push(p.category);
+    });
+  });
+  cats.sort();
+
+  // Selected items HTML
+  var selectedHtml = '';
+  if(stylingWith.length){
+    selectedHtml = '<div class="sw-selected-list">';
+    stylingWith.forEach(function(item, i){
+      selectedHtml += '<div class="sw-selected-item">'
+        +(item.image?'<img class="sw-selected-img" src="'+item.image+'">'
+                   :'<div class="sw-selected-img-ph">&#127912;</div>')
+        +'<div class="sw-selected-info">'
+        +'<div class="sw-selected-name">'+item.description+'</div>'
+        +'<div class="sw-selected-sub">'+(item.colour||'')+(item.category?' &bull; '+item.category:'')+'</div>'
+        +'</div>'
+        +'<button class="sw-remove" onclick="removeStyleWith('+i+')" title="Remove">&#10005;</button>'
+        +'</div>';
+    });
+    selectedHtml += '</div>';
+  }
+
+  return '<div class="sw-section">'
+    +'<div class="sw-header">'
+    +'<span class="sw-title">&#9889; Style With</span>'
+    +(stylingWith.length?'<span class="sw-count">'+stylingWith.length+' added</span>':'')
+    +'</div>'
+    + selectedHtml
+    +'<div class="sw-browser">'
+    +'<div class="sw-browser-filters">'
+    +'<input class="sw-search-inp" id="sw-search" placeholder="&#128269; Search..." value="'+(_swFilters.search||'')+'" oninput="_swFilters.search=this.value;refreshSwGrid()">'
+    +'<select class="sw-filter-select" id="sw-cat" onchange="_swFilters.cat=this.value;refreshSwGrid()">'
+    +'<option value="">All Categories</option>'
+    +cats.map(function(c){return '<option value="'+c+'"'+(_swFilters.cat===c?' selected':'')+'>'+c+'</option>';}).join('')
+    +'</select>'
+    +'</div>'
+    +'<div class="sw-grid-wrap" id="sw-grid-wrap">'
+    +'<div class="sw-grid" id="sw-grid"></div>'
+    +'</div>'
+    +'</div>'
+    +'</div>';
+}
+
+function refreshSwGrid(){
+  var grid=document.getElementById('sw-grid'); if(!grid) return;
+  var es=G.activeEcomStyle?G.ecomStyles[ecomStyleId(G.activeEcomStyle.devId,G.activeEcomStyle.pidx)]:null;
+  var stylingWith=(es&&es.styling_with)||[];
+  var selectedIds=stylingWith.map(function(x){return x.devId+'-'+x.pidx;});
+
+  var q=(_swFilters.search||'').toLowerCase();
+  var cat=_swFilters.cat||'';
+  var currentId=G.activeEcomStyle?ecomStyleId(G.activeEcomStyle.devId,G.activeEcomStyle.pidx):'';
+
+  grid.innerHTML='';
+  var count=0;
+  G.devs.forEach(function(dev){
+    (dev.products||[]).filter(function(p){return p.description;}).forEach(function(p,pidx){
+      var id=dev.id+'-'+pidx;
+      if(id===currentId) return; // skip self
+      if(cat&&(p.category||dev.category||'')!==cat) return;
+      if(q&&!p.description.toLowerCase().includes(q)&&!(p.colour||'').toLowerCase().includes(q)) return;
+      var imgSrc=p.image||((dev.files||[]).find(function(f){return f.isImage&&f.dataUrl;})||{}).dataUrl||'';
+      var isSelected=selectedIds.indexOf(id)>=0;
+      var card=document.createElement('div');
+      card.className='sw-card'+(isSelected?' selected':'');
+      card.innerHTML=
+        '<div class="sw-card-img-wrap">'
+        +(imgSrc?'<img src="'+imgSrc+'" loading="lazy">':'<div class="sw-card-img-ph">&#127912;</div>')
+        +(isSelected?'<div class="sw-tick">&#10003;</div>':'')
+        +'</div>'
+        +'<div class="sw-card-info">'
+        +'<div class="sw-card-name">'+p.description+'</div>'
+        +'<div class="sw-card-sub">'+(p.colour||'')+' '+(p.category||'')+'</div>'
+        +'</div>';
+      card.onclick=(function(d,pp,pi,img,isS){
+        return function(){
+          if(isS) removeStyleWithByDevPidx(d.id,pi);
+          else addStyleWith(d,pp,pi,img);
+        };
+      })(dev,p,pidx,imgSrc,isSelected);
+      grid.appendChild(card);
+      count++;
+    });
+  });
+  if(!count){
+    grid.innerHTML='<div style="grid-column:1/-1;text-align:center;padding:1.5rem;font-size:0.8rem;color:var(--ink4);">No styles found</div>';
+  }
+}
+
+function addStyleWith(dev, product, pidx, imgSrc){
+  if(!G.activeEcomStyle) return;
+  var id=ecomStyleId(G.activeEcomStyle.devId,G.activeEcomStyle.pidx);
+  if(!G.ecomStyles[id]) G.ecomStyles[id]={id:id,dev_id:G.activeEcomStyle.devId,product_idx:G.activeEcomStyle.pidx,props:[],status:'unstyled',styling_with:[]};
+  if(!G.ecomStyles[id].styling_with) G.ecomStyles[id].styling_with=[];
+  // Prevent duplicates
+  if(G.ecomStyles[id].styling_with.find(function(x){return x.devId===dev.id&&x.pidx===pidx;})) return;
+  G.ecomStyles[id].styling_with.push({
+    devId:dev.id, pidx:pidx,
+    description:product.description,
+    colour:product.colour||'',
+    category:product.category||dev.category||'',
+    image:imgSrc||'',
+    retailPrice:product.retailPrice||'',
+    storeGrade:product.storeGrade||''
+  });
+  saveEcomStyle();
+  refreshSwGrid();
+  refreshSwSelected();
+}
+
+function removeStyleWith(idx){
+  if(!G.activeEcomStyle) return;
+  var id=ecomStyleId(G.activeEcomStyle.devId,G.activeEcomStyle.pidx);
+  if(!G.ecomStyles[id]||!G.ecomStyles[id].styling_with) return;
+  G.ecomStyles[id].styling_with.splice(idx,1);
+  saveEcomStyle();
+  refreshSwGrid();
+  refreshSwSelected();
+}
+
+function removeStyleWithByDevPidx(devId, pidx){
+  if(!G.activeEcomStyle) return;
+  var id=ecomStyleId(G.activeEcomStyle.devId,G.activeEcomStyle.pidx);
+  if(!G.ecomStyles[id]||!G.ecomStyles[id].styling_with) return;
+  G.ecomStyles[id].styling_with=G.ecomStyles[id].styling_with.filter(function(x){return !(x.devId===devId&&x.pidx===pidx);});
+  saveEcomStyle();
+  refreshSwGrid();
+  refreshSwSelected();
+}
+
+function refreshSwSelected(){
+  var id=G.activeEcomStyle?ecomStyleId(G.activeEcomStyle.devId,G.activeEcomStyle.pidx):'';
+  var es=G.ecomStyles[id]||{};
+  var stylingWith=es.styling_with||[];
+  // Rebuild selected list
+  var container=document.querySelector('.sw-section');
+  if(!container) return;
+  var oldList=container.querySelector('.sw-selected-list');
+  if(oldList) oldList.remove();
+
+  var counter=container.querySelector('.sw-count');
+  if(stylingWith.length){
+    if(counter) counter.textContent=stylingWith.length+' added';
+    else {
+      var hdr=container.querySelector('.sw-header');
+      if(hdr){var sp=document.createElement('span');sp.className='sw-count';sp.textContent=stylingWith.length+' added';hdr.appendChild(sp);}
+    }
+  } else {
+    if(counter) counter.remove();
+  }
+
+  if(stylingWith.length){
+    var browser=container.querySelector('.sw-browser');
+    var list=document.createElement('div');
+    list.className='sw-selected-list';
+    stylingWith.forEach(function(item,i){
+      var row=document.createElement('div');
+      row.className='sw-selected-item';
+      row.innerHTML=(item.image?'<img class="sw-selected-img" src="'+item.image+'">'
+                              :'<div class="sw-selected-img-ph">&#127912;</div>')
+        +'<div class="sw-selected-info">'
+        +'<div class="sw-selected-name">'+item.description+'</div>'
+        +'<div class="sw-selected-sub">'+(item.colour||'')+(item.category?' &bull; '+item.category:'')+'</div>'
+        +'</div>'
+        +'<button class="sw-remove" onclick="removeStyleWith('+i+')" title="Remove">&#10005;</button>';
+      list.appendChild(row);
+    });
+    container.insertBefore(list,browser);
+  }
+}
+
+window.removeStyleWith=removeStyleWith;
+window.refreshSwGrid=refreshSwGrid;
+
 // ── ECOM STYLING ──────────────────────────────────────────────────────────────
 
 function ecomStyleId(devId, pidx){ return devId+'-'+pidx; }
 
 function getEcomStyle(devId, pidx){
   var id=ecomStyleId(devId,pidx);
-  return G.ecomStyles[id]||{id:id,dev_id:devId,product_idx:pidx,model:'Terry Hollands',shot_type:'',styling_notes:'',props:[],status:'unstyled'};
+  return G.ecomStyles[id]||{id:id,dev_id:devId,product_idx:pidx,model:'Terry Hollands',shot_type:'',styling_notes:'',props:[],status:'unstyled',styling_with:[]};
 }
 
 function allEcomStyles(){
@@ -3576,8 +3797,10 @@ function openEcomDetail(devId, pidx){
     '<div class="ecom-field-label">Styling Notes</div>'+
     '<textarea class="ecom-textarea" id="ecom-notes" placeholder="Direction, how to wear, finishing touches...">'+( es.styling_notes||'')+'</textarea>'+
     '<div class="ecom-field-label">Props &amp; Accessories</div>'+
-    propsHtml;
+    propsHtml
+    + buildStyleWithSection(es);
 
+  setTimeout(function(){ refreshSwGrid(); _swFilters={cat:'',search:''}; },50);
   document.getElementById('ecom-detail').classList.add('open');
   document.getElementById('ecom-overlay-bg').classList.add('open');
 }
@@ -3652,7 +3875,8 @@ async function saveEcomStyle(){
     shotType:es.shot_type||'',
     stylingNotes:es.styling_notes||'',
     props:es.props||[],
-    status:es.status||'unstyled'
+    status:es.status||'unstyled',
+    stylingWith:es.styling_with||[]
   });
   toast('Saved','success');
   // Refresh grid progress bar if on ecom page
