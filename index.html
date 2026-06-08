@@ -563,6 +563,63 @@ input, select, textarea { font-family: inherit; }
 .pack-notes-label { font-size:0.65rem; font-weight:800; text-transform:uppercase; letter-spacing:0.06em; color:var(--ink4); margin-bottom:0.5rem; }
 .pack-notes-textarea { width:100%; border:1px solid var(--line); border-radius:7px; padding:0.5rem 0.75rem; font-size:0.82rem; font-family:inherit; resize:none; background:var(--line2); min-height:60px; }
 .pack-notes-textarea:focus { outline:none; border-color:#6366f1; background:white; }
+
+/* ── ECOM STYLING ─────────────────────────────────────── */
+.ecom-wrap { max-width:1200px; margin:0 auto; padding:1.25rem 1.5rem; }
+.ecom-progress-bar { background:white; border:1px solid var(--line); border-radius:10px; padding:1rem 1.25rem; margin-bottom:1.25rem; display:flex; align-items:center; gap:1rem; flex-wrap:wrap; }
+.ecom-progress-track { flex:1; min-width:200px; background:var(--line2); border-radius:20px; height:10px; overflow:hidden; }
+.ecom-progress-fill { height:100%; background:linear-gradient(90deg,#6366f1,#10b981); border-radius:20px; transition:width 0.4s ease; }
+.ecom-progress-label { font-size:0.8rem; font-weight:700; color:var(--ink2); white-space:nowrap; }
+.ecom-filters { display:flex; gap:0.5rem; flex-wrap:wrap; align-items:center; margin-bottom:1.25rem; }
+.ecom-filter-select { padding:0.45rem 0.75rem; border:1px solid var(--line); border-radius:8px; font-size:0.78rem; background:white; cursor:pointer; font-family:inherit; }
+.ecom-filter-select:focus { outline:none; border-color:#6366f1; }
+.ecom-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); gap:1rem; }
+.ecom-card { background:white; border:1px solid var(--line); border-radius:12px; overflow:hidden; cursor:pointer; transition:all 0.2s; }
+.ecom-card:hover { transform:translateY(-2px); box-shadow:var(--shadow-lg); border-color:#6366f1; }
+.ecom-card-img { width:100%; aspect-ratio:1; object-fit:cover; background:var(--line2); display:block; }
+.ecom-card-img-ph { width:100%; aspect-ratio:1; background:var(--line2); display:flex; align-items:center; justify-content:center; font-size:2rem; }
+.ecom-card-body { padding:0.75rem; }
+.ecom-card-name { font-size:0.82rem; font-weight:700; margin-bottom:0.2rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.ecom-card-sub { font-size:0.7rem; color:var(--ink3); margin-bottom:0.5rem; }
+.ecom-card-meta { display:flex; gap:0.3rem; flex-wrap:wrap; }
+.ecom-badge { font-size:0.62rem; font-weight:700; padding:0.15rem 0.45rem; border-radius:10px; }
+.ecom-badge.unstyled { background:#f3f4f6; color:#6b7280; }
+.ecom-badge.inprogress { background:#fef3c7; color:#b45309; }
+.ecom-badge.approved { background:#d1fae5; color:#065f46; }
+
+/* Ecom detail panel */
+.ecom-detail { position:fixed; top:0; right:0; bottom:0; width:min(560px,100vw); background:white; box-shadow:-4px 0 32px rgba(0,0,0,0.12); z-index:200; display:flex; flex-direction:column; transform:translateX(100%); transition:transform 0.3s ease; }
+.ecom-detail.open { transform:translateX(0); }
+.ecom-detail-head { padding:1rem 1.25rem; border-bottom:1px solid var(--line); display:flex; align-items:center; gap:0.75rem; flex-shrink:0; }
+.ecom-detail-body { flex:1; overflow-y:auto; padding:1.25rem; }
+.ecom-stage-bar { display:flex; border-radius:8px; overflow:hidden; border:1px solid var(--line); margin-bottom:1.25rem; }
+.ecom-stage-step { flex:1; padding:0.5rem; text-align:center; font-size:0.68rem; font-weight:700; text-transform:uppercase; letter-spacing:0.05em; cursor:pointer; background:var(--line2); color:var(--ink4); transition:all 0.15s; border-right:1px solid var(--line); }
+.ecom-stage-step:last-child { border-right:none; }
+.ecom-stage-step:hover { background:var(--line); }
+.ecom-stage-step.active.unstyled { background:#f3f4f6; color:#374151; }
+.ecom-stage-step.active.inprogress { background:#fef3c7; color:#b45309; }
+.ecom-stage-step.active.approved { background:#d1fae5; color:#065f46; }
+.ecom-product-hero { display:flex; gap:1rem; align-items:flex-start; background:var(--line2); border-radius:10px; padding:1rem; margin-bottom:1.25rem; }
+.ecom-product-hero img { width:90px; height:90px; border-radius:8px; object-fit:cover; flex-shrink:0; }
+.ecom-product-hero-ph { width:90px; height:90px; border-radius:8px; background:var(--line); display:flex; align-items:center; justify-content:center; font-size:2rem; flex-shrink:0; }
+.ecom-field-label { font-size:0.65rem; font-weight:800; text-transform:uppercase; letter-spacing:0.06em; color:var(--ink4); margin-bottom:0.4rem; margin-top:1rem; }
+.ecom-field-label:first-child { margin-top:0; }
+.ecom-text-input { width:100%; padding:0.6rem 0.75rem; border:1px solid var(--line); border-radius:8px; font-size:0.875rem; font-family:inherit; background:var(--line2); }
+.ecom-text-input:focus { outline:none; border-color:#6366f1; background:white; }
+.ecom-select { width:100%; padding:0.6rem 0.75rem; border:1px solid var(--line); border-radius:8px; font-size:0.875rem; font-family:inherit; background:var(--line2); cursor:pointer; }
+.ecom-select:focus { outline:none; border-color:#6366f1; background:white; }
+.ecom-textarea { width:100%; padding:0.6rem 0.75rem; border:1px solid var(--line); border-radius:8px; font-size:0.875rem; font-family:inherit; background:var(--line2); resize:none; min-height:80px; }
+.ecom-textarea:focus { outline:none; border-color:#6366f1; background:white; }
+.ecom-prop-row { display:flex; gap:0.5rem; align-items:center; background:var(--line2); border-radius:7px; padding:0.4rem 0.6rem; margin-bottom:0.35rem; }
+.ecom-prop-text { flex:1; font-size:0.82rem; }
+.ecom-prop-del { background:none; border:none; color:var(--ink4); cursor:pointer; font-size:0.8rem; padding:0; }
+.ecom-prop-del:hover { color:#ef4444; }
+.ecom-add-prop { display:flex; gap:0.5rem; margin-top:0.4rem; }
+.ecom-add-prop input { flex:1; padding:0.5rem 0.7rem; border:1px solid var(--line); border-radius:7px; font-size:0.82rem; font-family:inherit; }
+.ecom-add-prop input:focus { outline:none; border-color:#6366f1; }
+.ecom-add-prop button { padding:0.5rem 0.85rem; background:#6366f1; color:white; border:none; border-radius:7px; font-size:0.78rem; font-weight:700; cursor:pointer; white-space:nowrap; }
+.ecom-overlay-bg { position:fixed; inset:0; background:rgba(0,0,0,0.3); z-index:199; display:none; }
+.ecom-overlay-bg.open { display:block; }
 /* Toast */
 .toast { position: fixed; bottom: 1.5rem; right: 1.5rem; background: var(--ink); color: white; padding: 0.85rem 1.25rem; border-radius: 12px; font-size: 0.875rem; font-weight: 600; z-index: 9999; transform: translateY(100px); opacity: 0; transition: all 0.25s; }
 .toast.show { transform: translateY(0); opacity: 1; }
@@ -682,6 +739,17 @@ input, select, textarea { font-family: inherit; }
     <div class="form-body" id="atp-body" style="padding:1.25rem 1.5rem;"></div>
     <div class="form-foot" id="atp-foot"></div>
   </div>
+</div>
+
+<!-- Ecom detail overlay -->
+<div class="ecom-overlay-bg" id="ecom-overlay-bg" onclick="closeEcomDetail()"></div>
+<div class="ecom-detail" id="ecom-detail">
+  <div class="ecom-detail-head">
+    <button class="detail-close" onclick="closeEcomDetail()">&#10005;</button>
+    <div style="font-size:0.95rem;font-weight:800;flex:1;" id="ecom-detail-title">Style Detail</div>
+    <button class="btn btn-ghost btn-sm" onclick="saveEcomStyle()">Save</button>
+  </div>
+  <div class="ecom-detail-body" id="ecom-detail-body"></div>
 </div>
 
 <!-- Pack form overlay -->
@@ -816,7 +884,8 @@ var G = {
   invitedSuppliers: [], formProducts: [],
   _modalImgs: [], _modalIdx: 0,
   _pollTimer: null,
-  packs: [], activePack: null, activePackView: 'list'
+  packs: [], activePack: null, activePackView: 'list',
+  ecomStyles: {}, ecomFilters: {season:'',cat:'',intake:'',status:''}, activeEcomStyle: null
 };
 
 // ── UTILS ──────────────────────────────────────────────────────────────────
@@ -919,6 +988,7 @@ async function loadData(){
   if(dRes&&dRes.developments&&dRes.developments.length>=0) G.devs=dRes.developments;
   try { await loadDirectMessages(); } catch(e) { console.warn('Messages not loaded:', e.message); }
   try { var pRes=await api('GET','/packs'); if(pRes&&pRes.packs) G.packs=pRes.packs; } catch(e){}
+  try { var eRes=await api('GET','/ecom-styling'); if(eRes&&eRes.styles){ G.ecomStyles={}; eRes.styles.forEach(function(s){ G.ecomStyles[s.id]=s; }); } } catch(e){}
   if(dRes&&dRes.devComments) G.devComments=dRes.devComments;
   if(tRes&&tRes.tenders) G.tenders=tRes.tenders.map(function(t){ return Object.assign({},t,{deadlineDate:new Date(t.deadlineDate)}); });
   if(bRes&&bRes.bids) G.bids=bRes.bids;
@@ -958,7 +1028,7 @@ function startApp(){
 function buildTopbarNav(){
   var u=G.user; var nav=$('topbar-nav'); nav.innerHTML='';
   var tabs = u.type==='buyer'||u.type==='stakeholder'
-    ? [{id:'board',label:'Range Board'},{id:'pipeline',label:'Pipeline'},{id:'packs',label:'Packs'},{id:'admin',label:'Admin',admin:true}]
+    ? [{id:'board',label:'Range Board'},{id:'pipeline',label:'Pipeline'},{id:'packs',label:'Packs'},{id:'ecom',label:'Ecom Styling'},{id:'admin',label:'Admin',admin:true}]
     : [{id:'available',label:'Available'},{id:'active',label:'Active'},{id:'accepted',label:'Accepted'}];
   tabs.forEach(function(t){
     if(t.admin && u.name!=='Harley Killingsworth') return;
@@ -1105,6 +1175,7 @@ function renderMainContent(){
   else if(G.view==='pipeline') renderPipeline(mc);
   else if(G.view==='tenders') renderTenders(mc);
   else if(G.view==='packs') renderPacksPage(mc);
+  else if(G.view==='ecom') renderEcomPage(mc);
   else if(G.view==='admin') renderAdmin(mc);
 }
 
@@ -3343,6 +3414,257 @@ function updatePackRetailValue(packId){
     }
   }
 }
+
+// ── ECOM STYLING ──────────────────────────────────────────────────────────────
+
+function ecomStyleId(devId, pidx){ return devId+'-'+pidx; }
+
+function getEcomStyle(devId, pidx){
+  var id=ecomStyleId(devId,pidx);
+  return G.ecomStyles[id]||{id:id,dev_id:devId,product_idx:pidx,model:'Terry Hollands',shot_type:'',styling_notes:'',props:[],status:'unstyled'};
+}
+
+function allEcomStyles(){
+  var result=[];
+  G.devs.forEach(function(dev){
+    (dev.products||[]).filter(function(p){return p.description;}).forEach(function(p,pidx){
+      var es=getEcomStyle(dev.id,pidx);
+      result.push({dev:dev,product:p,pidx:pidx,styling:es});
+    });
+  });
+  return result;
+}
+
+function renderEcomPage(mc){
+  mc.innerHTML='';
+  var wrap=document.createElement('div');
+  wrap.className='ecom-wrap';
+  mc.appendChild(wrap);
+
+  var all=allEcomStyles();
+
+  // Progress bar
+  var fSeason=G.ecomFilters.season;
+  var filtered=fSeason?all.filter(function(x){
+    return (x.product.seasonCode||x.dev.seasonCode||'')=== fSeason;
+  }):all;
+  var approved=filtered.filter(function(x){return x.styling.status==='approved';}).length;
+  var pct=filtered.length>0?Math.round(approved/filtered.length*100):0;
+
+  var seasons=[...new Set(all.map(function(x){return x.product.seasonCode||x.dev.seasonCode||'';}))].filter(Boolean).sort();
+
+  var progressHtml='<div class="ecom-progress-bar">'
+    +'<div style="font-size:0.8rem;font-weight:800;color:var(--ink2);">Ecom Progress</div>'
+    +'<select class="ecom-filter-select" onchange="G.ecomFilters.season=this.value;renderMainContent()"><option value="">All Seasons</option>'
+    +seasons.map(function(s){return '<option value="'+s+'"'+(fSeason===s?' selected':'')+'>'+s+'</option>';}).join('')
+    +'</select>'
+    +'<div class="ecom-progress-track"><div class="ecom-progress-fill" style="width:'+pct+'%"></div></div>'
+    +'<div class="ecom-progress-label">'+approved+' / '+filtered.length+' approved ('+pct+'%)</div>'
+    +'</div>';
+  wrap.innerHTML+=progressHtml;
+
+  // Filters
+  var cats=[...new Set(all.map(function(x){return x.product.category||x.dev.category||'';}))].filter(Boolean).sort();
+  var intakes=[...new Set(all.map(function(x){return x.product.intakeMonth||'';}))].filter(Boolean).sort();
+  var fCat=G.ecomFilters.cat, fIntake=G.ecomFilters.intake, fStatus=G.ecomFilters.status;
+
+  var filterHtml='<div class="ecom-filters">'
+    +'<select class="ecom-filter-select" onchange="G.ecomFilters.cat=this.value;renderMainContent()"><option value="">All Categories</option>'
+    +cats.map(function(c){return '<option value="'+c+'"'+(fCat===c?' selected':'')+'>'+c+'</option>';}).join('')+'</select>'
+    +'<select class="ecom-filter-select" onchange="G.ecomFilters.intake=this.value;renderMainContent()"><option value="">All Intake Months</option>'
+    +intakes.map(function(i){return '<option value="'+i+'"'+(fIntake===i?' selected':'')+'>'+i+'</option>';}).join('')+'</select>'
+    +'<select class="ecom-filter-select" onchange="G.ecomFilters.status=this.value;renderMainContent()"><option value="">All Statuses</option>'
+    +'<option value="unstyled"'+(fStatus==='unstyled'?' selected':'')+'>Unstyled</option>'
+    +'<option value="inprogress"'+(fStatus==='inprogress'?' selected':'')+'>In Progress</option>'
+    +'<option value="approved"'+(fStatus==='approved'?' selected':'')+'>Approved</option>'
+    +'</select>'
+    +(fSeason||fCat||fIntake||fStatus?'<button class="btn btn-ghost btn-sm" onclick="G.ecomFilters={season:\'\',cat:\'\',intake:\'\',status:\'\'};renderMainContent()">Clear</button>':'')
+    +'</div>';
+  wrap.innerHTML+=filterHtml;
+
+  // Filter styles
+  var show=all.filter(function(x){
+    if(fSeason&&(x.product.seasonCode||x.dev.seasonCode||'')!==fSeason) return false;
+    if(fCat&&(x.product.category||x.dev.category||'')!==fCat) return false;
+    if(fIntake&&(x.product.intakeMonth||'')!==fIntake) return false;
+    if(fStatus&&x.styling.status!==fStatus) return false;
+    return true;
+  });
+
+  if(!show.length){
+    wrap.innerHTML+='<div class="empty-state"><div class="empty-state-icon">&#128247;</div><h3>No styles found</h3><p>Try adjusting your filters.</p></div>';
+    return;
+  }
+
+  var grid=document.createElement('div');
+  grid.className='ecom-grid';
+  show.forEach(function(x){
+    var dev=x.dev; var p=x.product; var pidx=x.pidx; var es=x.styling;
+    var imgSrc=p.image||((dev.files||[]).find(function(f){return f.isImage&&f.dataUrl;})||{}).dataUrl||'';
+    var statusLabel={unstyled:'Unstyled',inprogress:'In Progress',approved:'Approved'};
+    var card=document.createElement('div');
+    card.className='ecom-card';
+    card.innerHTML=
+      (imgSrc?'<img class="ecom-card-img" src="'+imgSrc+'">'
+            :'<div class="ecom-card-img-ph">&#128247;</div>')+
+      '<div class="ecom-card-body">'+
+        '<div class="ecom-card-name">'+p.description+'</div>'+
+        '<div class="ecom-card-sub">'+(p.colour||'')+' &bull; '+(p.intakeMonth||'')+' &bull; '+(p.seasonCode||dev.seasonCode||'')+'</div>'+
+        '<div class="ecom-card-meta">'+
+          (p.retailPrice?'<span class="ecom-badge" style="background:#dbeafe;color:#1e40af;">&pound;'+parseFloat((p.retailPrice+'').replace(/[^0-9.]/g,'')).toFixed(2)+'</span>':'')+
+          (p.storeGrade?'<span class="ecom-badge" style="background:#f3f4f6;color:#374151;">Grade '+p.storeGrade+'</span>':'')+
+          '<span class="ecom-badge '+es.status+'">'+( statusLabel[es.status]||'Unstyled')+'</span>'+
+        '</div>'+
+      '</div>';
+    card.onclick=function(){ openEcomDetail(dev.id, pidx); };
+    grid.appendChild(card);
+  });
+  wrap.appendChild(grid);
+}
+
+function openEcomDetail(devId, pidx){
+  var dev=G.devs.find(function(d){return d.id===devId;}); if(!dev) return;
+  var product=(dev.products||[])[pidx]; if(!product) return;
+  var es=getEcomStyle(devId,pidx);
+  G.activeEcomStyle={devId:devId,pidx:pidx};
+
+  document.getElementById('ecom-detail-title').textContent=product.description;
+
+  var imgSrc=product.image||((dev.files||[]).find(function(f){return f.isImage&&f.dataUrl;})||{}).dataUrl||'';
+
+  var stageLabels={unstyled:'Unstyled',inprogress:'In Progress',approved:'Approved'};
+  var stageBar='<div class="ecom-stage-bar">';
+  ['unstyled','inprogress','approved'].forEach(function(s){
+    stageBar+='<div class="ecom-stage-step'+(es.status===s?' active '+s:'')+'" onclick="setEcomStatus(\''+s+'\')">'+stageLabels[s]+'</div>';
+  });
+  stageBar+='</div>';
+
+  var propsHtml='<div id="ecom-props-list">';
+  (es.props||[]).forEach(function(prop,i){
+    propsHtml+='<div class="ecom-prop-row"><span class="ecom-prop-text">'+prop+'</span>'
+      +'<button class="ecom-prop-del" onclick="removeEcomProp('+i+')">&#10005;</button></div>';
+  });
+  propsHtml+='</div>'
+    +'<div class="ecom-add-prop">'
+    +'<input id="ecom-prop-inp" placeholder="e.g. White linen belt" onkeydown="if(event.key===\'Enter\')addEcomProp()">'
+    +'<button onclick="addEcomProp()">+ Add</button>'
+    +'</div>';
+
+  document.getElementById('ecom-detail-body').innerHTML=
+    stageBar+
+    '<div class="ecom-product-hero">'+
+      (imgSrc?'<img src="'+imgSrc+'">'
+             :'<div class="ecom-product-hero-ph">&#128247;</div>')+
+      '<div><div style="font-weight:800;font-size:0.9rem;margin-bottom:0.25rem;">'+product.description+'</div>'+
+        '<div style="font-size:0.75rem;color:var(--ink3);">'+(product.colour||'')+'</div>'+
+        '<div style="display:flex;gap:0.4rem;flex-wrap:wrap;margin-top:0.4rem;">'+
+          (product.retailPrice?'<span class="ecom-badge" style="background:#dbeafe;color:#1e40af;">&pound;'+parseFloat((product.retailPrice+'').replace(/[^0-9.]/g,'')).toFixed(2)+'</span>':'')+
+          (product.storeGrade?'<span class="ecom-badge" style="background:#f3f4f6;color:#374151;">Grade '+product.storeGrade+'</span>':'')+
+          (product.intakeMonth?'<span class="ecom-badge" style="background:#ede9fe;color:#7c3aed;">'+product.intakeMonth+'</span>':'')+
+          ((product.seasonCode||dev.seasonCode)?'<span class="ecom-badge" style="background:#f0fdf4;color:#166534;">'+(product.seasonCode||dev.seasonCode)+'</span>':'')+
+        '</div>'+
+      '</div>'+
+    '</div>'+
+    '<div class="ecom-field-label">Model</div>'+
+    '<input class="ecom-text-input" id="ecom-model" value="'+(es.model||'Terry Hollands')+'" placeholder="Model name">'+
+    '<div class="ecom-field-label">Shot Type</div>'+
+    '<select class="ecom-select" id="ecom-shot-type">'+
+      ['','On Model','Flat Lay','Detail','Lifestyle'].map(function(s){
+        return '<option value="'+s+'"'+(es.shot_type===s?' selected':'')+'>'+( s||'Select shot type')+'</option>';
+      }).join('')+
+    '</select>'+
+    '<div class="ecom-field-label">Styling Notes</div>'+
+    '<textarea class="ecom-textarea" id="ecom-notes" placeholder="Direction, how to wear, finishing touches...">'+( es.styling_notes||'')+'</textarea>'+
+    '<div class="ecom-field-label">Props &amp; Accessories</div>'+
+    propsHtml;
+
+  document.getElementById('ecom-detail').classList.add('open');
+  document.getElementById('ecom-overlay-bg').classList.add('open');
+}
+
+function closeEcomDetail(){
+  document.getElementById('ecom-detail').classList.remove('open');
+  document.getElementById('ecom-overlay-bg').classList.remove('open');
+  G.activeEcomStyle=null;
+}
+
+function setEcomStatus(status){
+  if(!G.activeEcomStyle) return;
+  var id=ecomStyleId(G.activeEcomStyle.devId,G.activeEcomStyle.pidx);
+  if(!G.ecomStyles[id]) G.ecomStyles[id]={id:id,dev_id:G.activeEcomStyle.devId,product_idx:G.activeEcomStyle.pidx};
+  G.ecomStyles[id].status=status;
+  // Update stage bar
+  var steps=document.querySelectorAll('.ecom-stage-step');
+  steps.forEach(function(s,i){
+    s.className='ecom-stage-step';
+    var st=['unstyled','inprogress','approved'][i];
+    if(st===status) s.className='ecom-stage-step active '+status;
+  });
+  saveEcomStyle();
+}
+
+function addEcomProp(){
+  var inp=document.getElementById('ecom-prop-inp'); if(!inp) return;
+  var val=inp.value.trim(); if(!val) return;
+  inp.value='';
+  var id=ecomStyleId(G.activeEcomStyle.devId,G.activeEcomStyle.pidx);
+  if(!G.ecomStyles[id]) G.ecomStyles[id]={id:id,dev_id:G.activeEcomStyle.devId,product_idx:G.activeEcomStyle.pidx,props:[],status:'inprogress'};
+  if(!G.ecomStyles[id].props) G.ecomStyles[id].props=[];
+  G.ecomStyles[id].props.push(val);
+  // Re-render props list
+  renderEcomProps(G.ecomStyles[id].props);
+  saveEcomStyle();
+}
+
+function removeEcomProp(idx){
+  var id=ecomStyleId(G.activeEcomStyle.devId,G.activeEcomStyle.pidx);
+  if(!G.ecomStyles[id]||!G.ecomStyles[id].props) return;
+  G.ecomStyles[id].props.splice(idx,1);
+  renderEcomProps(G.ecomStyles[id].props);
+  saveEcomStyle();
+}
+
+function renderEcomProps(props){
+  var list=document.getElementById('ecom-props-list'); if(!list) return;
+  list.innerHTML='';
+  (props||[]).forEach(function(prop,i){
+    var row=document.createElement('div');
+    row.className='ecom-prop-row';
+    row.innerHTML='<span class="ecom-prop-text">'+prop+'</span>'
+      +'<button class="ecom-prop-del" onclick="removeEcomProp('+i+')">&#10005;</button>';
+    list.appendChild(row);
+  });
+}
+
+async function saveEcomStyle(){
+  if(!G.activeEcomStyle) return;
+  var devId=G.activeEcomStyle.devId, pidx=G.activeEcomStyle.pidx;
+  var id=ecomStyleId(devId,pidx);
+  if(!G.ecomStyles[id]) G.ecomStyles[id]={id:id,dev_id:devId,product_idx:pidx,props:[],status:'unstyled'};
+  var es=G.ecomStyles[id];
+  // Read current form values
+  var model=document.getElementById('ecom-model'); if(model) es.model=model.value;
+  var shotType=document.getElementById('ecom-shot-type'); if(shotType) es.shot_type=shotType.value;
+  var notes=document.getElementById('ecom-notes'); if(notes) es.styling_notes=notes.value;
+  await api('PUT','/ecom-styling/'+id,{
+    devId:devId, productIdx:pidx,
+    model:es.model||'Terry Hollands',
+    shotType:es.shot_type||'',
+    stylingNotes:es.styling_notes||'',
+    props:es.props||[],
+    status:es.status||'unstyled'
+  });
+  toast('Saved','success');
+  // Refresh grid progress bar if on ecom page
+  if(G.view==='ecom') renderMainContent();
+}
+
+window.setEcomStatus=setEcomStatus;
+window.addEcomProp=addEcomProp;
+window.removeEcomProp=removeEcomProp;
+window.saveEcomStyle=saveEcomStyle;
+window.closeEcomDetail=closeEcomDetail;
+
 async function deleteDev(devId){
   if(!confirm('Delete this development? This cannot be undone.')) return;
   await api('DELETE','/developments/'+devId);
