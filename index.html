@@ -656,6 +656,61 @@ input, select, textarea { font-family: inherit; }
 .sw-card-name { font-size:0.62rem; font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; color:var(--ink); }
 .sw-card-sub { font-size:0.58rem; color:var(--ink3); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 .sw-tick { position:absolute; top:3px; right:3px; width:16px; height:16px; background:#6366f1; border-radius:50%; display:flex; align-items:center; justify-content:center; color:white; font-size:0.55rem; font-weight:800; }
+
+/* ── COMP SHOP ───────────────────────────────────── */
+.cs-wrap { max-width:1300px; margin:0 auto; padding:1.25rem 1.5rem; }
+.cs-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); gap:1rem; margin-top:1.25rem; }
+.cs-trip-card { background:white; border:1px solid var(--line); border-radius:14px; overflow:hidden; cursor:pointer; transition:all 0.2s; }
+.cs-trip-card:hover { transform:translateY(-2px); box-shadow:var(--shadow-lg); border-color:#6366f1; }
+.cs-trip-thumbs { display:grid; grid-template-columns:1fr 1fr; grid-template-rows:1fr 1fr; height:140px; background:var(--line2); }
+.cs-trip-thumb { overflow:hidden; }
+.cs-trip-thumb img { width:100%; height:100%; object-fit:cover; display:block; }
+.cs-trip-thumb-ph { width:100%; height:100%; background:var(--line2); display:flex; align-items:center; justify-content:center; font-size:1.5rem; }
+.cs-trip-body { padding:1rem; }
+.cs-trip-name { font-size:1rem; font-weight:800; margin-bottom:0.2rem; }
+.cs-trip-meta { font-size:0.72rem; color:var(--ink3); margin-bottom:0.6rem; }
+.cs-trip-stats { display:flex; gap:0.5rem; }
+
+/* Trip detail */
+.cs-detail-head { padding:0.9rem 1.5rem; border-bottom:1px solid var(--line); display:flex; align-items:center; gap:0.75rem; flex-wrap:wrap; background:white; position:sticky; top:58px; z-index:80; }
+.cs-detail-title { font-size:1.1rem; font-weight:800; flex:1; }
+.cs-filters-bar { display:flex; gap:0.5rem; flex-wrap:wrap; align-items:center; padding:0.75rem 1.5rem; border-bottom:1px solid var(--line); background:var(--surface); }
+.cs-filter-sel { padding:0.4rem 0.7rem; border:1px solid var(--line); border-radius:8px; font-size:0.78rem; background:white; font-family:inherit; cursor:pointer; }
+.cs-filter-sel:focus { outline:none; border-color:#6366f1; }
+.cs-images-wrap { max-width:1300px; margin:0 auto; padding:1.25rem 1.5rem; }
+.cs-masonry { columns:3; column-gap:1rem; }
+@media(max-width:900px){ .cs-masonry{columns:2;} }
+@media(max-width:580px){ .cs-masonry{columns:1;} }
+.cs-img-card { break-inside:avoid; background:white; border:1px solid var(--line); border-radius:12px; overflow:hidden; margin-bottom:1rem; transition:box-shadow 0.2s; }
+.cs-img-card:hover { box-shadow:var(--shadow-lg); }
+.cs-img-card img { width:100%; display:block; }
+.cs-img-body { padding:0.75rem; }
+.cs-img-store { font-size:0.75rem; font-weight:700; color:#6366f1; margin-bottom:0.3rem; }
+.cs-img-notes { font-size:0.8rem; color:var(--ink2); line-height:1.5; margin-bottom:0.5rem; white-space:pre-wrap; }
+.cs-flag { display:inline-block; font-size:0.65rem; font-weight:700; padding:0.15rem 0.5rem; border-radius:10px; }
+.cs-flag.reference  { background:#f3f4f6; color:#374151; }
+.cs-flag.supplier   { background:#dbeafe; color:#1e40af; }
+.cs-flag.designer   { background:#ede9fe; color:#7c3aed; }
+.cs-flag.inrange    { background:#d1fae5; color:#065f46; }
+.cs-flag.noaction   { background:#fee2e2; color:#991b1b; }
+.cs-img-actions { display:flex; gap:0.4rem; margin-top:0.5rem; flex-wrap:wrap; }
+.cs-edit-btn { background:none; border:1px solid var(--line); border-radius:6px; padding:0.2rem 0.55rem; font-size:0.7rem; color:var(--ink3); cursor:pointer; }
+.cs-edit-btn:hover { background:var(--line2); }
+.cs-del-btn { background:none; border:1px solid #fecaca; border-radius:6px; padding:0.2rem 0.55rem; font-size:0.7rem; color:#ef4444; cursor:pointer; }
+.cs-del-btn:hover { background:#fee2e2; }
+.cs-drop-zone { border:2px dashed var(--line); border-radius:12px; padding:2.5rem; text-align:center; cursor:pointer; transition:all 0.2s; background:white; margin-bottom:1.25rem; }
+.cs-drop-zone:hover, .cs-drop-zone.drag { border-color:#6366f1; background:#eef2ff; }
+.cs-drop-zone p { font-size:0.875rem; color:var(--ink3); margin-top:0.5rem; }
+.cs-drop-zone strong { color:#6366f1; }
+.cs-uploading { display:flex; align-items:center; gap:0.75rem; background:#eef2ff; border-radius:10px; padding:0.75rem 1rem; margin-bottom:1rem; font-size:0.82rem; color:#6366f1; font-weight:600; }
+
+/* Edit modal */
+.cs-edit-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:300; display:none; align-items:center; justify-content:center; padding:1rem; }
+.cs-edit-overlay.open { display:flex; }
+.cs-edit-box { background:white; border-radius:16px; width:100%; max-width:480px; overflow:hidden; }
+.cs-edit-head { padding:1.1rem 1.25rem; border-bottom:1px solid var(--line); display:flex; align-items:center; justify-content:space-between; }
+.cs-edit-body { padding:1.25rem; display:flex; flex-direction:column; gap:0.75rem; }
+.cs-edit-foot { padding:0.85rem 1.25rem; border-top:1px solid var(--line); display:flex; gap:0.5rem; justify-content:flex-end; }
 /* Toast */
 .toast { position: fixed; bottom: 1.5rem; right: 1.5rem; background: var(--ink); color: white; padding: 0.85rem 1.25rem; border-radius: 12px; font-size: 0.875rem; font-weight: 600; z-index: 9999; transform: translateY(100px); opacity: 0; transition: all 0.25s; }
 .toast.show { transform: translateY(0); opacity: 1; }
@@ -774,6 +829,33 @@ input, select, textarea { font-family: inherit; }
     </div>
     <div class="form-body" id="atp-body" style="padding:1.25rem 1.5rem;"></div>
     <div class="form-foot" id="atp-foot"></div>
+  </div>
+</div>
+
+<!-- Comp shop edit image overlay -->
+<div class="cs-edit-overlay" id="cs-edit-overlay" onclick="csEditCloseBg(event)">
+  <div class="cs-edit-box">
+    <div class="cs-edit-head">
+      <div style="font-weight:800;font-size:0.95rem;">Edit Image</div>
+      <button class="detail-close" onclick="csEditClose()">&#10005;</button>
+    </div>
+    <div class="cs-edit-body">
+      <div><label class="form-label">Store</label><input class="form-input" id="cse-store" placeholder="e.g. H&M, Next, Zara"></div>
+      <div><label class="form-label">Notes</label><textarea class="form-input" id="cse-notes" rows="3" placeholder="Price, what you liked, reference notes..."></textarea></div>
+      <div><label class="form-label">Action</label>
+        <select class="form-input" id="cse-flag">
+          <option value="reference">Keep for Reference</option>
+          <option value="supplier">Send to Supplier</option>
+          <option value="designer">Brief Designer</option>
+          <option value="inrange">In Range</option>
+          <option value="noaction">No Further Action</option>
+        </select>
+      </div>
+    </div>
+    <div class="cs-edit-foot">
+      <button class="btn btn-ghost" onclick="csEditClose()">Cancel</button>
+      <button class="btn btn-primary" onclick="csEditSave()">Save</button>
+    </div>
   </div>
 </div>
 
@@ -921,7 +1003,8 @@ var G = {
   _modalImgs: [], _modalIdx: 0,
   _pollTimer: null,
   packs: [], activePack: null, activePackView: 'list',
-  ecomStyles: {}, ecomFilters: {season:'',cat:'',intake:'',status:''}, activeEcomStyle: null
+  ecomStyles: {}, ecomFilters: {season:'',cat:'',intake:'',status:''}, activeEcomStyle: null,
+  compShops: [], activeCompShop: null, compImages: [], compFilters: {store:'',flag:''}
 };
 
 // ── UTILS ──────────────────────────────────────────────────────────────────
@@ -1024,6 +1107,7 @@ async function loadData(){
   if(dRes&&dRes.developments&&dRes.developments.length>=0) G.devs=dRes.developments;
   try { await loadDirectMessages(); } catch(e) { console.warn('Messages not loaded:', e.message); }
   try { var pRes=await api('GET','/packs'); if(pRes&&pRes.packs) G.packs=pRes.packs; } catch(e){}
+  try { var csRes=await api('GET','/comp-shops'); if(csRes&&csRes.shops) G.compShops=csRes.shops; } catch(e){}
   try { var eRes=await api('GET','/ecom-styling'); if(eRes&&eRes.styles){ G.ecomStyles={}; eRes.styles.forEach(function(s){ G.ecomStyles[s.id]=s; }); } } catch(e){}
   if(dRes&&dRes.devComments) G.devComments=dRes.devComments;
   if(tRes&&tRes.tenders) G.tenders=tRes.tenders.map(function(t){ return Object.assign({},t,{deadlineDate:new Date(t.deadlineDate)}); });
@@ -1064,7 +1148,7 @@ function startApp(){
 function buildTopbarNav(){
   var u=G.user; var nav=$('topbar-nav'); nav.innerHTML='';
   var tabs = u.type==='buyer'||u.type==='stakeholder'
-    ? [{id:'board',label:'Range Board'},{id:'pipeline',label:'Pipeline'},{id:'packs',label:'Packs'},{id:'ecom',label:'Ecom Styling'},{id:'admin',label:'Admin',admin:true}]
+    ? [{id:'board',label:'Range Board'},{id:'pipeline',label:'Pipeline'},{id:'packs',label:'Packs'},{id:'ecom',label:'Ecom Styling'},{id:'compshop',label:'Comp Shop'},{id:'admin',label:'Admin',admin:true}]
     : [{id:'available',label:'Available'},{id:'active',label:'Active'},{id:'accepted',label:'Accepted'}];
   tabs.forEach(function(t){
     if(t.admin && u.name!=='Harley Killingsworth') return;
@@ -1212,6 +1296,7 @@ function renderMainContent(){
   else if(G.view==='tenders') renderTenders(mc);
   else if(G.view==='packs') renderPacksPage(mc);
   else if(G.view==='ecom') renderEcomPage(mc);
+  else if(G.view==='compshop') renderCompShopPage(mc);
   else if(G.view==='admin') renderAdmin(mc);
 }
 
@@ -3635,6 +3720,387 @@ function refreshSwSelected(){
 
 window.removeStyleWith=removeStyleWith;
 window.refreshSwGrid=refreshSwGrid;
+
+
+// ── COMP SHOP ─────────────────────────────────────────────────────────────────
+
+var _csEditId = null;
+var FLAG_LABELS = {reference:'Keep for Reference',supplier:'Send to Supplier',designer:'Brief Designer',inrange:'In Range',noaction:'No Further Action'};
+
+// Compress image client-side using canvas
+function compressImage(file, maxW, quality, cb){
+  var reader = new FileReader();
+  reader.onload = function(e){
+    var img = new Image();
+    img.onload = function(){
+      var w = img.width, h = img.height;
+      if(w > maxW){ h = Math.round(h * maxW / w); w = maxW; }
+      var canvas = document.createElement('canvas');
+      canvas.width = w; canvas.height = h;
+      canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+      cb(canvas.toDataURL('image/jpeg', quality));
+    };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+function renderCompShopPage(mc){
+  mc.innerHTML = '';
+  var wrap = document.createElement('div');
+  wrap.className = 'cs-wrap';
+  mc.appendChild(wrap);
+
+  if(G.activeCompShop){
+    renderCompShopDetail(wrap);
+  } else {
+    renderCompShopList(wrap);
+  }
+}
+
+function renderCompShopList(wrap){
+  var head = '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.25rem;">'
+    +'<div><h2 style="font-size:1.2rem;font-weight:800;">Comp Shop</h2>'
+    +'<p style="font-size:0.8rem;color:var(--ink3);margin-top:0.2rem;">Your competitive shopping trips &amp; inspiration library</p></div>'
+    +'<button class="btn btn-primary" onclick="openNewCompShop()">+ New Trip</button></div>';
+  wrap.innerHTML += head;
+
+  if(!G.compShops.length){
+    wrap.innerHTML += '<div class="empty-state" style="margin-top:3rem;"><div class="empty-state-icon">&#128247;</div><h3>No comp shops yet</h3><p>Start a new trip to begin building your inspiration library.</p></div>';
+    return;
+  }
+
+  var grid = document.createElement('div');
+  grid.className = 'cs-grid';
+  G.compShops.forEach(function(shop){
+    var card = buildCompShopCard(shop);
+    grid.appendChild(card);
+  });
+  wrap.appendChild(grid);
+}
+
+function buildCompShopCard(shop){
+  var card = document.createElement('div');
+  card.className = 'cs-trip-card';
+  var thumbs = shop._thumbs || [];
+  var thumbHtml = '';
+  for(var i=0;i<4;i++){
+    if(thumbs[i]) thumbHtml += '<div class="cs-trip-thumb"><img src="'+thumbs[i]+'" loading="lazy"></div>';
+    else thumbHtml += '<div class="cs-trip-thumb"><div class="cs-trip-thumb-ph">&#128247;</div></div>';
+  }
+  var dateStr = shop.trip_date ? new Date(shop.trip_date).toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'}) : '';
+  card.innerHTML = '<div class="cs-trip-thumbs">'+thumbHtml+'</div>'
+    +'<div class="cs-trip-body">'
+    +'<div class="cs-trip-name">'+shop.name+'</div>'
+    +'<div class="cs-trip-meta">'+(shop.location?'&#128205; '+shop.location+' &bull; ':'')+dateStr+'</div>'
+    +'<div class="cs-trip-stats">'
+    +'<span class="pack-stat">'+( shop.image_count||0)+' image'+(shop.image_count!==1?'s':'')+'</span>'
+    +'</div></div>';
+  card.onclick = function(){ openCompShop(shop.id); };
+  return card;
+}
+
+async function openCompShop(shopId){
+  var shop = G.compShops.find(function(s){return s.id===shopId;});
+  if(!shop) return;
+  G.activeCompShop = shop;
+  G.compFilters = {store:'',flag:''};
+  // Load images
+  var mc = document.getElementById('main-content');
+  mc.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;padding:3rem;"><div style="font-size:0.875rem;color:var(--ink3);">Loading images...</div></div>';
+  var r = await api('GET', '/comp-shops/'+shopId+'/images');
+  G.compImages = (r && r.images) ? r.images : [];
+  renderMainContent();
+}
+
+function renderCompShopDetail(wrap){
+  var mc = document.getElementById('main-content');
+  var shop = G.activeCompShop;
+
+  // Header
+  var head = document.createElement('div');
+  head.className = 'cs-detail-head';
+  head.innerHTML = '<button class="pack-back-btn" onclick="backToCompShops()">&#8592; Comp Shop</button>'
+    +'<div class="cs-detail-title">'+shop.name+'</div>'
+    +'<div class="pack-detail-meta">'
+    +(shop.location?'<span class="pack-stat">&#128205; '+shop.location+'</span>':'')
+    +(shop.trip_date?'<span class="pack-stat">'+new Date(shop.trip_date).toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'})+'</span>':'')
+    +'<span class="pack-stat">'+G.compImages.length+' images</span>'
+    +'</div>'
+    +'<div style="display:flex;gap:0.5rem;">'
+    +'<button class="btn btn-ghost btn-sm" onclick="exportCompShopPDF()">&#128196; Export PDF</button>'
+    +'<button class="btn btn-danger btn-sm" onclick="deleteCompShop(\''+shop.id+'\')">&#128465;</button>'
+    +'</div>';
+  mc.appendChild(head);
+
+  // Filters bar
+  var stores = [...new Set(G.compImages.map(function(i){return i.store||'';}).filter(Boolean))].sort();
+  var fStore = G.compFilters.store, fFlag = G.compFilters.flag;
+  var filtersBar = document.createElement('div');
+  filtersBar.className = 'cs-filters-bar';
+  filtersBar.innerHTML = '<span style="font-size:0.75rem;font-weight:700;color:var(--ink3);">Filter:</span>'
+    +'<select class="cs-filter-sel" onchange="G.compFilters.store=this.value;renderMainContent()">'
+    +'<option value="">All Stores</option>'
+    +stores.map(function(s){return '<option value="'+s+'"'+(fStore===s?' selected':'')+'>'+s+'</option>';}).join('')
+    +'</select>'
+    +'<select class="cs-filter-sel" onchange="G.compFilters.flag=this.value;renderMainContent()">'
+    +'<option value="">All Actions</option>'
+    +'<option value="reference"'+(fFlag==='reference'?' selected':'')+'>Keep for Reference</option>'
+    +'<option value="supplier"'+(fFlag==='supplier'?' selected':'')+'>Send to Supplier</option>'
+    +'<option value="designer"'+(fFlag==='designer'?' selected':'')+'>Brief Designer</option>'
+    +'<option value="inrange"'+(fFlag==='inrange'?' selected':'')+'>In Range</option>'
+    +'<option value="noaction"'+(fFlag==='noaction'?' selected':'')+'>No Further Action</option>'
+    +'</select>'
+    +((fStore||fFlag)?'<button class="btn btn-ghost btn-sm" onclick="G.compFilters={store:\'\',flag:\'\'};renderMainContent()">Clear</button>':'');
+  mc.appendChild(filtersBar);
+
+  // Images area
+  var imagesWrap = document.createElement('div');
+  imagesWrap.className = 'cs-images-wrap';
+  mc.appendChild(imagesWrap);
+  wrap.appendChild(imagesWrap);
+
+  // Drop zone
+  imagesWrap.innerHTML = '<div class="cs-drop-zone" id="cs-drop-zone"'
+    +' ondragover="event.preventDefault();this.classList.add(\'drag\')"'
+    +' ondragleave="this.classList.remove(\'drag\')"'
+    +' ondrop="csDropFiles(event)"'
+    +' onclick="document.getElementById(\'cs-file-inp\').click()">'
+    +'<div style="font-size:2rem;">&#128247;</div>'
+    +'<p><strong>Drop images here</strong> or click to browse &bull; Add multiple at once</p>'
+    +'</div>'
+    +'<input type="file" id="cs-file-inp" multiple accept="image/*" style="display:none" onchange="csHandleFiles(event)">';
+
+  // Filter and render images
+  var show = G.compImages.filter(function(img){
+    if(fStore && img.store !== fStore) return false;
+    if(fFlag && img.action_flag !== fFlag) return false;
+    return true;
+  });
+
+  if(show.length){
+    var masonry = document.createElement('div');
+    masonry.className = 'cs-masonry';
+    show.forEach(function(img){
+      masonry.appendChild(buildCompImageCard(img));
+    });
+    imagesWrap.appendChild(masonry);
+  } else if(G.compImages.length){
+    imagesWrap.innerHTML += '<div class="empty-state" style="margin-top:1rem;"><div class="empty-state-icon">&#128269;</div><h3>No images match</h3><p>Try adjusting your filters.</p></div>';
+  }
+}
+
+function buildCompImageCard(img){
+  var card = document.createElement('div');
+  card.className = 'cs-img-card';
+  var flag = img.action_flag || 'reference';
+  card.innerHTML = (img.image_data ? '<img src="'+img.image_data+'" loading="lazy">' : '')
+    +'<div class="cs-img-body">'
+    +(img.store?'<div class="cs-img-store">&#128205; '+img.store+'</div>':'')
+    +(img.notes?'<div class="cs-img-notes">'+img.notes+'</div>':'')
+    +'<span class="cs-flag '+flag+'">'+( FLAG_LABELS[flag]||'Reference')+'</span>'
+    +'<div class="cs-img-actions">'
+    +'<button class="cs-edit-btn" onclick="csEditOpen(\''+img.id+'\')">&#9999; Edit</button>'
+    +'<button class="cs-del-btn" onclick="csDeleteImage(\''+img.id+'\')">&#128465;</button>'
+    +'</div>'
+    +'</div>';
+  return card;
+}
+
+// ── Upload flow ───────────────────────────────────────────────────────────────
+function csDropFiles(e){ e.preventDefault(); document.getElementById('cs-drop-zone').classList.remove('drag'); csProcessFiles(e.dataTransfer.files); }
+function csHandleFiles(e){ csProcessFiles(e.target.files); e.target.value=''; }
+
+async function csProcessFiles(files){
+  var shop = G.activeCompShop; if(!shop) return;
+  var arr = Array.from(files).filter(function(f){ return f.type.startsWith('image/'); });
+  if(!arr.length) return;
+
+  // Show uploading indicator
+  var zone = document.getElementById('cs-drop-zone');
+  if(zone) zone.innerHTML = '<div class="cs-uploading"><span>&#8987;</span> Compressing and uploading '+arr.length+' image'+( arr.length!==1?'s':'')+'...</div>';
+
+  var compressed = [];
+  var done = 0;
+  await new Promise(function(resolve){
+    arr.forEach(function(file, i){
+      compressImage(file, 1200, 0.75, function(dataUrl){
+        compressed[i] = { imageData: dataUrl, store:'', notes:'', actionFlag:'reference', sortOrder: G.compImages.length + i };
+        done++;
+        if(done === arr.length) resolve();
+      });
+    });
+  });
+
+  var r = await api('POST', '/comp-shops/'+shop.id+'/images', { images: compressed });
+  if(r){
+    toast(arr.length+' image'+(arr.length!==1?'s':'')+' uploaded','success');
+    // Reload images
+    var res = await api('GET', '/comp-shops/'+shop.id+'/images');
+    G.compImages = (res && res.images) ? res.images : [];
+    // Update count in shop list
+    var s = G.compShops.find(function(x){return x.id===shop.id;});
+    if(s) s.image_count = G.compImages.length;
+    renderMainContent();
+  } else {
+    toast('Upload failed — please try again','error');
+    renderMainContent();
+  }
+}
+
+// ── Edit image ────────────────────────────────────────────────────────────────
+function csEditOpen(imgId){
+  var img = G.compImages.find(function(i){return i.id===imgId;}); if(!img) return;
+  _csEditId = imgId;
+  document.getElementById('cse-store').value = img.store || '';
+  document.getElementById('cse-notes').value = img.notes || '';
+  document.getElementById('cse-flag').value = img.action_flag || 'reference';
+  document.getElementById('cs-edit-overlay').classList.add('open');
+  setTimeout(function(){ document.getElementById('cse-store').focus(); }, 100);
+}
+function csEditClose(){ document.getElementById('cs-edit-overlay').classList.remove('open'); _csEditId = null; }
+function csEditCloseBg(e){ if(e.target===document.getElementById('cs-edit-overlay')) csEditClose(); }
+
+async function csEditSave(){
+  if(!_csEditId) return;
+  var store = document.getElementById('cse-store').value.trim();
+  var notes = document.getElementById('cse-notes').value.trim();
+  var flag = document.getElementById('cse-flag').value;
+  var r = await api('PUT', '/comp-shop-images/'+_csEditId, {store:store,notes:notes,actionFlag:flag});
+  if(r){
+    var img = G.compImages.find(function(i){return i.id===_csEditId;});
+    if(img){ img.store=store; img.notes=notes; img.action_flag=flag; }
+    csEditClose();
+    toast('Saved','success');
+    renderMainContent();
+  } else toast('Save failed','error');
+}
+
+// ── Delete ────────────────────────────────────────────────────────────────────
+async function csDeleteImage(imgId){
+  if(!confirm('Remove this image?')) return;
+  var r = await api('DELETE', '/comp-shop-images/'+imgId);
+  if(r){
+    G.compImages = G.compImages.filter(function(i){return i.id!==imgId;});
+    var s = G.compShops.find(function(x){return x.id===G.activeCompShop.id;});
+    if(s) s.image_count = G.compImages.length;
+    toast('Image removed');
+    renderMainContent();
+  }
+}
+
+async function deleteCompShop(shopId){
+  if(!confirm('Delete this entire comp shop trip? This cannot be undone.')) return;
+  var r = await api('DELETE', '/comp-shops/'+shopId);
+  if(r){
+    G.compShops = G.compShops.filter(function(s){return s.id!==shopId;});
+    G.activeCompShop = null; G.compImages = [];
+    toast('Trip deleted');
+    renderMainContent();
+  }
+}
+
+function backToCompShops(){
+  G.activeCompShop = null; G.compImages = []; G.compFilters = {store:'',flag:''};
+  renderMainContent();
+}
+
+// ── New trip form ─────────────────────────────────────────────────────────────
+function openNewCompShop(){
+  var name = prompt('Trip name (e.g. Birmingham Comp Shop, Manchester SS27):'); if(!name) return;
+  var location = prompt('Location (e.g. Birmingham):');
+  var date = prompt('Date (YYYY-MM-DD):');
+  createCompShop({name:name.trim(), location:location||null, tripDate:date||null});
+}
+
+async function createCompShop(data){
+  var r = await api('POST', '/comp-shops', data);
+  if(r && r.shop){
+    r.shop.image_count = 0;
+    G.compShops.unshift(r.shop);
+    toast('Trip created!','success');
+    await openCompShop(r.shop.id);
+  } else toast('Failed to create trip','error');
+}
+
+// ── PDF Export ────────────────────────────────────────────────────────────────
+function exportCompShopPDF(){
+  var shop = G.activeCompShop; if(!shop) return;
+  var fStore = G.compFilters.store, fFlag = G.compFilters.flag;
+  var images = G.compImages.filter(function(img){
+    if(fStore && img.store !== fStore) return false;
+    if(fFlag && img.action_flag !== fFlag) return false;
+    return true;
+  });
+  if(!images.length){ toast('No images match current filters','error'); return; }
+
+  var today = new Date().toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'});
+  var fname = (shop.name+' Comp Shop').replace(/[^a-z0-9]/gi,'-')+'.pdf';
+  var filterDesc = (fStore?'Store: '+fStore+' &bull; ':'')+(fFlag?'Action: '+(FLAG_LABELS[fFlag]||fFlag):'');
+
+  var imgsHtml = images.map(function(img){
+    var flag = img.action_flag || 'reference';
+    var flagColors = {reference:'#f3f4f6',supplier:'#dbeafe',designer:'#ede9fe',inrange:'#d1fae5',noaction:'#fee2e2'};
+    var flagTxt = {reference:'#374151',supplier:'#1e40af',designer:'#7c3aed',inrange:'#065f46',noaction:'#991b1b'};
+    return '<div style="break-inside:avoid;page-break-inside:avoid;background:white;border:1px solid #e5e7eb;border-radius:10px;overflow:hidden;margin-bottom:14px;">'
+      +(img.image_data?'<img src="'+img.image_data+'" style="width:100%;display:block;max-height:340px;object-fit:cover;">':'')
+      +'<div style="padding:10px 12px;">'
+      +(img.store?'<div style="font-size:10px;font-weight:700;color:#6366f1;margin-bottom:4px;">&#128205; '+img.store+'</div>':'')
+      +(img.notes?'<div style="font-size:11px;color:#374151;line-height:1.5;margin-bottom:6px;white-space:pre-wrap;">'+img.notes+'</div>':'')
+      +'<span style="display:inline-block;font-size:9px;font-weight:700;padding:2px 8px;border-radius:10px;background:'+( flagColors[flag]||'#f3f4f6')+';color:'+(flagTxt[flag]||'#374151')+'">'+(FLAG_LABELS[flag]||'Reference')+'</span>'
+      +'</div></div>';
+  }).join('');
+
+  var html = '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>'+shop.name+'</title>'
+    +'<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">'
+    +'<style>*{box-sizing:border-box;margin:0;padding:0;}body{font-family:"DM Sans",Arial,sans-serif;background:white;color:#0c0f14;-webkit-print-color-adjust:exact;print-color-adjust:exact;}.page{max-width:860px;margin:0 auto;padding:28px;}.cols{columns:2;column-gap:14px;}@media print{@page{margin:10mm;size:A4;}.no-print{display:none;}}</style>'
+    +'<'+'script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"><'+'/script>'
+    +'</head><body><div class="page">'
+    +'<div style="display:flex;justify-content:space-between;align-items:flex-start;padding-bottom:14px;border-bottom:2px solid #0c0f14;margin-bottom:16px;">'
+    +'<div><div style="font-size:20px;font-weight:800;">Tender<span style="color:#6366f1;">able</span></div><div style="font-size:9px;color:#9ca3af;">Comp Shop Report</div></div>'
+    +'<div style="text-align:right;"><div style="font-size:18px;font-weight:800;">'+shop.name+'</div>'
+    +'<div style="font-size:10px;color:#6b7280;">'+(shop.location?shop.location+' &bull; ':'')+(shop.trip_date?new Date(shop.trip_date).toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'}):'Generated '+today)+'</div>'
+    +(filterDesc?'<div style="font-size:9px;color:#6b7280;margin-top:2px;">Filtered: '+filterDesc+'</div>':'')+'</div></div>'
+    +'<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px;">'
+    +'<div style="background:#f8f9fb;border-radius:8px;padding:10px;"><div style="font-size:9px;color:#9ca3af;font-weight:700;text-transform:uppercase;margin-bottom:3px;">Images</div><div style="font-size:14px;font-weight:800;">'+images.length+'</div></div>'
+    +(fStore?'<div style="background:#f8f9fb;border-radius:8px;padding:10px;"><div style="font-size:9px;color:#9ca3af;font-weight:700;text-transform:uppercase;margin-bottom:3px;">Store</div><div style="font-size:14px;font-weight:800;">'+fStore+'</div></div>':'')
+    +(fFlag?'<div style="background:#f8f9fb;border-radius:8px;padding:10px;"><div style="font-size:9px;color:#9ca3af;font-weight:700;text-transform:uppercase;margin-bottom:3px;">Action</div><div style="font-size:14px;font-weight:800;">'+(FLAG_LABELS[fFlag]||fFlag)+'</div></div>':'')
+    +'</div>'
+    +'<div class="cols">'+imgsHtml+'</div>'
+    +'<div style="border-top:1px solid #e5e7eb;padding-top:10px;margin-top:16px;display:flex;justify-content:space-between;font-size:9px;color:#9ca3af;"><span>'+shop.name+' &bull; '+today+'</span><span>CONFIDENTIAL</span></div>'
+    +'</div>'
+    +'<div class="no-print" style="position:fixed;bottom:20px;right:20px;display:flex;gap:8px;">'
+    +'<button onclick="window.print()" style="background:#0c0f14;color:white;border:none;padding:10px 20px;border-radius:8px;font-weight:700;cursor:pointer;font-family:inherit;">&#128424; Print</button>'
+    +'<button id="cs-pdf-btn" onclick="dlCSPDF()" style="background:#6366f1;color:white;border:none;padding:10px 20px;border-radius:8px;font-weight:700;cursor:pointer;font-family:inherit;">&#128190; Save PDF</button>'
+    +'</div>'
+    +'<'+'script>function dlCSPDF(){'
+    +'var btn=document.getElementById("cs-pdf-btn");btn.textContent="Generating...";btn.disabled=true;'
+    +'var el=document.querySelector(".page");'
+    +'var opt={margin:[8,8,8,8],filename:"'+fname+'",image:{type:"jpeg",quality:0.88},html2canvas:{scale:1.5,useCORS:true,allowTaint:true,logging:false,imageTimeout:0},jsPDF:{unit:"mm",format:"a4",orientation:"portrait"}};'
+    +'var imgs=Array.from(el.querySelectorAll("img"));var done=0;var total=imgs.length;'
+    +'function go(){html2pdf().set(opt).from(el).save().then(function(){btn.textContent="Save PDF";btn.disabled=false;});}'
+    +'if(!total){go();return;}'
+    +'imgs.forEach(function(img){if(img.complete&&img.naturalHeight!==0){done++;if(done===total)go();}else{img.onload=function(){done++;if(done===total)go();};img.onerror=function(){done++;if(done===total)go();};}});'
+    +'}<'+'/script>'
+    +'</body></html>';
+
+  var w = window.open('','_blank');
+  if(!w){ toast('Please allow popups to export PDF','error'); return; }
+  w.document.write(html);
+  w.document.close();
+}
+
+window.csEditOpen = csEditOpen;
+window.csEditClose = csEditClose;
+window.csEditCloseBg = csEditCloseBg;
+window.csEditSave = csEditSave;
+window.csDeleteImage = csDeleteImage;
+window.deleteCompShop = deleteCompShop;
+window.backToCompShops = backToCompShops;
+window.csDropFiles = csDropFiles;
+window.csHandleFiles = csHandleFiles;
+window.exportCompShopPDF = exportCompShopPDF;
+window.openNewCompShop = openNewCompShop;
 
 // ── ECOM STYLING ──────────────────────────────────────────────────────────────
 
