@@ -832,6 +832,27 @@ input, select, textarea { font-family: inherit; }
   </div>
 </div>
 
+<!-- Comp shop new trip form -->
+<div class="form-overlay" id="cs-form-overlay" onclick="csFormCloseBg(event)">
+  <div class="form-sheet" style="max-width:520px;">
+    <div class="form-head">
+      <div class="form-title">New Comp Shop Trip</div>
+      <button class="form-close" onclick="csFormClose()">&#10005;</button>
+    </div>
+    <div class="form-body">
+      <div class="form-grid">
+        <div class="form-group full"><label class="form-label">Trip Name</label><input class="form-input" id="cs-fname" placeholder="e.g. Birmingham Comp Shop"></div>
+        <div class="form-group"><label class="form-label">Location</label><input class="form-input" id="cs-floc" placeholder="e.g. Birmingham"></div>
+        <div class="form-group"><label class="form-label">Date</label><input class="form-input" type="date" id="cs-fdate"></div>
+      </div>
+    </div>
+    <div class="form-foot">
+      <button class="btn btn-ghost" onclick="csFormClose()">Cancel</button>
+      <button class="btn btn-primary" onclick="csFormSubmit()">Create Trip</button>
+    </div>
+  </div>
+</div>
+
 <!-- Comp shop edit image overlay -->
 <div class="cs-edit-overlay" id="cs-edit-overlay" onclick="csEditCloseBg(event)">
   <div class="cs-edit-box">
@@ -4007,10 +4028,21 @@ function backToCompShops(){
 
 // ── New trip form ─────────────────────────────────────────────────────────────
 function openNewCompShop(){
-  var name = prompt('Trip name (e.g. Birmingham Comp Shop, Manchester SS27):'); if(!name) return;
-  var location = prompt('Location (e.g. Birmingham):');
-  var date = prompt('Date (YYYY-MM-DD):');
-  createCompShop({name:name.trim(), location:location||null, tripDate:date||null});
+  document.getElementById('cs-fname').value='';
+  document.getElementById('cs-floc').value='';
+  document.getElementById('cs-fdate').value='';
+  document.getElementById('cs-form-overlay').classList.add('open');
+  setTimeout(function(){document.getElementById('cs-fname').focus();},100);
+}
+function csFormClose(){ document.getElementById('cs-form-overlay').classList.remove('open'); }
+function csFormCloseBg(e){ if(e.target===document.getElementById('cs-form-overlay')) csFormClose(); }
+async function csFormSubmit(){
+  var name=document.getElementById('cs-fname').value.trim();
+  if(!name){document.getElementById('cs-fname').focus();return;}
+  var location=document.getElementById('cs-floc').value.trim()||null;
+  var tripDate=document.getElementById('cs-fdate').value||null;
+  csFormClose();
+  createCompShop({name:name,location:location,tripDate:tripDate});
 }
 
 async function createCompShop(data){
@@ -4101,6 +4133,9 @@ window.csDropFiles = csDropFiles;
 window.csHandleFiles = csHandleFiles;
 window.exportCompShopPDF = exportCompShopPDF;
 window.openNewCompShop = openNewCompShop;
+window.csFormClose = csFormClose;
+window.csFormCloseBg = csFormCloseBg;
+window.csFormSubmit = csFormSubmit;
 
 // ── ECOM STYLING ──────────────────────────────────────────────────────────────
 
