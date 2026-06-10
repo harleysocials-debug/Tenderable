@@ -2389,30 +2389,8 @@ function supplierBrief(devId){
   _sbDevId=devId;
   document.getElementById('sb-cost').checked=false;
   document.getElementById('sb-qty').checked=false;
-  _sbEmailMode=false;
-  var sbEmailSec=document.getElementById('sb-email-section');
-  if(sbEmailSec) sbEmailSec.style.display='none';
-  if(sbEmailBtn) sbEmailBtn.textContent='✉ Email to Supplier (Outlook)';
   document.getElementById('sb-overlay').classList.add('open');
 }
-var _sbEmailMode=false;
-function sbToggleEmail(){
-  var sec=document.getElementById('sb-email-section');
-  if(!_sbEmailMode){
-    _sbEmailMode=true;
-    sec.style.display='block';
-    var dev=_sbDevId?G.devs.find(function(d){return d.id===_sbDevId;}):null;
-    var supName=dev?(dev.supplierAllocation||'Supplier'):'Supplier';
-    var devName=dev?dev.description:'Development';
-    document.getElementById('sb-email-body').value=
-      'Hi '+supName+',\n\nPlease find attached the supplier brief for '+devName+'.\n\nPlease review and confirm your ability to meet the specifications and lead time.\n\nMany thanks,\n'+(G.user?G.user.name:'');
-    if(btn) btn.textContent='✉ Send Email';
-  } else {
-    _sbEmailMode=false;
-    sbGenerate(true);
-  }
-}
-window.sbToggleEmail=sbToggleEmail;
 
 function sbGenerate(emailMode){
   var includeCost=document.getElementById('sb-cost').checked;
