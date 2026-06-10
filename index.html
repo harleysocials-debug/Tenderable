@@ -3830,7 +3830,7 @@ function renderCompShopList(wrap){
 function buildCompShopCard(shop){
   var card = document.createElement('div');
   card.className = 'cs-trip-card';
-  var thumbs = shop._thumbs || [];
+  var thumbs = shop.thumbs || shop._thumbs || [];
   var thumbHtml = '';
   for(var i=0;i<4;i++){
     if(thumbs[i]) thumbHtml += '<div class="cs-trip-thumb"><img src="'+thumbs[i]+'" loading="lazy"></div>';
