@@ -5018,6 +5018,9 @@ async function renderAdmin(mc){
   var users=r?r.users:[];
   var pending=users.filter(function(u){return u.status==='pending';});
   var all=users;
+  // Always fetch suppliers fresh from DB
+  var supFresh=await api('GET','/suppliers');
+  if(supFresh&&supFresh.suppliers) G.suppliers=supFresh.suppliers;
   var supRows=(G.suppliers||[]).map(function(s){
     return '<tr data-supid="'+s.id+'">'
       +'<td><input class="sup-edit-inp" value="'+esc(s.name)+'" onblur="updateSupplierRow(this)" style="width:180px;"></td>'
@@ -5061,16 +5064,17 @@ function updateSupplierRow(inp){
 window.updateSupplierRow=updateSupplierRow;
 
 async function addSupplier(){
-  var name=document.getElementById('new-sup-name').value.trim();
-  var email=document.getElementById('new-sup-email').value.trim();
+  var nameEl=document.getElementById('new-sup-name');
+  var emailEl=document.getElementById('new-sup-email');
+  var name=(nameEl?nameEl.value:'').trim();
+  var email=(emailEl?emailEl.value:'').trim();
   if(!name){ toast('Please enter a supplier name','error'); return; }
   var r=await api('POST','/suppliers',{name:name,email:email||null});
   if(r){
-    G.suppliers.push({id:r.id,name:name,email:email||null});
-    document.getElementById('new-sup-name').value='';
-    document.getElementById('new-sup-email').value='';
     toast('Supplier added','success');
     renderAdmin(document.getElementById('main-content'));
+  } else {
+    toast('Failed to add supplier','error');
   }
 }
 
