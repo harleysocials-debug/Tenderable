@@ -2390,11 +2390,10 @@ function exportRangePDF(){
     var _bodyTa=document.getElementById('sb-email-body');
     var _rawBody=(_bodyTa&&_bodyTa.value)?_bodyTa.value:'Hi '+_supName+',\n\nPlease find attached the supplier brief for '+_devName+'.\n\nMany thanks,\n'+G.user.name;
     var _body=encodeURIComponent(_rawBody);
+    // Open PDF first, then Outlook after a short delay
     setTimeout(function(){
-      var link=document.createElement('a');
-      link.href='mailto:'+encodeURIComponent(_supEmail)+'?subject='+_subject+'&body='+_body;
-      link.click();
-    }, 1500);
+      window.location.href='mailto:'+_supEmail+'?subject='+_subject+'&body='+_body;
+    }, 800);
   }
 
   var w=window.open('','_blank');
