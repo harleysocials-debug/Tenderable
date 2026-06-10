@@ -1212,7 +1212,7 @@ async function loadData(){
   if(dRes&&dRes.developments&&dRes.developments.length>=0) G.devs=dRes.developments;
   try { await loadDirectMessages(); } catch(e) { console.warn('Messages not loaded:', e.message); }
   try { var pRes=await api('GET','/packs'); if(pRes&&pRes.packs) G.packs=pRes.packs; } catch(e){}
-  try { var supRes=await api('GET','/suppliers'); if(supRes&&supRes.suppliers) G.suppliers=supRes.suppliers; } catch(e){}
+  try { var supRes=await api('GET','/suppliers'); if(supRes&&supRes.suppliers&&(supRes.suppliers.length>0||G.suppliers.length===0)) G.suppliers=supRes.suppliers; } catch(e){}
   try { var csRes=await api('GET','/comp-shops'); if(csRes&&csRes.shops) G.compShops=csRes.shops; } catch(e){}
   try { var eRes=await api('GET','/ecom-styling'); if(eRes&&eRes.styles){ G.ecomStyles={}; eRes.styles.forEach(function(s){ s.styling_with=s.styling_with||[]; s.props=s.props||[]; G.ecomStyles[s.id]=s; }); } } catch(e){}
   if(dRes&&dRes.devComments) G.devComments=dRes.devComments;
