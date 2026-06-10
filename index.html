@@ -1212,7 +1212,7 @@ async function loadData(){
   if(dRes&&dRes.developments&&dRes.developments.length>=0) G.devs=dRes.developments;
   try { await loadDirectMessages(); } catch(e) { console.warn('Messages not loaded:', e.message); }
   try { var pRes=await api('GET','/packs'); if(pRes&&pRes.packs) G.packs=pRes.packs; } catch(e){}
-  try { var supRes=await api('GET','/suppliers'); if(supRes&&supRes.suppliers&&(supRes.suppliers.length>0||G.suppliers.length===0)) G.suppliers=supRes.suppliers; } catch(e){}
+  try { var supRes=await api('GET','/suppliers'); if(supRes&&supRes.suppliers) G.suppliers=supRes.suppliers; } catch(e){}
   try { var csRes=await api('GET','/comp-shops'); if(csRes&&csRes.shops) G.compShops=csRes.shops; } catch(e){}
   try { var eRes=await api('GET','/ecom-styling'); if(eRes&&eRes.styles){ G.ecomStyles={}; eRes.styles.forEach(function(s){ s.styling_with=s.styling_with||[]; s.props=s.props||[]; G.ecomStyles[s.id]=s; }); } } catch(e){}
   if(dRes&&dRes.devComments) G.devComments=dRes.devComments;
@@ -5020,11 +5020,7 @@ async function renderAdmin(mc){
   var users=r?r.users:[];
   var pending=users.filter(function(u){return u.status==='pending';});
   var all=users;
-  // Fetch suppliers from DB (always fresh to ensure persistence)
-  try {
-    var supFresh=await api('GET','/suppliers');
-    if(supFresh&&supFresh.suppliers) G.suppliers=supFresh.suppliers;
-  } catch(e){}
+  try { var supRes=await api('GET','/suppliers'); if(supRes&&supRes.suppliers) G.suppliers=supRes.suppliers; } catch(e){}
   var supRows=(G.suppliers||[]).map(function(s){
     return '<tr data-supid="'+s.id+'">'
       +'<td><input class="sup-edit-inp" value="'+esc(s.name)+'" onblur="updateSupplierRow(this)" style="width:180px;"></td>'
@@ -5056,6 +5052,7 @@ async function adminApprove(uid){ var r=await api('POST','/admin/approve/'+uid);
 async function adminReject(uid){ var r=await api('POST','/admin/reject/'+uid); if(r) toast('User rejected'); else toast('Reject failed','error'); renderAdmin($('main-content')); }
 
 // ── SUPPLIER MANAGEMENT ──────────────────────────────────────────────────────
+
 function updateSupplierRow(inp){
   var row=inp.closest('tr'); if(!row) return;
   var id=row.dataset.supid; if(!id) return;
@@ -5074,39 +5071,31 @@ async function addSupplier(){
   var email=(emailEl?emailEl.value:'').trim();
   if(!name){ toast('Please enter a supplier name','error'); return; }
   var r=await api('POST','/suppliers',{name:name,email:email||null});
-  if(r&&r.id){
-    // Add to local state immediately
+  if(r&&(r.success||r.id)){
+    var id=r.id||('sup-'+Date.now());
     if(!G.suppliers) G.suppliers=[];
-    G.suppliers.push({id:r.id, name:name, email:email||null, company:G.user?G.user.company:''});
-    toast('Supplier added','success');
-    renderAdmin(document.getElementById('main-content'));
-  } else if(r&&r.success){
-    // Fallback if id not returned
+    G.suppliers.push({id:id,name:name,email:email||null});
     toast('Supplier added','success');
     renderAdmin(document.getElementById('main-content'));
   } else {
-    toast('Failed to add supplier — check Railway logs','error');
+    toast('Failed to add supplier','error');
   }
 }
 
-async function updateSupplier(id, name, email){
+async function updateSupplier(id,name,email){
   if(!name) return;
-  var r=await api('PUT','/suppliers/'+id,{name:name,email:email||null});
-  if(r){
-    var s=G.suppliers.find(function(x){return x.id===id;});
-    if(s){s.name=name;s.email=email||null;}
-    toast('Supplier updated','success');
-  }
+  var s=G.suppliers.find(function(x){return x.id===id;});
+  if(s){s.name=name;s.email=email||null;}
+  await api('PUT','/suppliers/'+id,{name:name,email:email||null});
+  toast('Supplier updated','success');
 }
 
 async function deleteSupplier(id){
   if(!confirm('Remove this supplier?')) return;
-  var r=await api('DELETE','/suppliers/'+id);
-  if(r){
-    G.suppliers=G.suppliers.filter(function(s){return s.id!==id;});
-    toast('Supplier removed');
-    renderAdmin(document.getElementById('main-content'));
-  }
+  G.suppliers=G.suppliers.filter(function(s){return s.id!==id;});
+  await api('DELETE','/suppliers/'+id);
+  toast('Supplier removed');
+  renderAdmin(document.getElementById('main-content'));
 }
 
 function lookupSupplierEmail(supplierName){
