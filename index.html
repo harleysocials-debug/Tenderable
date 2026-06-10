@@ -884,7 +884,14 @@ input, select, textarea { font-family: inherit; }
           <span>Include Order Quantity</span>
         </label>
       </div>
-      <button class="btn btn-primary" style="width:100%;justify-content:center;" onclick="sbGenerate(false)">&#128196; Generate Brief</button>
+      <button class="btn btn-primary" style="width:100%;display:block;text-align:center;" onclick="sbGenerate(false)">&#128196; Generate Brief</button>
+      <div style="height:0.75rem;"></div>
+      <div id="sb-email-section" style="display:none;margin-bottom:0.75rem;">
+        <label class="form-label" style="margin-bottom:0.4rem;">Email Body</label>
+        <textarea class="form-input" id="sb-email-body" rows="5" style="font-size:0.82rem;resize:vertical;width:100%;"></textarea>
+        <div style="font-size:0.7rem;color:var(--ink3);margin-top:0.3rem;">PDF downloads automatically — attach it before sending.</div>
+      </div>
+      <button class="btn btn-ghost" id="sb-email-btn" style="width:100%;display:block;text-align:center;" onclick="sbToggleEmail()">&#9993; Email to Supplier (Outlook)</button>
     </div>
   </div>
 </div>
@@ -2385,12 +2392,36 @@ function exportRangePDF(){
 
 
 var _sbDevId=null;
+var _sbEmailMode=false;
 function supplierBrief(devId){
   _sbDevId=devId;
+  _sbEmailMode=false;
   document.getElementById('sb-cost').checked=false;
   document.getElementById('sb-qty').checked=false;
+  var sec=document.getElementById('sb-email-section');
+  if(sec) sec.style.display='none';
+  var btn=document.getElementById('sb-email-btn');
+  if(btn) btn.textContent='✉ Email to Supplier (Outlook)';
   document.getElementById('sb-overlay').classList.add('open');
 }
+function sbToggleEmail(){
+  var sec=document.getElementById('sb-email-section');
+  var btn=document.getElementById('sb-email-btn');
+  if(!_sbEmailMode){
+    _sbEmailMode=true;
+    sec.style.display='block';
+    var dev=_sbDevId?G.devs.find(function(d){return d.id===_sbDevId;}):null;
+    var supName=dev?(dev.supplierAllocation||'Supplier'):'Supplier';
+    var devName=dev?dev.description:'Development';
+    document.getElementById('sb-email-body').value=
+      'Hi '+supName+',\n\nPlease find attached the supplier brief for '+devName+'.\n\nPlease review and confirm your ability to meet the specifications and lead time.\n\nMany thanks,\n'+(G.user?G.user.name:'');
+    if(btn) btn.textContent='✉ Send Email';
+  } else {
+    _sbEmailMode=false;
+    sbGenerate(true);
+  }
+}
+window.sbToggleEmail=sbToggleEmail;
 
 function sbGenerate(emailMode){
   var includeCost=document.getElementById('sb-cost').checked;
@@ -2509,17 +2540,15 @@ function _supplierBriefGenerate(devId, includeCost, includeQty, emailMode){
     '</body></html>';
 
 
-  // Email mode — trigger Outlook synchronously (must be within user gesture context)
+  // Email mode — open Outlook with blank To (user fills in manually)
   if(emailMode){
-    var _supName2=d.supplierAllocation||d.agreedSupplier||'Supplier';
-    var _supEmail2=''; // User will fill in email manually in Outlook
+    var _supName2=d.supplierAllocation||'Supplier';
     var _subject2=encodeURIComponent('Supplier Brief — '+d.description);
     var _bodyTa2=document.getElementById('sb-email-body');
     var _rawBody2=(_bodyTa2&&_bodyTa2.value)?_bodyTa2.value:'Hi '+_supName2+',\n\nPlease find attached the supplier brief for '+d.description+'.\n\nMany thanks,\n'+G.user.name;
     var _body2=encodeURIComponent(_rawBody2);
-    var _mailto='mailto:'+_supEmail2+'?subject='+_subject2+'&body='+_body2;
     var _a=document.createElement('a');
-    _a.href=_mailto;
+    _a.href='mailto:?subject='+_subject2+'&body='+_body2;
     _a.style.display='none';
     document.body.appendChild(_a);
     _a.click();
