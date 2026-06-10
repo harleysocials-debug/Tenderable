@@ -870,17 +870,23 @@ input, select, textarea { font-family: inherit; }
       <div style="font-weight:800;font-size:0.95rem;">Edit Image</div>
       <button class="detail-close" onclick="csEditClose()">&#10005;</button>
     </div>
-    <div class="cs-edit-body">
-      <div><label class="form-label">Store</label><input class="form-input" id="cse-store" placeholder="e.g. H&M, Next, Zara"></div>
-      <div><label class="form-label">Notes</label><textarea class="form-input" id="cse-notes" rows="3" placeholder="Price, what you liked, reference notes..."></textarea></div>
-      <div><label class="form-label">Action</label>
-        <select class="form-input" id="cse-flag">
-          <option value="reference">Keep for Reference</option>
-          <option value="supplier">Send to Supplier</option>
-          <option value="designer">Brief Designer</option>
-          <option value="inrange">In Range</option>
-          <option value="noaction">No Further Action</option>
-        </select>
+    <div class="cs-edit-body" style="max-height:70vh;overflow-y:auto;">
+      <div class="form-grid">
+        <div class="form-group"><label class="form-label">Store</label><input class="form-input" id="cse-store" placeholder="e.g. H&M, Next, Zara"></div>
+        <div class="form-group"><label class="form-label">Department / Category</label><input class="form-input" id="cse-category" placeholder="e.g. Tops, Shorts, Outerwear"></div>
+        <div class="form-group"><label class="form-label">Colour</label><input class="form-input" id="cse-colour" placeholder="e.g. Navy, Stone, Khaki"></div>
+        <div class="form-group"><label class="form-label">Price</label><input class="form-input" id="cse-price" placeholder="e.g. £29.99"></div>
+        <div class="form-group full"><label class="form-label">Fabric</label><input class="form-input" id="cse-fabric" placeholder="e.g. 100% Cotton, Linen blend"></div>
+        <div class="form-group full"><label class="form-label">Comments</label><textarea class="form-input" id="cse-notes" rows="3" placeholder="What you liked, notes for the team..."></textarea></div>
+        <div class="form-group full"><label class="form-label">Action</label>
+          <select class="form-input" id="cse-flag">
+            <option value="reference">Keep for Reference</option>
+            <option value="supplier">Send to Supplier</option>
+            <option value="designer">Brief Designer</option>
+            <option value="inrange">In Range</option>
+            <option value="noaction">No Further Action</option>
+          </select>
+        </div>
       </div>
     </div>
     <div class="cs-edit-foot">
@@ -3868,7 +3874,9 @@ function renderCompShopDetail(wrap){
 
   // Filters bar
   var stores = [...new Set(G.compImages.map(function(i){return i.store||'';}).filter(Boolean))].sort();
-  var fStore = G.compFilters.store, fFlag = G.compFilters.flag;
+  var cats = [...new Set(G.compImages.map(function(i){return i.category||'';}).filter(Boolean))].sort();
+  var colours = [...new Set(G.compImages.map(function(i){return i.colour||'';}).filter(Boolean))].sort();
+  var fStore = G.compFilters.store, fFlag = G.compFilters.flag, fCat = G.compFilters.cat||'', fColour = G.compFilters.colour||'';
   var filtersBar = document.createElement('div');
   filtersBar.className = 'cs-filters-bar';
   filtersBar.innerHTML = '<span style="font-size:0.75rem;font-weight:700;color:var(--ink3);">Filter:</span>'
@@ -3908,6 +3916,8 @@ function renderCompShopDetail(wrap){
   var show = G.compImages.filter(function(img){
     if(fStore && img.store !== fStore) return false;
     if(fFlag && img.action_flag !== fFlag) return false;
+    if(fCat && img.category !== fCat) return false;
+    if(fColour && img.colour !== fColour) return false;
     return true;
   });
 
@@ -3927,9 +3937,15 @@ function buildCompImageCard(img){
   var card = document.createElement('div');
   card.className = 'cs-img-card';
   var flag = img.action_flag || 'reference';
+  var metaBadges = '';
+  if(img.category) metaBadges += '<span class="cs-flag" style="background:#ede9fe;color:#7c3aed;">'+img.category+'</span> ';
+  if(img.colour) metaBadges += '<span class="cs-flag" style="background:#f3f4f6;color:#374151;">'+img.colour+'</span> ';
+  if(img.price) metaBadges += '<span class="cs-flag" style="background:#d1fae5;color:#065f46;">'+img.price+'</span> ';
+  if(img.fabric) metaBadges += '<span class="cs-flag" style="background:#fef3c7;color:#b45309;">'+img.fabric+'</span> ';
   card.innerHTML = (img.image_data ? '<img src="'+img.image_data+'" loading="lazy">' : '')
     +'<div class="cs-img-body">'
     +(img.store?'<div class="cs-img-store">&#128205; '+img.store+'</div>':'')
+    +(metaBadges?'<div style="display:flex;flex-wrap:wrap;gap:0.3rem;margin-bottom:0.4rem;">'+metaBadges+'</div>':'')
     +(img.notes?'<div class="cs-img-notes">'+img.notes+'</div>':'')
     +'<span class="cs-flag '+flag+'">'+( FLAG_LABELS[flag]||'Reference')+'</span>'
     +'<div class="cs-img-actions">'
@@ -3986,6 +4002,10 @@ function csEditOpen(imgId){
   var img = G.compImages.find(function(i){return i.id===imgId;}); if(!img) return;
   _csEditId = imgId;
   document.getElementById('cse-store').value = img.store || '';
+  document.getElementById('cse-category').value = img.category || '';
+  document.getElementById('cse-colour').value = img.colour || '';
+  document.getElementById('cse-price').value = img.price || '';
+  document.getElementById('cse-fabric').value = img.fabric || '';
   document.getElementById('cse-notes').value = img.notes || '';
   document.getElementById('cse-flag').value = img.action_flag || 'reference';
   document.getElementById('cs-edit-overlay').classList.add('open');
@@ -3997,12 +4017,16 @@ function csEditCloseBg(e){ if(e.target===document.getElementById('cs-edit-overla
 async function csEditSave(){
   if(!_csEditId) return;
   var store = document.getElementById('cse-store').value.trim();
+  var category = document.getElementById('cse-category').value.trim();
+  var colour = document.getElementById('cse-colour').value.trim();
+  var price = document.getElementById('cse-price').value.trim();
+  var fabric = document.getElementById('cse-fabric').value.trim();
   var notes = document.getElementById('cse-notes').value.trim();
   var flag = document.getElementById('cse-flag').value;
-  var r = await api('PUT', '/comp-shop-images/'+_csEditId, {store:store,notes:notes,actionFlag:flag});
+  var r = await api('PUT', '/comp-shop-images/'+_csEditId, {store:store,category:category,colour:colour,price:price,fabric:fabric,notes:notes,actionFlag:flag});
   if(r){
     var img = G.compImages.find(function(i){return i.id===_csEditId;});
-    if(img){ img.store=store; img.notes=notes; img.action_flag=flag; }
+    if(img){ img.store=store; img.category=category; img.colour=colour; img.price=price; img.fabric=fabric; img.notes=notes; img.action_flag=flag; }
     csEditClose();
     toast('Saved','success');
     renderMainContent();
