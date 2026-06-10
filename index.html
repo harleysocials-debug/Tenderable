@@ -900,7 +900,7 @@ input, select, textarea { font-family: inherit; }
         <div style="font-size:0.7rem;color:var(--ink3);margin-top:0.3rem;">The PDF will download automatically — attach it to the email before sending.</div>
       </div>
       <button class="btn btn-primary" style="width:100%;justify-content:center;" onclick="sbGenerate(false)">&#128196; Generate Brief</button>
-      <button class="btn btn-ghost" style="width:100%;justify-content:center;margin-top:0.5rem;" onclick="sbToggleEmail()">&#9993; Email to Supplier (Outlook)</button>
+      <button class="btn btn-ghost" id="sb-email-btn" style="width:100%;justify-content:center;margin-top:0.5rem;" onclick="sbToggleEmail()">&#9993; Email to Supplier (Outlook)</button>
     </div>
   </div>
 </div>
@@ -2427,26 +2427,28 @@ function supplierBrief(devId){
   _sbDevId=devId;
   document.getElementById('sb-cost').checked=false;
   document.getElementById('sb-qty').checked=false;
+  _sbEmailMode=false;
   var sbEmailSec=document.getElementById('sb-email-section');
   if(sbEmailSec) sbEmailSec.style.display='none';
-  var sbEmailBtn=document.querySelector('[onclick="sbToggleEmail()"]');
-  if(sbEmailBtn){ sbEmailBtn.textContent='✉ Email to Supplier (Outlook)'; sbEmailBtn.onclick=sbToggleEmail; }
+  var sbEmailBtn=document.getElementById('sb-email-btn');
+  if(sbEmailBtn) sbEmailBtn.textContent='✉ Email to Supplier (Outlook)';
   document.getElementById('sb-overlay').classList.add('open');
 }
+var _sbEmailMode=false;
 function sbToggleEmail(){
   var sec=document.getElementById('sb-email-section');
-  var btn=document.querySelector('[onclick="sbToggleEmail()"]');
-  if(sec.style.display==='none'){
+  var btn=document.getElementById('sb-email-btn');
+  if(!_sbEmailMode){
+    _sbEmailMode=true;
     sec.style.display='block';
-    // Pre-fill body based on current dev
     var dev=_sbDevId?G.devs.find(function(d){return d.id===_sbDevId;}):null;
     var supName=dev?(dev.supplierAllocation||'Supplier'):'Supplier';
     var devName=dev?dev.description:'Development';
     document.getElementById('sb-email-body').value=
       'Hi '+supName+',\n\nPlease find attached the supplier brief for '+devName+'.\n\nPlease review and confirm your ability to meet the specifications and lead time.\n\nMany thanks,\n'+(G.user?G.user.name:'');
-    btn.textContent='✉ Send Email';
-    btn.onclick=function(){ sbGenerate(true); };
+    if(btn) btn.textContent='✉ Send Email';
   } else {
+    _sbEmailMode=false;
     sbGenerate(true);
   }
 }
@@ -4945,10 +4947,29 @@ async function renderAdmin(mc){
   var users=r?r.users:[];
   var pending=users.filter(function(u){return u.status==='pending';});
   var all=users;
-  mc.innerHTML='<div class="admin-wrap"><h2 class="admin-section-title">Pending Approval ('+(pending.length)+')</h2>'+
-    pending.map(function(u){ return userRow(u,true); }).join('')+
-    '<h2 class="admin-section-title" style="margin-top:2rem;">All Users ('+(all.length)+')</h2>'+
-    all.map(function(u){ return userRow(u,false); }).join('')+'</div>';
+  var supRows=(G.suppliers||[]).map(function(s){
+    return '<tr data-supid="'+s.id+'">'
+      +'<td><input class="sup-edit-inp" value="'+esc(s.name)+'" onblur="updateSupplierRow(this)" style="width:180px;"></td>'
+      +'<td><input class="sup-edit-inp" type="email" value="'+(s.email||'')+'" onblur="updateSupplierRow(this)" style="width:260px;" placeholder="email@supplier.com"></td>'
+      +'<td><button class="btn btn-danger btn-sm" data-delid="'+s.id+'" onclick="deleteSupplier(this.dataset.delid)">&#128465;</button></td>'
+      +'</tr>';
+  }).join('');
+  mc.innerHTML='<div class="admin-wrap">'
+    +'<h2 class="admin-section-title">Pending Approval ('+(pending.length)+')</h2>'
+    +pending.map(function(u){ return userRow(u,true); }).join('')
+    +'<h2 class="admin-section-title" style="margin-top:2rem;">All Users ('+(all.length)+')</h2>'
+    +all.map(function(u){ return userRow(u,false); }).join('')
+    +'<div style="margin-top:2.5rem;">'
+    +'<h2 class="admin-section-title">Supplier Email Directory</h2>'
+    +'<p style="font-size:0.8rem;color:var(--ink3);margin-bottom:0.75rem;">Emails used when emailing supplier briefs. Not displayed elsewhere.</p>'
+    +'<table class="sup-table"><thead><tr><th>Supplier Name</th><th>Email Address</th><th></th></tr></thead>'
+    +'<tbody>'+supRows+'</tbody></table>'
+    +'<div class="sup-input-row">'
+    +'<input id="new-sup-name" placeholder="Supplier name" style="max-width:200px;">'
+    +'<input id="new-sup-email" type="email" placeholder="email@supplier.com" style="max-width:260px;">'
+    +'<button class="btn btn-primary btn-sm" onclick="addSupplier()">+ Add Supplier</button>'
+    +'</div></div>'
+    +'</div>';
 }
 function userRow(u, showActions){
   return '<div class="user-row"><div><div class="user-row-name">'+u.name+'</div><div class="user-row-meta">'+(u.role||u.type||'')+(u.company?' &bull; '+u.company:'')+'</div></div><span class="user-row-status status-'+u.status+'">'+u.status+'</span>'+(showActions?'<button class="btn btn-green btn-sm" onclick="adminApprove(\''+u.id+'\')">Approve</button><button class="btn btn-danger btn-sm" onclick="adminReject(\''+u.id+'\')">Reject</button>':'')+'</div>';
@@ -4957,6 +4978,17 @@ async function adminApprove(uid){ var r=await api('POST','/admin/approve/'+uid);
 async function adminReject(uid){ var r=await api('POST','/admin/reject/'+uid); if(r) toast('User rejected'); else toast('Reject failed','error'); renderAdmin($('main-content')); }
 
 // ── SUPPLIER MANAGEMENT ──────────────────────────────────────────────────────
+function updateSupplierRow(inp){
+  var row=inp.closest('tr'); if(!row) return;
+  var id=row.dataset.supid; if(!id) return;
+  var inputs=row.querySelectorAll('.sup-edit-inp');
+  var name=inputs[0]?inputs[0].value.trim():'';
+  var email=inputs[1]?inputs[1].value.trim():'';
+  if(!name) return;
+  updateSupplier(id,name,email);
+}
+window.updateSupplierRow=updateSupplierRow;
+
 async function addSupplier(){
   var name=document.getElementById('new-sup-name').value.trim();
   var email=document.getElementById('new-sup-email').value.trim();
@@ -4971,10 +5003,7 @@ async function addSupplier(){
   }
 }
 
-async function updateSupplier(id, row){
-  var inputs=row.querySelectorAll('.sup-edit-inp');
-  var name=inputs[0].value.trim();
-  var email=inputs[1].value.trim();
+async function updateSupplier(id, name, email){
   if(!name) return;
   var r=await api('PUT','/suppliers/'+id,{name:name,email:email||null});
   if(r){
