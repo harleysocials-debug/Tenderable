@@ -1464,7 +1464,7 @@ function styleCard(s,_si,_allStyles){
   var isLicTheme=(dev.theme||'').toLowerCase()==='license'||(dev.theme||'').toLowerCase()==='licence';
   var bothConf=s.confirmed||(isLicTheme?(s.costConfirmed&&s.qtyConfirmed&&s.licensorApproved):(s.costConfirmed&&s.qtyConfirmed));
   var costConfCard=s.costConfirmed?'<span style="font-size:0.7rem;font-weight:700;background:#dcfce7;color:#166534;padding:0.15rem 0.5rem;border-radius:20px;">&#10003; Cost</span>':'';
-  var licConfCard=(isLicTheme&&s.licensorApproved)?'<span style="font-size:0.7rem;font-weight:700;background:#fef3c7;color:#b45309;padding:0.15rem 0.5rem;border-radius:20px;">&#10003; Licensed</span>':'';
+  var licConfCard=isLicTheme?(s.licensorApproved?'<span style="font-size:0.7rem;font-weight:700;background:#fef3c7;color:#b45309;padding:0.15rem 0.5rem;border-radius:20px;">&#10003; Licensor Approved</span>':'<span style="font-size:0.7rem;font-weight:700;background:#fee2e2;color:#991b1b;padding:0.15rem 0.5rem;border-radius:20px;">&#9888; Awaiting Licensor Approval</span>'):'';
   var qtyConfCard=s.qtyConfirmed?'<span style="font-size:0.7rem;font-weight:700;background:#dbeafe;color:#1e40af;padding:0.15rem 0.5rem;border-radius:20px;">&#10003; Qty</span>':'';
   var confirmedHtml=costConfCard+qtyConfCard+licConfCard;
   return '<div class="dev-card" onclick="openDetail(\''+dev.id+'\')">'+
@@ -1633,7 +1633,7 @@ function openDetail(devId){
       // Licensor Approved — only shown when theme is License
       // Licensor Approved — only shown when theme is License
       if(isLicDet){
-        prodHtml+='<button style="border:2px solid '+(licConf?'#f59e0b':'var(--line)')+';background:'+(licConf?'#f59e0b':'white')+';color:'+(licConf?'white':'var(--ink4)')+';border-radius:8px;width:80px;height:30px;font-size:0.65rem;font-weight:700;cursor:pointer;white-space:nowrap;" onclick="window.tcf(this)" data-devid="'+dId+'" data-pidx="'+pIdx+'" data-field="licensor">'+(licConf?'&#10003; Licensed':'Licensed')+'</button>';
+        prodHtml+='<button style="border:2px solid '+(licConf?'#f59e0b':'var(--line)')+';background:'+(licConf?'#f59e0b':'white')+';color:'+(licConf?'white':'var(--ink4)')+';border-radius:8px;width:80px;height:30px;font-size:0.65rem;font-weight:700;cursor:pointer;white-space:nowrap;" onclick="window.tcf(this)" data-devid="'+dId+'" data-pidx="'+pIdx+'" data-field="licensor">'+(licConf?'&#10003; Licensor Approved':'Licensor Approved')+'</button>';
       }
       prodHtml+='</div>';
     }
