@@ -756,8 +756,8 @@ input, select, textarea { font-family: inherit; }
         <input type="text" id="login-name" placeholder="Your full name" autocomplete="name">
         <label>PIN</label>
         <input type="password" id="login-pin" placeholder="4-digit PIN" maxlength="6" inputmode="numeric" autocomplete="current-password">
-        <button class="login-btn" id="login-submit-btn">Sign In</button>
-        <div class="login-toggle">New user? <button id="show-register-btn">Create account</button></div>
+        <button class="login-btn" onclick="doLogin()">Sign In</button>
+        <div class="login-toggle">New user? <button onclick="showRegister()">Create account</button></div>
       </div>
       <div id="register-form" style="display:none;">
         <label>Full Name</label>
@@ -777,8 +777,8 @@ input, select, textarea { font-family: inherit; }
           <label>Supplier Categories</label>
           <div id="reg-cats" style="display:flex;flex-wrap:wrap;gap:0.4rem;margin-bottom:1rem;"></div>
         </div>
-        <button class="login-btn" id="register-submit-btn">Create Account</button>
-        <div class="login-toggle">Already registered? <button id="show-login-btn">Sign in</button></div>
+        <button class="login-btn" onclick="doRegister()">Create Account</button>
+        <div class="login-toggle">Already registered? <button onclick="showLogin()">Sign in</button></div>
       </div>
       <div id="login-msg"></div>
     </div>
@@ -1066,8 +1066,8 @@ function detailPill(s, extra){ return '<span class="detail-pill '+stageClass(s)+
 function initials(name){ if(!name) return '?'; return name.split(' ').map(function(w){return w[0];}).join('').substring(0,2).toUpperCase(); }
 
 // ── AUTH ───────────────────────────────────────────────────────────────────
-function showRegister(){ $('login-form').style.display='none'; $('register-form').style.display=''; $('login-msg').innerHTML=''; }
-function showLogin(){ $('login-form').style.display=''; $('register-form').style.display='none'; $('login-msg').innerHTML=''; }
+window.showRegister = function showRegister(){ $('login-form').style.display='none'; $('register-form').style.display=''; $('login-msg').innerHTML=''; }
+window.showLogin = function showLogin(){ $('login-form').style.display=''; $('register-form').style.display='none'; $('login-msg').innerHTML=''; }
 document.getElementById('reg-role').addEventListener('change', function(){ $('reg-cats-wrap').style.display = this.value==='supplier' ? '' : 'none'; renderRegCats(); });
 function renderRegCats(){
   var el = $('reg-cats'); el.innerHTML='';
@@ -1081,29 +1081,8 @@ function renderRegCats(){
   });
 }
 
-// ── LOGIN EVENT LISTENERS (Safari-safe) ──────────────────────────────────────
-(function(){
-  function bindLogin(){
-    var signIn = document.getElementById('login-submit-btn');
-    var register = document.getElementById('register-submit-btn');
-    var showReg = document.getElementById('show-register-btn');
-    var showLog = document.getElementById('show-login-btn');
-    var pinInput = document.getElementById('login-pin');
-    if(signIn) signIn.addEventListener('click', function(e){ e.preventDefault(); doLogin(); });
-    if(register) register.addEventListener('click', function(e){ e.preventDefault(); doRegister(); });
-    if(showReg) showReg.addEventListener('click', function(e){ e.preventDefault(); showRegister(); });
-    if(showLog) showLog.addEventListener('click', function(e){ e.preventDefault(); showLogin(); });
-    if(pinInput) pinInput.addEventListener('keydown', function(e){ if(e.key==='Enter'){ e.preventDefault(); doLogin(); } });
-  }
-  if(document.readyState==='loading'){ document.addEventListener('DOMContentLoaded', bindLogin); }
-  else { bindLogin(); }
-})();
 
-window.doLogin=function(){ doLogin(); };
-window.doRegister=function(){ doRegister(); };
-window.showLogin=showLogin;
-window.showRegister=showRegister;
-async function doLogin(){
+window.doLogin = async function doLogin(){
   var name=$('login-name').value.trim(), pin=$('login-pin').value.trim();
   if(!name||!pin){ $('login-msg').innerHTML='<div class="error-msg">Please enter your name and PIN</div>'; return; }
   loading(true);
@@ -1118,7 +1097,7 @@ async function doLogin(){
   await loadData();
   startApp();
 }
-async function doRegister(){
+window.doRegister = async function doRegister(){
   var name=$('reg-name').value.trim(), pin=$('reg-pin').value.trim(), role=$('reg-role').value, company=$('reg-company').value.trim();
   if(!name||!pin||!role){ $('login-msg').innerHTML='<div class="error-msg">Please fill all required fields</div>'; return; }
   var cats=[]; if(role==='supplier') $('reg-cats').querySelectorAll('[data-on="1"]').forEach(function(b){cats.push(b.dataset.cat);});
