@@ -1461,12 +1461,12 @@ function styleCard(s,_si,_allStyles){
   var retailHtml=s.retailPrice?'<span style="font-size:0.78rem;font-weight:700;color:#10b981;">Retail &pound;'+parseFloat(s.retailPrice).toFixed(2)+'</span>':'';
   var qtyHtml=s.qty?'<span style="font-size:0.7rem;color:var(--ink4);">'+parseInt(s.qty).toLocaleString()+' units</span>':'';
   var gradeBodyHtml=s.storeGrade?'<span style="font-size:0.7rem;font-weight:800;background:var(--line2);border:1px solid var(--line);padding:0.15rem 0.5rem;border-radius:20px;color:var(--ink2);">Grade '+s.storeGrade+'</span>':'';
-  var bothConf=s.confirmed||(s.costConfirmed&&s.qtyConfirmed);
-  var costConfCard=s.costConfirmed?'<span style="font-size:0.7rem;font-weight:700;background:#dcfce7;color:#166534;padding:0.15rem 0.5rem;border-radius:20px;">&#10003; Cost</span>':'';
   var isLicTheme=(dev.theme||'').toLowerCase()==='license'||(dev.theme||'').toLowerCase()==='licence';
-  var licConfCard=(isLicTheme&&s.licensorApproved)?'<span style="font-size:0.7rem;font-weight:700;background:#fef3c7;color:#b45309;padding:0.15rem 0.5rem;border-radius:20px;">&#10003; Licensed</span>':''
+  var bothConf=s.confirmed||(isLicTheme?(s.costConfirmed&&s.qtyConfirmed&&s.licensorApproved):(s.costConfirmed&&s.qtyConfirmed));
+  var costConfCard=s.costConfirmed?'<span style="font-size:0.7rem;font-weight:700;background:#dcfce7;color:#166534;padding:0.15rem 0.5rem;border-radius:20px;">&#10003; Cost</span>':'';
+  var licConfCard=(isLicTheme&&s.licensorApproved)?'<span style="font-size:0.7rem;font-weight:700;background:#fef3c7;color:#b45309;padding:0.15rem 0.5rem;border-radius:20px;">&#10003; Licensed</span>':'';
   var qtyConfCard=s.qtyConfirmed?'<span style="font-size:0.7rem;font-weight:700;background:#dbeafe;color:#1e40af;padding:0.15rem 0.5rem;border-radius:20px;">&#10003; Qty</span>':'';
-  var confirmedHtml=costConfCard+qtyConfCard;
+  var confirmedHtml=costConfCard+qtyConfCard+licConfCard;
   return '<div class="dev-card" onclick="openDetail(\''+dev.id+'\')">'+
     '<div class="card-img" style="position:relative;">'+
     (imgSrc?'<img src="'+imgSrc+'" style="position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;">':'<div class="card-img-placeholder" style="width:100%;height:100%;">&#127912;</div>')+
