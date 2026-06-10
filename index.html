@@ -3796,13 +3796,12 @@ function compressImage(file, maxW, quality, cb){
 
 function renderCompShopPage(mc){
   mc.innerHTML = '';
-  var wrap = document.createElement('div');
-  wrap.className = 'cs-wrap';
-  mc.appendChild(wrap);
-
   if(G.activeCompShop){
-    renderCompShopDetail(wrap);
+    renderCompShopDetail(mc);
   } else {
+    var wrap = document.createElement('div');
+    wrap.className = 'cs-wrap';
+    mc.appendChild(wrap);
     renderCompShopList(wrap);
   }
 }
@@ -3862,8 +3861,7 @@ async function openCompShop(shopId){
   renderMainContent();
 }
 
-function renderCompShopDetail(wrap){
-  var mc = document.getElementById('main-content');
+function renderCompShopDetail(mc){
   var shop = G.activeCompShop;
 
   // Header — appended to mc directly so it's sticky at top
@@ -3890,19 +3888,11 @@ function renderCompShopDetail(wrap){
   var filtersBar = document.createElement('div');
   filtersBar.className = 'cs-filters-bar';
   filtersBar.innerHTML = '<span style="font-size:0.75rem;font-weight:700;color:var(--ink3);">Filter:</span>'
-    +'<select class="cs-filter-sel" onchange="G.compFilters.store=this.value;renderMainContent()">'
-    +'<option value="">All Stores</option>'
-    +stores.map(function(s){return '<option value="'+s+'"'+(fStore===s?' selected':'')+'>'+s+'</option>';}).join('')
-    +'</select>'
-    +'<select class="cs-filter-sel" onchange="G.compFilters.flag=this.value;renderMainContent()">'
-    +'<option value="">All Actions</option>'
-    +'<option value="reference"'+(fFlag==='reference'?' selected':'')+'>Keep for Reference</option>'
-    +'<option value="supplier"'+(fFlag==='supplier'?' selected':'')+'>Send to Supplier</option>'
-    +'<option value="designer"'+(fFlag==='designer'?' selected':'')+'>Brief Designer</option>'
-    +'<option value="inrange"'+(fFlag==='inrange'?' selected':'')+'>In Range</option>'
-    +'<option value="noaction"'+(fFlag==='noaction'?' selected':'')+'>No Further Action</option>'
-    +'</select>'
-    +((fStore||fFlag)?'<button class="btn btn-ghost btn-sm" onclick="G.compFilters={store:\'\',flag:\'\'};renderMainContent()">Clear</button>':'');
+    +'<select class="cs-filter-sel" onchange="G.compFilters.store=this.value;renderMainContent()"><option value="">All Stores</option>'+stores.map(function(s){return '<option value="'+s+'"'+(fStore===s?' selected':'')+'>'+s+'</option>';}).join('')+'</select>'
+    +(cats.length?'<select class="cs-filter-sel" onchange="G.compFilters.cat=this.value;renderMainContent()"><option value="">All Categories</option>'+cats.map(function(c){return '<option value="'+c+'"'+(fCat===c?' selected':'')+'>'+c+'</option>';}).join('')+'</select>':'')
+    +(colours.length?'<select class="cs-filter-sel" onchange="G.compFilters.colour=this.value;renderMainContent()"><option value="">All Colours</option>'+colours.map(function(c){return '<option value="'+c+'"'+(fColour===c?' selected':'')+'>'+c+'</option>';}).join('')+'</select>':'')
+    +'<select class="cs-filter-sel" onchange="G.compFilters.flag=this.value;renderMainContent()"><option value="">All Actions</option><option value="reference"'+(fFlag==='reference'?' selected':'')+'>Keep for Reference</option><option value="supplier"'+(fFlag==='supplier'?' selected':'')+'>Send to Supplier</option><option value="designer"'+(fFlag==='designer'?' selected':'')+'>Brief Designer</option><option value="inrange"'+(fFlag==='inrange'?' selected':'')+'>In Range</option><option value="noaction"'+(fFlag==='noaction'?' selected':'')+'>No Further Action</option></select>'
+    +((fStore||fFlag||fCat||fColour)?'<button class="btn btn-ghost btn-sm" onclick="G.compFilters={store:\'\',flag:\'\',cat:\'\',colour:\'\'};renderMainContent()">&#10005; Clear</button>':'');
   mc.appendChild(filtersBar);
 
   // Selection bar
@@ -3919,7 +3909,6 @@ function renderCompShopDetail(wrap){
   var imagesWrap = document.createElement('div');
   imagesWrap.className = 'cs-images-wrap';
   mc.appendChild(imagesWrap);
-  wrap.appendChild(imagesWrap);
 
   // Drop zone
   imagesWrap.innerHTML = '<div class="cs-drop-zone" id="cs-drop-zone"'
