@@ -1171,7 +1171,7 @@ async function loadData(){
   try { await loadDirectMessages(); } catch(e) { console.warn('Messages not loaded:', e.message); }
   try { var pRes=await api('GET','/packs'); if(pRes&&pRes.packs) G.packs=pRes.packs; } catch(e){}
   try { var csRes=await api('GET','/comp-shops'); if(csRes&&csRes.shops) G.compShops=csRes.shops; } catch(e){}
-  try { var eRes=await api('GET','/ecom-styling'); if(eRes&&eRes.styles){ G.ecomStyles={}; eRes.styles.forEach(function(s){ G.ecomStyles[s.id]=s; }); } } catch(e){}
+  try { var eRes=await api('GET','/ecom-styling'); if(eRes&&eRes.styles){ G.ecomStyles={}; eRes.styles.forEach(function(s){ s.styling_with=s.styling_with||[]; s.props=s.props||[]; G.ecomStyles[s.id]=s; }); } } catch(e){}
   if(dRes&&dRes.devComments) G.devComments=dRes.devComments;
   if(tRes&&tRes.tenders) G.tenders=tRes.tenders.map(function(t){ return Object.assign({},t,{deadlineDate:new Date(t.deadlineDate)}); });
   if(bRes&&bRes.bids) G.bids=bRes.bids;
@@ -3727,6 +3727,10 @@ function removeStyleWith(idx){
   var id=ecomStyleId(G.activeEcomStyle.devId,G.activeEcomStyle.pidx);
   if(!G.ecomStyles[id]||!G.ecomStyles[id].styling_with) return;
   G.ecomStyles[id].styling_with.splice(idx,1);
+  // Revert to unstyled if no styling items remain
+  if(!G.ecomStyles[id].styling_with.length && G.ecomStyles[id].status==='styled'){
+    G.ecomStyles[id].status='unstyled';
+  }
   saveEcomStyle();
   refreshSwGrid();
   refreshSwSelected();
@@ -3737,6 +3741,10 @@ function removeStyleWithByDevPidx(devId, pidx){
   var id=ecomStyleId(G.activeEcomStyle.devId,G.activeEcomStyle.pidx);
   if(!G.ecomStyles[id]||!G.ecomStyles[id].styling_with) return;
   G.ecomStyles[id].styling_with=G.ecomStyles[id].styling_with.filter(function(x){return !(x.devId===devId&&x.pidx===pidx);});
+  // Revert to unstyled if no styling items remain
+  if(!G.ecomStyles[id].styling_with.length && G.ecomStyles[id].status==='styled'){
+    G.ecomStyles[id].status='unstyled';
+  }
   saveEcomStyle();
   refreshSwGrid();
   refreshSwSelected();
@@ -4454,7 +4462,9 @@ function ecomStyleId(devId, pidx){ return devId+'-'+pidx; }
 
 function getEcomStyle(devId, pidx){
   var id=ecomStyleId(devId,pidx);
-  return G.ecomStyles[id]||{id:id,dev_id:devId,product_idx:pidx,model:'Terry Hollands',shot_type:'',styling_notes:'',props:[],status:'unstyled',styling_with:[]};
+  var existing=G.ecomStyles[id];
+  if(existing){ existing.styling_with=existing.styling_with||[]; existing.props=existing.props||[]; return existing; }
+  return {id:id,dev_id:devId,product_idx:pidx,model:'Terry Hollands',shot_type:'',styling_notes:'',props:[],status:'unstyled',styling_with:[]};
 }
 
 function allEcomStyles(){
