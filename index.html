@@ -1463,6 +1463,8 @@ function styleCard(s,_si,_allStyles){
   var gradeBodyHtml=s.storeGrade?'<span style="font-size:0.7rem;font-weight:800;background:var(--line2);border:1px solid var(--line);padding:0.15rem 0.5rem;border-radius:20px;color:var(--ink2);">Grade '+s.storeGrade+'</span>':'';
   var bothConf=s.confirmed||(s.costConfirmed&&s.qtyConfirmed);
   var costConfCard=s.costConfirmed?'<span style="font-size:0.7rem;font-weight:700;background:#dcfce7;color:#166534;padding:0.15rem 0.5rem;border-radius:20px;">&#10003; Cost</span>':'';
+  var isLicTheme=(dev.theme||'').toLowerCase()==='license'||(dev.theme||'').toLowerCase()==='licence';
+  var licConfCard=(isLicTheme&&s.licensorApproved)?'<span style="font-size:0.7rem;font-weight:700;background:#fef3c7;color:#b45309;padding:0.15rem 0.5rem;border-radius:20px;">&#10003; Licensed</span>':''
   var qtyConfCard=s.qtyConfirmed?'<span style="font-size:0.7rem;font-weight:700;background:#dbeafe;color:#1e40af;padding:0.15rem 0.5rem;border-radius:20px;">&#10003; Qty</span>':'';
   var confirmedHtml=costConfCard+qtyConfCard;
   return '<div class="dev-card" onclick="openDetail(\''+dev.id+'\')">'+
@@ -1626,6 +1628,12 @@ function openDetail(devId){
       prodHtml+='<div style="display:flex;flex-direction:column;align-items:center;gap:0.25rem;flex-shrink:0;">';
       prodHtml+='<button style="border:2px solid '+(costConf?'#10b981':'var(--line)')+';background:'+(costConf?'#10b981':'white')+';color:'+(costConf?'white':'var(--ink4)')+';border-radius:8px;width:52px;height:30px;font-size:0.7rem;font-weight:700;cursor:pointer;" onclick="window.tcf(this)" data-devid="'+dId+'" data-pidx="'+pIdx+'" data-field="cost">'+(costConf?'&#10003; Cost':'Cost')+'</button>';
       prodHtml+='<button style="border:2px solid '+(qtyConf?'#6366f1':'var(--line)')+';background:'+(qtyConf?'#6366f1':'white')+';color:'+(qtyConf?'white':'var(--ink4)')+';border-radius:8px;width:52px;height:30px;font-size:0.7rem;font-weight:700;cursor:pointer;" onclick="window.tcf(this)" data-devid="'+dId+'" data-pidx="'+pIdx+'" data-field="qty">'+(qtyConf?'&#10003; Qty':'Qty')+'</button>';
+      // Licensor Approved — only shown when theme is License
+      var isLicense=(dev.theme||'').toLowerCase()==='license'||(dev.theme||'').toLowerCase()==='licence';
+      if(isLicense){
+        var licConf=p.licensorApproved===true;
+        prodHtml+='<button style="border:2px solid '+(licConf?'#f59e0b':'var(--line)')+';background:'+(licConf?'#f59e0b':'white')+';color:'+(licConf?'white':'var(--ink4)')+';border-radius:8px;width:80px;height:30px;font-size:0.65rem;font-weight:700;cursor:pointer;white-space:nowrap;" onclick="window.tcf(this)" data-devid="'+dId+'" data-pidx="'+pIdx+'" data-field="licensor">'+(licConf?'&#10003; Licensed':'Licensed')+'</button>';
+      }
       prodHtml+='</div>';
     }
     // Prices
@@ -2147,9 +2155,12 @@ async function toggleConfirmField(devId, pIdx, field){
   if(field==='cost'){
     prods[pIdx].costConfirmed = !prods[pIdx].costConfirmed;
     toast(prods[pIdx].costConfirmed?'Cost confirmed':'Cost unconfirmed','success');
-  } else {
+  } else if(field==='qty'){
     prods[pIdx].qtyConfirmed = !prods[pIdx].qtyConfirmed;
     toast(prods[pIdx].qtyConfirmed?'Qty confirmed':'Qty unconfirmed','success');
+  } else if(field==='licensor'){
+    prods[pIdx].licensorApproved = !prods[pIdx].licensorApproved;
+    toast(prods[pIdx].licensorApproved?'Licensor approved ✓':'Licensor approval removed','success');
   }
   d.products=prods; // update local state
   openDetail(devId); // re-render immediately
