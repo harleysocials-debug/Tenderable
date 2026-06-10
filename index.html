@@ -2399,7 +2399,7 @@ function _supplierBriefGenerate(devId, includeCost, includeQty){
     if(p.storeGrade) meta.push('Grade '+p.storeGrade);
     if(p.intakeMonth) meta.push('Intake: '+p.intakeMonth);
     if(meta.length) styleCards+='<div class="style-meta">'+meta.join(' &bull; ')+'</div>';
-    styleCards+='<div class="style-qty">Qty: <strong>'+(parseInt(p.qty||0)).toLocaleString()+'</strong></div>';
+    if(includeQty) styleCards+='<div class="style-qty">Qty: <strong>'+(parseInt(p.qty||0)).toLocaleString()+'</strong></div>';
     if(includeCost&&p.targetCost) styleCards+='<div class="style-cost">Target Cost: <strong>&pound;'+parseFloat(p.targetCost).toFixed(2)+'</strong></div>';
     styleCards+='</div></div>';
   });
@@ -2457,18 +2457,15 @@ function _supplierBriefGenerate(devId, includeCost, includeQty){
     '<div class="sum-box"><div class="sum-label">Category</div><div class="sum-val">'+(prods[0]&&prods[0].category?prods[0].category:d.category||'&mdash;')+'</div></div>'+
     '<div class="sum-box"><div class="sum-label">Lead Time From Order</div><div class="sum-val">'+(d.leadTimeTarget?d.leadTimeTarget+' wks / '+(d.leadTimeTarget*7)+' days':'&mdash;')+'</div></div>'+
     '<div class="sum-box"><div class="sum-label">Total Styles</div><div class="sum-val">'+prods.length+'</div></div>'+
-    '<div class="sum-box"><div class="sum-label">Total Units</div><div class="sum-val">'+totalQty.toLocaleString()+'</div></div>'+
+    (includeQty?'<div class="sum-box"><div class="sum-label">Total Units</div><div class="sum-val">'+totalQty.toLocaleString()+'</div></div>':'')+
     '</div>'+
     // Fabric
     (d.fabric||d.block?'<div class="section-title">Fabric &amp; Construction</div><div class="notes-box"><div class="notes-text">'+(d.fabric||'')+(d.fabric&&d.block?' &bull; ':'')+( d.block?'<strong>Block:</strong> '+d.block:'')+'</div></div>':'')+
     // Styles
-    '<div class="section-title">Styles &amp; Quantities ('+prods.length+')</div>'+
+    '<div class="section-title">'+(includeQty?'Styles &amp; Quantities':'Styles')+' ('+prods.length+')</div>'+
     '<div class="styles-grid">'+styleCards+'</div>'+
     // Total
-    '<div class="total-row">'+
-    '<div><div class="total-label">TOTAL ORDER QUANTITY</div></div>'+
-    '<div class="total-val">'+totalQty.toLocaleString()+' units</div>'+
-    '</div>'+
+    (includeQty?'<div class="total-row"><div><div class="total-label">TOTAL ORDER QUANTITY</div></div><div class="total-val">'+totalQty.toLocaleString()+' units</div></div>':'')+
     // Notes
     (d.labellingReqs?'<div class="section-title">Notes, Labelling &amp; Requirements</div><div class="notes-box"><div class="notes-text">'+d.labellingReqs+'</div></div>':'')+
     // Footer
