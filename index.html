@@ -584,7 +584,7 @@ input, select, textarea { font-family: inherit; }
 .ecom-card-meta { display:flex; gap:0.3rem; flex-wrap:wrap; }
 .ecom-badge { font-size:0.62rem; font-weight:700; padding:0.15rem 0.45rem; border-radius:10px; }
 .ecom-badge.unstyled { background:#f3f4f6; color:#6b7280; }
-.ecom-badge.inprogress { background:#fef3c7; color:#b45309; }
+.ecom-badge.styled { background:#dbeafe; color:#1e40af; }
 .ecom-badge.approved { background:#d1fae5; color:#065f46; }
 
 /* Ecom detail panel */
@@ -597,7 +597,7 @@ input, select, textarea { font-family: inherit; }
 .ecom-stage-step:last-child { border-right:none; }
 .ecom-stage-step:hover { background:var(--line); }
 .ecom-stage-step.active.unstyled { background:#f3f4f6; color:#374151; }
-.ecom-stage-step.active.inprogress { background:#fef3c7; color:#b45309; }
+.ecom-stage-step.active.styled { background:#fef3c7; color:#b45309; }
 .ecom-stage-step.active.approved { background:#d1fae5; color:#065f46; }
 .ecom-product-hero { display:flex; gap:1rem; align-items:flex-start; background:var(--line2); border-radius:10px; padding:1rem; margin-bottom:1.25rem; }
 .ecom-product-hero img { width:90px; height:90px; border-radius:8px; object-fit:cover; flex-shrink:0; }
@@ -731,6 +731,18 @@ input, select, textarea { font-family: inherit; }
   .login-card { padding: 1.25rem; border-radius: 16px; }
   .login-btn { padding: 0.9rem; font-size: 0.9rem; }
 }
+
+/* ── ECOM SELECTION ──────────────────────────────── */
+.ecom-card { position:relative; }
+.ecom-card-tick-wrap { position:absolute; top:6px; left:6px; z-index:5; }
+.ecom-card-tick { width:22px; height:22px; border-radius:5px; border:2px solid white; background:rgba(0,0,0,0.25); cursor:pointer; display:flex; align-items:center; justify-content:center; transition:all 0.15s; backdrop-filter:blur(4px); }
+.ecom-card.ecom-selected .ecom-card-tick { background:#6366f1; border-color:#6366f1; }
+.ecom-card-tick-check { color:white; font-size:0.7rem; font-weight:800; display:none; }
+.ecom-card.ecom-selected .ecom-card-tick-check { display:block; }
+.ecom-card.ecom-selected { border-color:#6366f1; box-shadow:0 0 0 2px #6366f1; }
+.ecom-sel-bar { background:#eef2ff; border-bottom:1px solid #c7d2fe; padding:0.6rem 1.5rem; display:none; align-items:center; gap:0.75rem; flex-wrap:wrap; }
+.ecom-sel-bar.visible { display:flex; }
+.ecom-sel-count { font-size:0.8rem; font-weight:700; color:#6366f1; }
 /* Toast */
 .toast { position: fixed; bottom: 1.5rem; right: 1.5rem; background: var(--ink); color: white; padding: 0.85rem 1.25rem; border-radius: 12px; font-size: 0.875rem; font-weight: 600; z-index: 9999; transform: translateY(100px); opacity: 0; transition: all 0.25s; }
 .toast.show { transform: translateY(0); opacity: 1; }
@@ -3694,6 +3706,8 @@ function addStyleWith(dev, product, pidx, imgSrc){
   if(!G.ecomStyles[id].styling_with) G.ecomStyles[id].styling_with=[];
   // Prevent duplicates
   if(G.ecomStyles[id].styling_with.find(function(x){return x.devId===dev.id&&x.pidx===pidx;})) return;
+  // Auto-advance status to 'styled' if currently unstyled
+  if(G.ecomStyles[id].status==='unstyled') G.ecomStyles[id].status='styled';
   G.ecomStyles[id].styling_with.push({
     devId:dev.id, pidx:pidx,
     description:product.description,
@@ -4308,6 +4322,132 @@ window.csFormClose = csFormClose;
 window.csFormCloseBg = csFormCloseBg;
 window.csFormSubmit = csFormSubmit;
 
+
+// ── ECOM SELECTION & PDF ───────────────────────────────────────────────────────
+G._ecomSelected = G._ecomSelected || [];
+
+function toggleEcomSel(e, eid){
+  e.stopPropagation();
+  if(!G._ecomSelected) G._ecomSelected=[];
+  var idx=G._ecomSelected.indexOf(eid);
+  if(idx>=0) G._ecomSelected.splice(idx,1); else G._ecomSelected.push(eid);
+  // Update card
+  document.querySelectorAll('.ecom-card').forEach(function(card){
+    var tick=card.querySelector('.ecom-card-tick');
+    if(!tick) return;
+    var id=tick.dataset.eid;
+    card.classList.toggle('ecom-selected',G._ecomSelected.indexOf(id)>=0);
+  });
+  updateEcomSelBar();
+}
+
+function updateEcomSelBar(){
+  var bar=document.getElementById('ecom-sel-bar');
+  var count=document.getElementById('ecom-sel-count');
+  var n=(G._ecomSelected||[]).length;
+  if(bar){ bar.className='ecom-sel-bar'+(n>0?' visible':''); }
+  if(count) count.textContent=n+' selected';
+}
+
+function ecomSelectAll(){
+  G._ecomSelected=[];
+  document.querySelectorAll('.ecom-card').forEach(function(card){
+    var tick=card.querySelector('.ecom-card-tick');
+    if(tick){ G._ecomSelected.push(tick.dataset.eid); card.classList.add('ecom-selected'); }
+  });
+  updateEcomSelBar();
+}
+
+function ecomClearSel(){
+  G._ecomSelected=[];
+  document.querySelectorAll('.ecom-card.ecom-selected').forEach(function(c){ c.classList.remove('ecom-selected'); });
+  updateEcomSelBar();
+}
+
+function exportEcomPDF(){
+  var ids=G._ecomSelected||[];
+  if(!ids.length){ toast('No styles selected','error'); return; }
+  var today=new Date().toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'});
+  var statusLabels={unstyled:'Unstyled',styled:'Styled',approved:'Approved'};
+
+  var itemsHtml='';
+  ids.forEach(function(eid){
+    var es=G.ecomStyles[eid]; if(!es) return;
+    var parts=eid.split('-'); var pidx=parseInt(parts[parts.length-1]);
+    var devId=parts.slice(0,-1).join('-');
+    var dev=G.devs.find(function(d){return d.id===devId;}); if(!dev) return;
+    var product=(dev.products||[])[pidx]; if(!product) return;
+    var imgSrc=product.image||((dev.files||[]).find(function(f){return f.isImage&&f.dataUrl;})||{}).dataUrl||'';
+    var status=es.status||'unstyled';
+    var statusColors={unstyled:'#f3f4f6',styled:'#dbeafe',approved:'#d1fae5'};
+    var statusTxt={unstyled:'#374151',styled:'#1e40af',approved:'#065f46'};
+
+    // Style with items
+    var swHtml='';
+    (es.styling_with||[]).forEach(function(sw){
+      var swImg=sw.image||'';
+      swHtml+='<div style="display:flex;align-items:center;gap:8px;background:#f8f9fb;border-radius:6px;padding:5px 8px;margin-bottom:4px;">'
+        +(swImg?'<img src="'+swImg+'" style="width:36px;height:36px;border-radius:5px;object-fit:cover;flex-shrink:0;">':'<div style="width:36px;height:36px;border-radius:5px;background:#e5e7eb;flex-shrink:0;"></div>')
+        +'<div><div style="font-size:9px;font-weight:700;">'+sw.description+'</div>'
+        +'<div style="font-size:8px;color:#6b7280;">'+(sw.colour||'')+(sw.category?' &bull; '+sw.category:'')+'</div></div>'
+        +'</div>';
+    });
+
+    itemsHtml+='<div style="break-inside:avoid;page-break-inside:avoid;border:1px solid #e5e7eb;border-radius:10px;overflow:hidden;margin-bottom:14px;background:white;">'
+      +'<div style="display:flex;gap:12px;padding:12px;">'
+      +(imgSrc?'<img src="'+imgSrc+'" style="width:100px;height:100px;border-radius:8px;object-fit:cover;flex-shrink:0;">':'<div style="width:100px;height:100px;border-radius:8px;background:#f3f4f6;flex-shrink:0;"></div>')
+      +'<div style="flex:1;">'
+      +'<div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:6px;">'
+      +'<div><div style="font-size:12px;font-weight:800;">'+product.description+'</div>'
+      +'<div style="font-size:10px;color:#6b7280;">'+(product.colour||'')+' &bull; '+(product.seasonCode||dev.seasonCode||'')+'</div></div>'
+      +'<span style="font-size:8px;font-weight:700;padding:2px 8px;border-radius:10px;background:'+(statusColors[status]||'#f3f4f6')+';color:'+(statusTxt[status]||'#374151')+';">'+(statusLabels[status]||status)+'</span>'
+      +'</div>'
+      +(es.model?'<div style="font-size:9px;color:#6b7280;margin-bottom:3px;"><strong>Model:</strong> '+es.model+'</div>':'')
+      +(es.shot_type?'<div style="font-size:9px;color:#6b7280;margin-bottom:3px;"><strong>Shot Type:</strong> '+es.shot_type+'</div>':'')
+      +(es.styling_notes?'<div style="font-size:9px;color:#374151;background:#fffbeb;border-left:3px solid #f59e0b;padding:4px 6px;border-radius:0 4px 4px 0;margin-bottom:6px;">'+es.styling_notes+'</div>':'')
+      +(es.props&&es.props.length?'<div style="font-size:9px;color:#6b7280;margin-bottom:3px;"><strong>Props:</strong> '+es.props.join(', ')+'</div>':'')
+      +'</div></div>'
+      +(es.styling_with&&es.styling_with.length?'<div style="padding:8px 12px;border-top:1px solid #f3f4f6;"><div style="font-size:9px;font-weight:700;color:#6366f1;margin-bottom:5px;">&#9889; Styled With</div>'+swHtml+'</div>':'')
+      +'</div>';
+  });
+
+  var html='<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Ecom Styling Export</title>'
+    +'<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">'
+    +'<style>*{box-sizing:border-box;margin:0;padding:0;}body{font-family:"DM Sans",Arial,sans-serif;background:white;color:#0c0f14;-webkit-print-color-adjust:exact;print-color-adjust:exact;}.page{max-width:860px;margin:0 auto;padding:28px;}@media print{@page{margin:10mm;size:A4;}.no-print{display:none;}}</style>'
+    +'<'+'script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"><'+'/script>'
+    +'</head><body><div class="page">'
+    +'<div style="display:flex;justify-content:space-between;align-items:flex-start;padding-bottom:14px;border-bottom:2px solid #0c0f14;margin-bottom:16px;">'
+    +'<div><div style="font-size:20px;font-weight:800;">Tender<span style="color:#6366f1;">able</span></div><div style="font-size:9px;color:#9ca3af;">Ecom Styling Export</div></div>'
+    +'<div style="text-align:right;"><div style="font-size:14px;font-weight:800;">Ecom Styling</div><div style="font-size:10px;color:#6b7280;">'+ids.length+' styles &bull; '+today+'</div></div></div>'
+    +itemsHtml
+    +'<div style="border-top:1px solid #e5e7eb;padding-top:10px;margin-top:16px;display:flex;justify-content:space-between;font-size:9px;color:#9ca3af;"><span>Ecom Styling &bull; '+today+'</span><span>CONFIDENTIAL</span></div>'
+    +'</div>'
+    +'<div class="no-print" style="position:fixed;bottom:20px;right:20px;display:flex;gap:8px;">'
+    +'<button onclick="window.print()" style="background:#0c0f14;color:white;border:none;padding:10px 20px;border-radius:8px;font-weight:700;cursor:pointer;font-family:inherit;">&#128424; Print</button>'
+    +'<button id="ecom-pdf-btn" onclick="dlEcomPDF()" style="background:#6366f1;color:white;border:none;padding:10px 20px;border-radius:8px;font-weight:700;cursor:pointer;font-family:inherit;">&#128190; Save PDF</button>'
+    +'</div>'
+    +'<'+'script>function dlEcomPDF(){'
+    +'var btn=document.getElementById("ecom-pdf-btn");btn.textContent="Generating...";btn.disabled=true;'
+    +'var el=document.querySelector(".page");'
+    +'var opt={margin:[8,8,8,8],filename:"Ecom-Styling-Export.pdf",image:{type:"jpeg",quality:0.9},html2canvas:{scale:2,useCORS:true,allowTaint:true,logging:false,imageTimeout:0},jsPDF:{unit:"mm",format:"a4",orientation:"portrait"}};'
+    +'var imgs=Array.from(el.querySelectorAll("img"));var done=0;var total=imgs.length;'
+    +'function go(){html2pdf().set(opt).from(el).save().then(function(){btn.textContent="Save PDF";btn.disabled=false;});}'
+    +'if(!total){go();return;}'
+    +'imgs.forEach(function(img){if(img.complete&&img.naturalHeight!==0){done++;if(done===total)go();}else{img.onload=function(){done++;if(done===total)go();};img.onerror=function(){done++;if(done===total)go();};}});'
+    +'}<'+'/script>'
+    +'</body></html>';
+
+  var w=window.open('','_blank');
+  if(!w){ toast('Please allow popups to export PDF','error'); return; }
+  w.document.write(html);
+  w.document.close();
+}
+
+window.toggleEcomSel=toggleEcomSel;
+window.ecomSelectAll=ecomSelectAll;
+window.ecomClearSel=ecomClearSel;
+window.exportEcomPDF=exportEcomPDF;
+
 // ── ECOM STYLING ──────────────────────────────────────────────────────────────
 
 function ecomStyleId(devId, pidx){ return devId+'-'+pidx; }
@@ -4384,6 +4524,17 @@ function renderEcomPage(mc){
     return true;
   });
 
+  // Selection bar
+  var ecomSelBar=document.createElement('div');
+  ecomSelBar.className='ecom-sel-bar'+(G._ecomSelected&&G._ecomSelected.length?' visible':'');
+  ecomSelBar.id='ecom-sel-bar';
+  ecomSelBar.innerHTML='<span class="ecom-sel-count" id="ecom-sel-count">'+(G._ecomSelected?G._ecomSelected.length:0)+' selected</span>'
+    +'<button class="btn btn-primary btn-sm" onclick="exportEcomPDF()">&#128196; Export PDF</button>'
+    +'<button class="btn btn-ghost btn-sm" onclick="ecomSelectAll()">Select All</button>'
+    +'<button class="btn btn-ghost btn-sm" onclick="ecomClearSel()">Clear</button>';
+  wrap.innerHTML='';
+  wrap.appendChild(ecomSelBar);
+
   if(!show.length){
     wrap.innerHTML+='<div class="empty-state"><div class="empty-state-icon">&#128247;</div><h3>No styles found</h3><p>Try adjusting your filters.</p></div>';
     return;
@@ -4394,7 +4545,7 @@ function renderEcomPage(mc){
   show.forEach(function(x){
     var dev=x.dev; var p=x.product; var pidx=x.pidx; var es=x.styling;
     var imgSrc=p.image||((dev.files||[]).find(function(f){return f.isImage&&f.dataUrl;})||{}).dataUrl||'';
-    var statusLabel={unstyled:'Unstyled',inprogress:'In Progress',approved:'Approved'};
+    var statusLabel={unstyled:'Unstyled',styled:'Styled',approved:'Approved'};
     var card=document.createElement('div');
     card.className='ecom-card';
     card.innerHTML=
@@ -4409,7 +4560,14 @@ function renderEcomPage(mc){
           '<span class="ecom-badge '+es.status+'">'+( statusLabel[es.status]||'Unstyled')+'</span>'+
         '</div>'+
       '</div>';
-    card.onclick=function(){ openEcomDetail(dev.id, pidx); };
+    var isEcomSel=(G._ecomSelected||[]).indexOf(ecomStyleId(dev.id,pidx))>=0;
+    if(isEcomSel) card.classList.add('ecom-selected');
+    // Tick in corner
+    var tickWrap=document.createElement('div');
+    tickWrap.className='ecom-card-tick-wrap';
+    tickWrap.innerHTML='<div class="ecom-card-tick" data-eid="'+ecomStyleId(dev.id,pidx)+'" onclick="toggleEcomSel(event,this.dataset.eid)"><span class="ecom-card-tick-check">&#10003;</span></div>';
+    card.appendChild(tickWrap);
+    card.onclick=function(e){ if(!e.target.closest('.ecom-card-tick-wrap')) openEcomDetail(dev.id, pidx); };
     grid.appendChild(card);
   });
   wrap.appendChild(grid);
@@ -4425,9 +4583,9 @@ function openEcomDetail(devId, pidx){
 
   var imgSrc=product.image||((dev.files||[]).find(function(f){return f.isImage&&f.dataUrl;})||{}).dataUrl||'';
 
-  var stageLabels={unstyled:'Unstyled',inprogress:'In Progress',approved:'Approved'};
+  var stageLabels={unstyled:'Unstyled',styled:'Styled',approved:'Approved'};
   var stageBar='<div class="ecom-stage-bar">';
-  ['unstyled','inprogress','approved'].forEach(function(s){
+  ['unstyled','styled','approved'].forEach(function(s){
     stageBar+='<div class="ecom-stage-step'+(es.status===s?' active '+s:'')+'" onclick="setEcomStatus(\''+s+'\')">'+stageLabels[s]+'</div>';
   });
   stageBar+='</div>';
@@ -4492,7 +4650,7 @@ function setEcomStatus(status){
   var steps=document.querySelectorAll('.ecom-stage-step');
   steps.forEach(function(s,i){
     s.className='ecom-stage-step';
-    var st=['unstyled','inprogress','approved'][i];
+    var st=['unstyled','styled','approved'][i];
     if(st===status) s.className='ecom-stage-step active '+status;
   });
   saveEcomStyle();
