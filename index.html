@@ -2216,16 +2216,18 @@ function exportRangePDF(){
 
   // Build active filter summary
   var filterSummary=[];
-  if(G.filters.season) filterSummary.push('Season: '+G.filters.season);
-  if(G.filters.stage) filterSummary.push('Stage: '+STAGE_LABELS[G.filters.stage]);
-  if(G.filters.cat) filterSummary.push('Category: '+G.filters.cat);
-  if(G.filters.dept) filterSummary.push('Dept: '+G.filters.dept);
-  if(G.filters.colour) filterSummary.push('Colour: '+G.filters.colour);
-  if(G.filters.intake) filterSummary.push('Intake: '+G.filters.intake);
-  if(G.filters.retail) filterSummary.push('Retail: '+G.filters.retail);
-  if(G.filters.stylegrade) filterSummary.push('Grade: '+G.filters.stylegrade);
-  if(G.filters.theme) filterSummary.push('Theme: '+G.filters.theme);
-  if(G.filters.supplier) filterSummary.push('Supplier: '+G.filters.supplier);
+  var active=function(v){return Array.isArray(v)?v.length>0:!!v;};
+  var join=function(v){return Array.isArray(v)?v.join(', '):v;};
+  if(active(G.filters.season)) filterSummary.push('Season: '+join(G.filters.season));
+  if(active(G.filters.stage)) filterSummary.push('Stage: '+(STAGE_LABELS[G.filters.stage]||join(G.filters.stage)));
+  if(active(G.filters.cat)) filterSummary.push('Category: '+join(G.filters.cat));
+  if(active(G.filters.dept)) filterSummary.push('Dept: '+join(G.filters.dept));
+  if(active(G.filters.colour)) filterSummary.push('Colour: '+join(G.filters.colour));
+  if(active(G.filters.intake)) filterSummary.push('Intake: '+join(G.filters.intake));
+  if(active(G.filters.retail)) filterSummary.push('Retail: '+join(G.filters.retail));
+  if(active(G.filters.stylegrade)) filterSummary.push('Grade: '+join(G.filters.stylegrade));
+  if(active(G.filters.theme)) filterSummary.push('Theme: '+join(G.filters.theme));
+  if(active(G.filters.supplier)) filterSummary.push('Supplier: '+join(G.filters.supplier));
 
   var totalStyles=allStyles.filter(function(s){return !s._isPlaceholder;}).length;
   var totalQty=allStyles.filter(function(s){return !s._isPlaceholder;}).reduce(function(s,x){return s+parseInt(x.qty||0);},0);
@@ -2324,7 +2326,8 @@ function exportRangePDF(){
     '  @page{margin:10mm;size:A4;}'+
     '  body{-webkit-print-color-adjust:exact;print-color-adjust:exact;}'+
     '  .card-grid{grid-template-columns:repeat(4,1fr);}'+
-    '  .no-print{display:none;}'+
+    '  .no-print{display:none !important;}'+
+    '  #range-btn-bar{display:none !important;}'+
     '}'+
     '</style></head><body>'+
     '<div id="range-content"><div class="page-header">'+
@@ -2332,13 +2335,21 @@ function exportRangePDF(){
     '<div class="header-right"><div class="header-title">Range Plan</div><div class="header-meta">'+today+' &bull; '+G.user.name+' &bull; '+(G.user.company||'')+'</div></div>'+
     '</div>'+
     (filterSummary.length?'<div class="filter-bar"><strong>Filters:</strong> '+filterSummary.join(' &bull; ')+'</div>':'')+
-    '<div class="summary-bar">'+
-    '<div class="summary-item"><strong>'+allStyles.filter(function(s){return !s._isPlaceholder;}).length+'</strong>Styles</div>'+
-    '<div class="summary-item"><strong>'+devs.length+'</strong>Developments</div>'+
-    '<div class="summary-item"><strong>'+totalQty.toLocaleString()+'</strong>Total Units</div>'+
-    '</div>'+
+    (function(){
+      var nonPH=allStyles.filter(function(s){return !s._isPlaceholder;});
+      var avgCostNum=nonPH.filter(function(s){return s.targetCost;}).map(function(s){return parseFloat((s.targetCost+'').replace(/[^0-9.]/g,''))||0;});
+      var avgRetailNum=nonPH.filter(function(s){return s.retailPrice;}).map(function(s){return parseFloat((s.retailPrice+'').replace(/[^0-9.]/g,''))||0;});
+      var avgCost=avgCostNum.length?(avgCostNum.reduce(function(a,b){return a+b;},0)/avgCostNum.length).toFixed(2):null;
+      var avgRetail=avgRetailNum.length?(avgRetailNum.reduce(function(a,b){return a+b;},0)/avgRetailNum.length).toFixed(2):null;
+      return '<div class="summary-bar">'
+        +'<div class="summary-item"><strong>'+nonPH.length+'</strong>Styles</div>'
+        +'<div class="summary-item"><strong>'+totalQty.toLocaleString()+'</strong>Total Units</div>'
+        +(avgCost?'<div class="summary-item"><strong style="color:#6366f1;">&pound;'+avgCost+'</strong>Avg Cost</div>':'')
+        +(avgRetail?'<div class="summary-item"><strong style="color:#059669;">&pound;'+avgRetail+'</strong>Avg Retail</div>':'')
+        +'</div>';
+    })()+
     sections+
-    '</div>'+'<div class="no-print" style="position:fixed;bottom:20px;right:20px;display:flex;gap:8px;">'+
+    '</div>'+'<div id="range-btn-bar" class="no-print" style="position:fixed;bottom:20px;right:20px;display:flex;gap:8px;">'+
     '<button onclick="window.print()" style="background:#0c0f14;color:white;border:none;padding:10px 20px;border-radius:8px;font-weight:700;font-size:13px;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,.25);">&#128424; Print</button>'+
     '<button onclick="doSavePDF()" style="background:#6366f1;color:white;border:none;padding:10px 20px;border-radius:8px;font-weight:700;font-size:13px;cursor:pointer;box-shadow:0 4px 14px rgba(99,102,241,.4);" id="save-pdf-btn">&#128190; Save PDF</button>'+
     '</div>'+
