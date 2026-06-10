@@ -3967,9 +3967,48 @@ function renderCompShopList(wrap){
     return;
   }
 
+  // Build month options from trip dates
+  var months = [];
+  G.compShops.forEach(function(shop){
+    if(shop.trip_date){
+      var d = new Date(shop.trip_date);
+      var key = d.getFullYear()+'-'+(d.getMonth()+1).toString().padStart(2,'0');
+      var label = d.toLocaleDateString('en-GB',{month:'long',year:'numeric'});
+      if(!months.find(function(m){return m.key===key;})) months.push({key:key,label:label});
+    }
+  });
+  months.sort(function(a,b){return b.key.localeCompare(a.key);});
+  var fMonth = G.compFilters.month||'';
+
+  if(months.length){
+    var filterBar = document.createElement('div');
+    filterBar.style.cssText='display:flex;align-items:center;gap:0.5rem;margin-bottom:1rem;flex-wrap:wrap;';
+    filterBar.innerHTML='<span style="font-size:0.75rem;font-weight:700;color:var(--ink3);">Filter:</span>'
+      +'<select class="cs-filter-sel" onchange="G.compFilters.month=this.value;renderMainContent()">'
+      +'<option value="">All Months</option>'
+      +months.map(function(m){return '<option value="'+m.key+'"'+(fMonth===m.key?' selected':'')+'>'+m.label+'</option>';}).join('')
+      +'</select>'
+      +(fMonth?'<button class="btn btn-ghost btn-sm" onclick="csListClearMonth()">&#10005; Clear</button>':'');
+    wrap.appendChild(filterBar);
+  }
+
+  // Filter shops by month
+  var show = G.compShops.filter(function(shop){
+    if(!fMonth) return true;
+    if(!shop.trip_date) return false;
+    var d = new Date(shop.trip_date);
+    var key = d.getFullYear()+'-'+(d.getMonth()+1).toString().padStart(2,'0');
+    return key === fMonth;
+  });
+
+  if(!show.length){
+    wrap.innerHTML += '<div class="empty-state" style="margin-top:2rem;"><div class="empty-state-icon">&#128247;</div><h3>No trips this month</h3><p>Try a different month or clear the filter.</p></div>';
+    return;
+  }
+
   var grid = document.createElement('div');
   grid.className = 'cs-grid';
-  G.compShops.forEach(function(shop){
+  show.forEach(function(shop){
     var card = buildCompShopCard(shop);
     grid.appendChild(card);
   });
@@ -4230,6 +4269,8 @@ async function deleteCompShop(shopId){
   }
 }
 
+function csListClearMonth(){ G.compFilters.month=''; renderMainContent(); }
+window.csListClearMonth=csListClearMonth;
 function backToCompShops(){
   G._csSelected = []; G.activeCompShop = null; G.compImages = []; G.compFilters = {store:'',flag:'',cat:'',colour:''};
   renderMainContent();
