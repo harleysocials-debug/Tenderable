@@ -2555,7 +2555,7 @@ function _supplierBriefGenerate(devId, includeCost, includeQty, emailMode){
     '</body></html>';
 
 
-  // Email mode — open Outlook with pre-filled body
+  // Email mode — trigger Outlook synchronously (must be within user gesture context)
   if(emailMode){
     var _supName2=d.supplierAllocation||d.agreedSupplier||'Supplier';
     var _supEmail2=lookupSupplierEmail(_supName2)||'';
@@ -2563,9 +2563,13 @@ function _supplierBriefGenerate(devId, includeCost, includeQty, emailMode){
     var _bodyTa2=document.getElementById('sb-email-body');
     var _rawBody2=(_bodyTa2&&_bodyTa2.value)?_bodyTa2.value:'Hi '+_supName2+',\n\nPlease find attached the supplier brief for '+d.description+'.\n\nMany thanks,\n'+G.user.name;
     var _body2=encodeURIComponent(_rawBody2);
-    setTimeout(function(){
-      window.location.href='mailto:'+_supEmail2+'?subject='+_subject2+'&body='+_body2;
-    }, 800);
+    var _mailto='mailto:'+_supEmail2+'?subject='+_subject2+'&body='+_body2;
+    var _a=document.createElement('a');
+    _a.href=_mailto;
+    _a.style.display='none';
+    document.body.appendChild(_a);
+    _a.click();
+    setTimeout(function(){ if(document.body.contains(_a)) document.body.removeChild(_a); },1000);
   }
 
   var w=window.open('','_blank');
