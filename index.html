@@ -5020,9 +5020,11 @@ async function renderAdmin(mc){
   var users=r?r.users:[];
   var pending=users.filter(function(u){return u.status==='pending';});
   var all=users;
-  // Always fetch suppliers fresh from DB
-  var supFresh=await api('GET','/suppliers');
-  if(supFresh&&supFresh.suppliers) G.suppliers=supFresh.suppliers;
+  // Fetch suppliers from DB (always fresh to ensure persistence)
+  try {
+    var supFresh=await api('GET','/suppliers');
+    if(supFresh&&supFresh.suppliers) G.suppliers=supFresh.suppliers;
+  } catch(e){}
   var supRows=(G.suppliers||[]).map(function(s){
     return '<tr data-supid="'+s.id+'">'
       +'<td><input class="sup-edit-inp" value="'+esc(s.name)+'" onblur="updateSupplierRow(this)" style="width:180px;"></td>'
@@ -5072,11 +5074,18 @@ async function addSupplier(){
   var email=(emailEl?emailEl.value:'').trim();
   if(!name){ toast('Please enter a supplier name','error'); return; }
   var r=await api('POST','/suppliers',{name:name,email:email||null});
-  if(r){
+  if(r&&r.id){
+    // Add to local state immediately
+    if(!G.suppliers) G.suppliers=[];
+    G.suppliers.push({id:r.id, name:name, email:email||null, company:G.user?G.user.company:''});
+    toast('Supplier added','success');
+    renderAdmin(document.getElementById('main-content'));
+  } else if(r&&r.success){
+    // Fallback if id not returned
     toast('Supplier added','success');
     renderAdmin(document.getElementById('main-content'));
   } else {
-    toast('Failed to add supplier','error');
+    toast('Failed to add supplier — check Railway logs','error');
   }
 }
 
