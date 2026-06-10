@@ -2380,22 +2380,6 @@ function exportRangePDF(){
     '</div>'+
     '</body></html>';
 
-  // Email mode — open Outlook with supplier email pre-filled
-  if(emailMode){
-    var _dev=G.devs.find(function(d){return d.id===devId;});
-    var _supName=_dev?(_dev.supplierAllocation||_dev.agreedSupplier||'Supplier'):'Supplier';
-    var _supEmail=lookupSupplierEmail(_supName)||'';
-    var _devName=_dev?_dev.description:'Development';
-    var _subject=encodeURIComponent('Supplier Brief — '+_devName);
-    var _bodyTa=document.getElementById('sb-email-body');
-    var _rawBody=(_bodyTa&&_bodyTa.value)?_bodyTa.value:'Hi '+_supName+',\n\nPlease find attached the supplier brief for '+_devName+'.\n\nMany thanks,\n'+G.user.name;
-    var _body=encodeURIComponent(_rawBody);
-    // Open PDF first, then Outlook after a short delay
-    setTimeout(function(){
-      window.location.href='mailto:'+_supEmail+'?subject='+_subject+'&body='+_body;
-    }, 800);
-  }
-
   var w=window.open('','_blank');
   w.document.write(html);
   w.document.close();
@@ -2569,6 +2553,20 @@ function _supplierBriefGenerate(devId, includeCost, includeQty, emailMode){
     '<button class="action-btn" id="dl-btn" style="background:#6366f1;color:white;" onclick="dlPDF()">&#128190; Save PDF</button>'+
     '</div>'+
     '</body></html>';
+
+
+  // Email mode — open Outlook with pre-filled body
+  if(emailMode){
+    var _supName2=d.supplierAllocation||d.agreedSupplier||'Supplier';
+    var _supEmail2=lookupSupplierEmail(_supName2)||'';
+    var _subject2=encodeURIComponent('Supplier Brief — '+d.description);
+    var _bodyTa2=document.getElementById('sb-email-body');
+    var _rawBody2=(_bodyTa2&&_bodyTa2.value)?_bodyTa2.value:'Hi '+_supName2+',\n\nPlease find attached the supplier brief for '+d.description+'.\n\nMany thanks,\n'+G.user.name;
+    var _body2=encodeURIComponent(_rawBody2);
+    setTimeout(function(){
+      window.location.href='mailto:'+_supEmail2+'?subject='+_subject2+'&body='+_body2;
+    }, 800);
+  }
 
   var w=window.open('','_blank');
   w.document.write(html);
