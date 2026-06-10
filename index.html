@@ -743,6 +743,17 @@ input, select, textarea { font-family: inherit; }
 .ecom-sel-bar { background:#eef2ff; border-bottom:1px solid #c7d2fe; padding:0.6rem 1.5rem; display:none; align-items:center; gap:0.75rem; flex-wrap:wrap; }
 .ecom-sel-bar.visible { display:flex; }
 .ecom-sel-count { font-size:0.8rem; font-weight:700; color:#6366f1; }
+
+/* ── SUPPLIERS ───────────────────────────────────── */
+.sup-table { width:100%; border-collapse:collapse; margin-top:0.75rem; }
+.sup-table th { font-size:0.7rem; font-weight:800; text-transform:uppercase; letter-spacing:0.05em; color:var(--ink4); padding:0.5rem 0.75rem; border-bottom:2px solid var(--line); text-align:left; }
+.sup-table td { padding:0.6rem 0.75rem; border-bottom:1px solid var(--line2); font-size:0.85rem; }
+.sup-table tr:hover td { background:var(--line2); }
+.sup-input-row { display:flex; gap:0.5rem; margin-top:0.75rem; }
+.sup-input-row input { flex:1; padding:0.5rem 0.75rem; border:1px solid var(--line); border-radius:8px; font-size:0.875rem; font-family:inherit; }
+.sup-input-row input:focus { outline:none; border-color:#6366f1; }
+.sup-edit-inp { width:100%; padding:0.25rem 0.5rem; border:1px solid var(--line); border-radius:6px; font-size:0.82rem; font-family:inherit; }
+.sup-edit-inp:focus { outline:none; border-color:#6366f1; }
 /* Toast */
 .toast { position: fixed; bottom: 1.5rem; right: 1.5rem; background: var(--ink); color: white; padding: 0.85rem 1.25rem; border-radius: 12px; font-size: 0.875rem; font-weight: 600; z-index: 9999; transform: translateY(100px); opacity: 0; transition: all 0.25s; }
 .toast.show { transform: translateY(0); opacity: 1; }
@@ -883,7 +894,13 @@ input, select, textarea { font-family: inherit; }
           <span>Include Order Quantity</span>
         </label>
       </div>
-      <button class="btn btn-primary" style="width:100%;justify-content:center;" onclick="sbGenerate()">&#128196; Generate Supplier Brief</button>
+      <div id="sb-email-section" style="display:none;margin-bottom:0.75rem;">
+        <label class="form-label" style="margin-bottom:0.4rem;">Email Body</label>
+        <textarea class="form-input" id="sb-email-body" rows="5" style="font-size:0.82rem;resize:vertical;"></textarea>
+        <div style="font-size:0.7rem;color:var(--ink3);margin-top:0.3rem;">The PDF will download automatically — attach it to the email before sending.</div>
+      </div>
+      <button class="btn btn-primary" style="width:100%;justify-content:center;" onclick="sbGenerate(false)">&#128196; Generate Brief</button>
+      <button class="btn btn-ghost" style="width:100%;justify-content:center;margin-top:0.5rem;" onclick="sbToggleEmail()">&#9993; Email to Supplier (Outlook)</button>
     </div>
   </div>
 </div>
@@ -1194,6 +1211,7 @@ async function loadData(){
   if(dRes&&dRes.developments&&dRes.developments.length>=0) G.devs=dRes.developments;
   try { await loadDirectMessages(); } catch(e) { console.warn('Messages not loaded:', e.message); }
   try { var pRes=await api('GET','/packs'); if(pRes&&pRes.packs) G.packs=pRes.packs; } catch(e){}
+  try { var supRes=await api('GET','/suppliers'); if(supRes&&supRes.suppliers) G.suppliers=supRes.suppliers; } catch(e){}
   try { var csRes=await api('GET','/comp-shops'); if(csRes&&csRes.shops) G.compShops=csRes.shops; } catch(e){}
   try { var eRes=await api('GET','/ecom-styling'); if(eRes&&eRes.styles){ G.ecomStyles={}; eRes.styles.forEach(function(s){ s.styling_with=s.styling_with||[]; s.props=s.props||[]; G.ecomStyles[s.id]=s; }); } } catch(e){}
   if(dRes&&dRes.devComments) G.devComments=dRes.devComments;
@@ -1804,7 +1822,13 @@ function renderFormBody(d){
   // Season moved to style level
   html += '<div class="form-group"><label class="form-label">Stage</label>'+stageSelect+'</div>';
 
-  html += '<div class="form-group"><label class="form-label">Supplier Allocation</label>'+inp('f-supplier',d?esc(d.supplierAllocation||''):'','Supplier name')+'</div>';
+  var _curSup=d?esc(d.supplierAllocation||''):'';
+  var _supInList=(G.suppliers||[]).some(function(s){return s.name===_curSup;});
+  var supOptions='<option value="">Select supplier</option>';
+  // If existing value not in directory, add it as an option so it doesn't disappear
+  if(_curSup&&!_supInList) supOptions+='<option value="'+_curSup+'" selected>'+_curSup+' (not in directory)</option>';
+  supOptions+=(G.suppliers||[]).map(function(s){var sel=_curSup===s.name?' selected':'';return '<option value="'+esc(s.name)+'"'+sel+'>'+esc(s.name)+'</option>';}).join('');
+  html += '<div class="form-group"><label class="form-label">Supplier Allocation</label><select class="form-input" id="f-supplier">'+supOptions+'</select></div>';
   // price moved to product level
   // Order Qty removed - calculated dynamically from styles
   html += '<div class="form-group"><label class="form-label">Lead Time From Order (weeks)</label><input class="form-input" type="number" id="f-lead" min="0" value="'+(d?d.leadTimeTarget||'':'')+'" placeholder="e.g. 12 weeks"></div>';
@@ -2355,6 +2379,23 @@ function exportRangePDF(){
     '</div>'+
     '</body></html>';
 
+  // Email mode — open Outlook with supplier email pre-filled
+  if(emailMode){
+    var _dev=G.devs.find(function(d){return d.id===devId;});
+    var _supName=_dev?(_dev.supplierAllocation||_dev.agreedSupplier||'Supplier'):'Supplier';
+    var _supEmail=lookupSupplierEmail(_supName)||'';
+    var _devName=_dev?_dev.description:'Development';
+    var _subject=encodeURIComponent('Supplier Brief — '+_devName);
+    var _bodyTa=document.getElementById('sb-email-body');
+    var _rawBody=(_bodyTa&&_bodyTa.value)?_bodyTa.value:'Hi '+_supName+',\n\nPlease find attached the supplier brief for '+_devName+'.\n\nMany thanks,\n'+G.user.name;
+    var _body=encodeURIComponent(_rawBody);
+    setTimeout(function(){
+      var link=document.createElement('a');
+      link.href='mailto:'+encodeURIComponent(_supEmail)+'?subject='+_subject+'&body='+_body;
+      link.click();
+    }, 1500);
+  }
+
   var w=window.open('','_blank');
   w.document.write(html);
   w.document.close();
@@ -2386,17 +2427,40 @@ function supplierBrief(devId){
   _sbDevId=devId;
   document.getElementById('sb-cost').checked=false;
   document.getElementById('sb-qty').checked=false;
+  var sbEmailSec=document.getElementById('sb-email-section');
+  if(sbEmailSec) sbEmailSec.style.display='none';
+  var sbEmailBtn=document.querySelector('[onclick="sbToggleEmail()"]');
+  if(sbEmailBtn){ sbEmailBtn.textContent='✉ Email to Supplier (Outlook)'; sbEmailBtn.onclick=sbToggleEmail; }
   document.getElementById('sb-overlay').classList.add('open');
 }
-function sbGenerate(){
+function sbToggleEmail(){
+  var sec=document.getElementById('sb-email-section');
+  var btn=document.querySelector('[onclick="sbToggleEmail()"]');
+  if(sec.style.display==='none'){
+    sec.style.display='block';
+    // Pre-fill body based on current dev
+    var dev=_sbDevId?G.devs.find(function(d){return d.id===_sbDevId;}):null;
+    var supName=dev?(dev.supplierAllocation||'Supplier'):'Supplier';
+    var devName=dev?dev.description:'Development';
+    document.getElementById('sb-email-body').value=
+      'Hi '+supName+',\n\nPlease find attached the supplier brief for '+devName+'.\n\nPlease review and confirm your ability to meet the specifications and lead time.\n\nMany thanks,\n'+(G.user?G.user.name:'');
+    btn.textContent='✉ Send Email';
+    btn.onclick=function(){ sbGenerate(true); };
+  } else {
+    sbGenerate(true);
+  }
+}
+window.sbToggleEmail=sbToggleEmail;
+
+function sbGenerate(emailMode){
   var includeCost=document.getElementById('sb-cost').checked;
   var includeQty=document.getElementById('sb-qty').checked;
   document.getElementById('sb-overlay').classList.remove('open');
   var devId=_sbDevId; _sbDevId=null;
-  _supplierBriefGenerate(devId, includeCost, includeQty);
+  _supplierBriefGenerate(devId, includeCost, includeQty, emailMode||false);
 }
 window.sbGenerate=sbGenerate;
-function _supplierBriefGenerate(devId, includeCost, includeQty){
+function _supplierBriefGenerate(devId, includeCost, includeQty, emailMode){
   var d=G.devs.find(function(x){return x.id===devId;});
   if(!d) return;
 
@@ -4891,6 +4955,59 @@ function userRow(u, showActions){
 }
 async function adminApprove(uid){ var r=await api('POST','/admin/approve/'+uid); if(r) toast('User approved','success'); else toast('Approve failed','error'); renderAdmin($('main-content')); }
 async function adminReject(uid){ var r=await api('POST','/admin/reject/'+uid); if(r) toast('User rejected'); else toast('Reject failed','error'); renderAdmin($('main-content')); }
+
+// ── SUPPLIER MANAGEMENT ──────────────────────────────────────────────────────
+async function addSupplier(){
+  var name=document.getElementById('new-sup-name').value.trim();
+  var email=document.getElementById('new-sup-email').value.trim();
+  if(!name){ toast('Please enter a supplier name','error'); return; }
+  var r=await api('POST','/suppliers',{name:name,email:email||null});
+  if(r){
+    G.suppliers.push({id:r.id,name:name,email:email||null});
+    document.getElementById('new-sup-name').value='';
+    document.getElementById('new-sup-email').value='';
+    toast('Supplier added','success');
+    renderAdmin(document.getElementById('main-content'));
+  }
+}
+
+async function updateSupplier(id, row){
+  var inputs=row.querySelectorAll('.sup-edit-inp');
+  var name=inputs[0].value.trim();
+  var email=inputs[1].value.trim();
+  if(!name) return;
+  var r=await api('PUT','/suppliers/'+id,{name:name,email:email||null});
+  if(r){
+    var s=G.suppliers.find(function(x){return x.id===id;});
+    if(s){s.name=name;s.email=email||null;}
+    toast('Supplier updated','success');
+  }
+}
+
+async function deleteSupplier(id){
+  if(!confirm('Remove this supplier?')) return;
+  var r=await api('DELETE','/suppliers/'+id);
+  if(r){
+    G.suppliers=G.suppliers.filter(function(s){return s.id!==id;});
+    toast('Supplier removed');
+    renderAdmin(document.getElementById('main-content'));
+  }
+}
+
+function lookupSupplierEmail(supplierName){
+  if(!supplierName||!G.suppliers) return null;
+  var match=G.suppliers.find(function(s){
+    return s.name.toLowerCase()===supplierName.toLowerCase()
+        || supplierName.toLowerCase().indexOf(s.name.toLowerCase())>=0
+        || s.name.toLowerCase().indexOf(supplierName.toLowerCase())>=0;
+  });
+  return match?match.email:null;
+}
+
+window.addSupplier=addSupplier;
+window.updateSupplier=updateSupplier;
+window.deleteSupplier=deleteSupplier;
+
 window.adminApprove=adminApprove; window.adminReject=adminReject;
 </script>
 </body>
