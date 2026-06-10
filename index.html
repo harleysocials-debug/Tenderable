@@ -894,13 +894,7 @@ input, select, textarea { font-family: inherit; }
           <span>Include Order Quantity</span>
         </label>
       </div>
-      <div id="sb-email-section" style="display:none;margin-bottom:0.75rem;">
-        <label class="form-label" style="margin-bottom:0.4rem;">Email Body</label>
-        <textarea class="form-input" id="sb-email-body" rows="5" style="font-size:0.82rem;resize:vertical;"></textarea>
-        <div style="font-size:0.7rem;color:var(--ink3);margin-top:0.3rem;">The PDF will download automatically — attach it to the email before sending.</div>
-      </div>
       <button class="btn btn-primary" style="width:100%;justify-content:center;" onclick="sbGenerate(false)">&#128196; Generate Brief</button>
-      <button class="btn btn-ghost" id="sb-email-btn" style="width:100%;justify-content:center;margin-top:0.5rem;" onclick="sbToggleEmail()">&#9993; Email to Supplier (Outlook)</button>
     </div>
   </div>
 </div>
@@ -2416,14 +2410,12 @@ function supplierBrief(devId){
   _sbEmailMode=false;
   var sbEmailSec=document.getElementById('sb-email-section');
   if(sbEmailSec) sbEmailSec.style.display='none';
-  var sbEmailBtn=document.getElementById('sb-email-btn');
   if(sbEmailBtn) sbEmailBtn.textContent='✉ Email to Supplier (Outlook)';
   document.getElementById('sb-overlay').classList.add('open');
 }
 var _sbEmailMode=false;
 function sbToggleEmail(){
   var sec=document.getElementById('sb-email-section');
-  var btn=document.getElementById('sb-email-btn');
   if(!_sbEmailMode){
     _sbEmailMode=true;
     sec.style.display='block';
@@ -2560,7 +2552,7 @@ function _supplierBriefGenerate(devId, includeCost, includeQty, emailMode){
   // Email mode — trigger Outlook synchronously (must be within user gesture context)
   if(emailMode){
     var _supName2=d.supplierAllocation||d.agreedSupplier||'Supplier';
-    var _supEmail2=lookupSupplierEmail(_supName2)||'';
+    var _supEmail2=''; // User will fill in email manually in Outlook
     var _subject2=encodeURIComponent('Supplier Brief — '+d.description);
     var _bodyTa2=document.getElementById('sb-email-body');
     var _rawBody2=(_bodyTa2&&_bodyTa2.value)?_bodyTa2.value:'Hi '+_supName2+',\n\nPlease find attached the supplier brief for '+d.description+'.\n\nMany thanks,\n'+G.user.name;
@@ -5025,8 +5017,7 @@ async function renderAdmin(mc){
 
   var supRows=(G.suppliers||[]).map(function(s){
     return '<tr data-supid="'+s.id+'">'
-      +'<td><input class="sup-edit-inp" value="'+esc(s.name)+'" onblur="updateSupplierRow(this)" style="width:180px;"></td>'
-      +'<td><input class="sup-edit-inp" type="email" value="'+(s.email||'')+'" onblur="updateSupplierRow(this)" style="width:260px;" placeholder="email@supplier.com"></td>'
+      +'<td><input class="sup-edit-inp" value="'+esc(s.name)+'" onblur="updateSupplierRow(this)" style="width:280px;"></td>'
       +'<td><button class="btn btn-danger btn-sm" data-delid="'+s.id+'" onclick="deleteSupplier(this.dataset.delid)">&#128465;</button></td>'
       +'</tr>';
   }).join('');
@@ -5038,11 +5029,10 @@ async function renderAdmin(mc){
     +'<div style="margin-top:2.5rem;">'
     +'<h2 class="admin-section-title">Supplier Email Directory</h2>'
     +'<p style="font-size:0.8rem;color:var(--ink3);margin-bottom:0.75rem;">Emails used when emailing supplier briefs. Not displayed elsewhere.</p>'
-    +'<table class="sup-table"><thead><tr><th>Supplier Name</th><th>Email Address</th><th></th></tr></thead>'
+    +'<table class="sup-table"><thead><tr><th>Supplier Name</th><th></th></tr></thead>'
     +'<tbody>'+supRows+'</tbody></table>'
     +'<div class="sup-input-row">'
-    +'<input id="new-sup-name" placeholder="Supplier name" style="max-width:200px;">'
-    +'<input id="new-sup-email" type="email" placeholder="email@supplier.com" style="max-width:260px;">'
+    +'<input id="new-sup-name" placeholder="Supplier name" style="max-width:280px;">'
     +'<button class="btn btn-primary btn-sm" onclick="addSupplier()">+ Add Supplier</button>'
     +'</div></div>'
     +'</div>';
@@ -5058,25 +5048,21 @@ async function adminReject(uid){ var r=await api('POST','/admin/reject/'+uid); i
 function updateSupplierRow(inp){
   var row=inp.closest('tr'); if(!row) return;
   var id=row.dataset.supid; if(!id) return;
-  var inputs=row.querySelectorAll('.sup-edit-inp');
-  var name=inputs[0]?inputs[0].value.trim():'';
-  var email=inputs[1]?inputs[1].value.trim():'';
+  var name=inp.value.trim();
   if(!name) return;
-  updateSupplier(id,name,email);
+  updateSupplier(id,name,null);
 }
 window.updateSupplierRow=updateSupplierRow;
 
 async function addSupplier(){
   var nameEl=document.getElementById('new-sup-name');
-  var emailEl=document.getElementById('new-sup-email');
   var name=(nameEl?nameEl.value:'').trim();
-  var email=(emailEl?emailEl.value:'').trim();
   if(!name){ toast('Please enter a supplier name','error'); return; }
-  var r=await api('POST','/suppliers',{name:name,email:email||null});
+  var r=await api('POST','/suppliers',{name:name,email:null});
   if(r&&(r.success||r.id)){
     var id=r.id||('sup-'+Date.now());
     if(!G.suppliers) G.suppliers=[];
-    G.suppliers.push({id:id,name:name,email:email||null});
+    G.suppliers.push({id:id,name:name});
     toast('Supplier added','success');
     renderAdmin(document.getElementById('main-content'));
   } else {
