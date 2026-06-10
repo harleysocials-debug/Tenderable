@@ -942,6 +942,7 @@ input, select, textarea { font-family: inherit; }
         <div class="form-group"><label class="form-label">Fabric</label><input class="form-input" id="cse-fabric" placeholder="e.g. 100% Cotton, Linen blend"></div>
         <div class="form-group"><label class="form-label">Type</label><input class="form-input" id="cse-type" placeholder="e.g. Shirt, Shorts, Jacket"></div>
         <div class="form-group full"><label class="form-label">Theme</label><input class="form-input" id="cse-theme" placeholder="e.g. Coastal, Smart Casual, Workwear"></div>
+        <div class="form-group"><label class="form-label">Visit Month</label><select class="form-input" id="cse-visit-month"><option value="">Select month</option></select></div>
         <div class="form-group full"><label class="form-label">Comments</label><textarea class="form-input" id="cse-notes" rows="3" placeholder="What you liked, notes for the team..."></textarea></div>
         <div class="form-group full"><label class="form-label">Action</label>
           <select class="form-input" id="cse-flag">
@@ -4074,7 +4075,17 @@ function renderCompShopDetail(mc){
   var colours = [...new Set(G.compImages.map(function(i){return i.colour||'';}).filter(Boolean))].sort();
   var types = [...new Set(G.compImages.map(function(i){return i.type||'';}).filter(Boolean))].sort();
   var themes = [...new Set(G.compImages.map(function(i){return i.theme||'';}).filter(Boolean))].sort();
-  var fStore = G.compFilters.store, fFlag = G.compFilters.flag, fCat = G.compFilters.cat||'', fColour = G.compFilters.colour||'', fType = G.compFilters.type||'', fTheme = G.compFilters.theme||'';
+  var fStore = G.compFilters.store, fFlag = G.compFilters.flag, fCat = G.compFilters.cat||'', fColour = G.compFilters.colour||'', fType = G.compFilters.type||'', fTheme = G.compFilters.theme||'', fImgMonth = G.compFilters.imgMonth||'';
+
+  // Static last 18 months for manual selection
+  var imgMonths = [];
+  var _now = new Date();
+  for(var _mi=0; _mi<18; _mi++){
+    var _d = new Date(_now.getFullYear(), _now.getMonth()-_mi, 1);
+    var _key = _d.getFullYear()+'-'+(_d.getMonth()+1).toString().padStart(2,'0');
+    var _lbl = _d.toLocaleDateString('en-GB',{month:'long',year:'numeric'});
+    imgMonths.push({key:_key,label:_lbl});
+  }
   var filtersBar = document.createElement('div');
   filtersBar.className = 'cs-filters-bar';
   filtersBar.innerHTML = '<span style="font-size:0.75rem;font-weight:700;color:var(--ink3);">Filter:</span>'
@@ -4084,8 +4095,9 @@ function renderCompShopDetail(mc){
     +(types.length?'<select class="cs-filter-sel" onchange="G.compFilters.type=this.value;renderMainContent()"><option value="">All Types</option>'+types.map(function(t){return '<option value="'+t+'"'+(fType===t?' selected':'')+'>'+t+'</option>';}).join('')+'</select>':'')
     +(themes.length?'<select class="cs-filter-sel" onchange="G.compFilters.theme=this.value;renderMainContent()"><option value="">All Themes</option>'+themes.map(function(t){return '<option value="'+t+'"'+(fTheme===t?' selected':'')+'>'+t+'</option>';}).join('')+'</select>':'')
     +'<select class="cs-filter-sel" onchange="G.compFilters.flag=this.value;renderMainContent()"><option value="">All Actions</option><option value="reference"'+(fFlag==='reference'?' selected':'')+'>Keep for Reference</option><option value="supplier"'+(fFlag==='supplier'?' selected':'')+'>Send to Supplier</option><option value="designer"'+(fFlag==='designer'?' selected':'')+'>Brief Designer</option><option value="inrange"'+(fFlag==='inrange'?' selected':'')+'>In Range</option><option value="noaction"'+(fFlag==='noaction'?' selected':'')+'>No Further Action</option></select>'
-    +((fStore||fFlag||fCat||fColour||fType||fTheme)?'<button class="btn btn-ghost btn-sm" onclick="G.compFilters={store:\'\',flag:\'\',cat:\'\',colour:\'\',type:\'\',theme:\'\'};renderMainContent()">&#10005; Clear</button>':'');
-  mc.appendChild(filtersBar);
+    +'<select class="cs-filter-sel" onchange="G.compFilters.flag=this.value;renderMainContent()"><option value="">All Actions</option><option value="reference"'+(fFlag==='reference'?' selected':'')+'>Keep for Reference</option><option value="supplier"'+(fFlag==='supplier'?' selected':'')+'>Send to Supplier</option><option value="designer"'+(fFlag==='designer'?' selected':'')+'>Brief Designer</option><option value="inrange"'+(fFlag==='inrange'?' selected':'')+'>In Range</option><option value="noaction"'+(fFlag==='noaction'?' selected':'')+'>No Further Action</option></select>'
+    +(imgMonths.length?'<select class="cs-filter-sel" onchange="G.compFilters.imgMonth=this.value;renderMainContent()"><option value="">All Months</option>'+imgMonths.map(function(m){return '<option value="'+m.key+'"'+(fImgMonth===m.key?' selected':'')+'>'+m.label+'</option>';}).join('')+'</select>':'')
+    +((fStore||fFlag||fCat||fColour||fType||fTheme||fImgMonth)?'<button class="btn btn-ghost btn-sm" onclick="csDetailClearFilters()">&#10005; Clear</button>':'');
 
   // Selection bar
   var selectBar = document.createElement('div');
@@ -4121,6 +4133,7 @@ function renderCompShopDetail(mc){
     if(fColour && img.colour !== fColour) return false;
     if(fType && img.type !== fType) return false;
     if(fTheme && img.theme !== fTheme) return false;
+    if(fImgMonth && (img.visit_month||'')!==fImgMonth) return false;
     return true;
   });
 
@@ -4214,6 +4227,21 @@ function csEditOpen(imgId){
   document.getElementById('cse-colour').value = img.colour || '';
   document.getElementById('cse-price').value = img.price || '';
   document.getElementById('cse-fabric').value = img.fabric || '';
+  // Populate visit month select
+  var _vmSel=document.getElementById('cse-visit-month');
+  if(_vmSel){
+    _vmSel.innerHTML='<option value="">Select month</option>';
+    var _now2=new Date();
+    for(var _i=0;_i<18;_i++){
+      var _d2=new Date(_now2.getFullYear(),_now2.getMonth()-_i,1);
+      var _k2=_d2.getFullYear()+'-'+(_d2.getMonth()+1).toString().padStart(2,'0');
+      var _l2=_d2.toLocaleDateString('en-GB',{month:'long',year:'numeric'});
+      var _opt=document.createElement('option');
+      _opt.value=_k2; _opt.textContent=_l2;
+      if((img.visit_month||'')===_k2) _opt.selected=true;
+      _vmSel.appendChild(_opt);
+    }
+  }
   document.getElementById('cse-type').value = img.type || '';
   document.getElementById('cse-theme').value = img.theme || '';
   document.getElementById('cse-notes').value = img.notes || '';
@@ -4231,14 +4259,15 @@ async function csEditSave(){
   var colour = document.getElementById('cse-colour').value.trim();
   var price = document.getElementById('cse-price').value.trim();
   var fabric = document.getElementById('cse-fabric').value.trim();
+  var visitMonth = (document.getElementById('cse-visit-month')||{}).value||'';
   var type = document.getElementById('cse-type').value.trim();
   var theme = document.getElementById('cse-theme').value.trim();
   var notes = document.getElementById('cse-notes').value.trim();
   var flag = document.getElementById('cse-flag').value;
-  var r = await api('PUT', '/comp-shop-images/'+_csEditId, {store:store,category:category,colour:colour,price:price,fabric:fabric,type:type,theme:theme,notes:notes,actionFlag:flag});
+  var r = await api('PUT', '/comp-shop-images/'+_csEditId, {store:store,category:category,colour:colour,price:price,fabric:fabric,type:type,theme:theme,visitMonth:visitMonth,notes:notes,actionFlag:flag});
   if(r){
     var img = G.compImages.find(function(i){return i.id===_csEditId;});
-    if(img){ img.store=store; img.category=category; img.colour=colour; img.price=price; img.fabric=fabric; img.type=type; img.theme=theme; img.notes=notes; img.action_flag=flag; }
+    if(img){ img.store=store; img.category=category; img.colour=colour; img.price=price; img.fabric=fabric; img.type=type; img.theme=theme; img.visit_month=visitMonth; img.notes=notes; img.action_flag=flag; }
     csEditClose();
     toast('Saved','success');
     renderMainContent();
@@ -4269,6 +4298,8 @@ async function deleteCompShop(shopId){
   }
 }
 
+function csDetailClearFilters(){ G.compFilters=Object.assign(G.compFilters,{store:'',flag:'',cat:'',colour:'',fabric:'',type:'',theme:'',imgMonth:''}); renderMainContent(); }
+window.csDetailClearFilters=csDetailClearFilters;
 function csListClearMonth(){ G.compFilters.month=''; renderMainContent(); }
 window.csListClearMonth=csListClearMonth;
 function backToCompShops(){
