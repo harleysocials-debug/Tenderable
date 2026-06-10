@@ -864,6 +864,30 @@ input, select, textarea { font-family: inherit; }
   </div>
 </div>
 
+<!-- Supplier Brief overlay -->
+<div class="form-overlay" id="sb-overlay" onclick="if(event.target===this)document.getElementById('sb-overlay').classList.remove('open')">
+  <div class="form-sheet" style="max-width:400px;">
+    <div class="form-head">
+      <div class="form-title">&#128196; Supplier Brief</div>
+      <button class="form-close" onclick="document.getElementById('sb-overlay').classList.remove('open')">&#10005;</button>
+    </div>
+    <div class="form-body" style="padding:1.5rem;">
+      <p style="font-size:0.875rem;color:var(--ink2);margin-bottom:1.25rem;">Choose what to include in the supplier brief:</p>
+      <div style="display:flex;flex-direction:column;gap:0.5rem;margin-bottom:1.25rem;">
+        <label style="display:flex;align-items:center;gap:0.6rem;font-size:0.875rem;cursor:pointer;padding:0.6rem 0.75rem;border:1px solid var(--line);border-radius:8px;background:var(--line2);">
+          <input type="checkbox" id="sb-cost" style="width:16px;height:16px;cursor:pointer;accent-color:#6366f1;">
+          <span>Include Cost Price</span>
+        </label>
+        <label style="display:flex;align-items:center;gap:0.6rem;font-size:0.875rem;cursor:pointer;padding:0.6rem 0.75rem;border:1px solid var(--line);border-radius:8px;background:var(--line2);">
+          <input type="checkbox" id="sb-qty" style="width:16px;height:16px;cursor:pointer;accent-color:#6366f1;">
+          <span>Include Order Quantity</span>
+        </label>
+      </div>
+      <button class="btn btn-primary" style="width:100%;justify-content:center;" onclick="sbGenerate()">&#128196; Generate Supplier Brief</button>
+    </div>
+  </div>
+</div>
+
 <!-- Comp shop new trip form -->
 <div class="form-overlay" id="cs-form-overlay" onclick="csFormCloseBg(event)">
   <div class="form-sheet" style="max-width:520px;">
@@ -2334,12 +2358,27 @@ function exportRangePDF(){
 }
 
 
+var _sbDevId=null;
 function supplierBrief(devId){
+  _sbDevId=devId;
+  document.getElementById('sb-cost').checked=false;
+  document.getElementById('sb-qty').checked=false;
+  document.getElementById('sb-overlay').classList.add('open');
+}
+function sbGenerate(){
+  var includeCost=document.getElementById('sb-cost').checked;
+  var includeQty=document.getElementById('sb-qty').checked;
+  document.getElementById('sb-overlay').classList.remove('open');
+  var devId=_sbDevId; _sbDevId=null;
+  _supplierBriefGenerate(devId, includeCost, includeQty);
+}
+window.sbGenerate=sbGenerate;
+function _supplierBriefGenerate(devId, includeCost, includeQty){
   var d=G.devs.find(function(x){return x.id===devId;});
   if(!d) return;
 
   // Ask about cost price
-  var includeCost = confirm('Include cost price in the supplier brief?\n\nClick OK to include, Cancel to exclude.');
+  // includeCost and includeQty passed as parameters
   var today=new Date().toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'});
   var prods=(d.products||[]).filter(function(p){return p.description;});
   var totalQty=prods.reduce(function(s,p){return s+parseInt(p.qty||0);},0);
