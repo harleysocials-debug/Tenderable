@@ -886,7 +886,9 @@ input, select, textarea { font-family: inherit; }
         <div class="form-group"><label class="form-label">Department / Category</label><input class="form-input" id="cse-category" placeholder="e.g. Tops, Shorts, Outerwear"></div>
         <div class="form-group"><label class="form-label">Colour</label><input class="form-input" id="cse-colour" placeholder="e.g. Navy, Stone, Khaki"></div>
         <div class="form-group"><label class="form-label">Price</label><input class="form-input" id="cse-price" placeholder="e.g. £29.99"></div>
-        <div class="form-group full"><label class="form-label">Fabric</label><input class="form-input" id="cse-fabric" placeholder="e.g. 100% Cotton, Linen blend"></div>
+        <div class="form-group"><label class="form-label">Fabric</label><input class="form-input" id="cse-fabric" placeholder="e.g. 100% Cotton, Linen blend"></div>
+        <div class="form-group"><label class="form-label">Type</label><input class="form-input" id="cse-type" placeholder="e.g. Shirt, Shorts, Jacket"></div>
+        <div class="form-group full"><label class="form-label">Theme</label><input class="form-input" id="cse-theme" placeholder="e.g. Coastal, Smart Casual, Workwear"></div>
         <div class="form-group full"><label class="form-label">Comments</label><textarea class="form-input" id="cse-notes" rows="3" placeholder="What you liked, notes for the team..."></textarea></div>
         <div class="form-group full"><label class="form-label">Action</label>
           <select class="form-input" id="cse-flag">
@@ -3884,15 +3886,19 @@ function renderCompShopDetail(mc){
   var stores = [...new Set(G.compImages.map(function(i){return i.store||'';}).filter(Boolean))].sort();
   var cats = [...new Set(G.compImages.map(function(i){return i.category||'';}).filter(Boolean))].sort();
   var colours = [...new Set(G.compImages.map(function(i){return i.colour||'';}).filter(Boolean))].sort();
-  var fStore = G.compFilters.store, fFlag = G.compFilters.flag, fCat = G.compFilters.cat||'', fColour = G.compFilters.colour||'';
+  var types = [...new Set(G.compImages.map(function(i){return i.type||'';}).filter(Boolean))].sort();
+  var themes = [...new Set(G.compImages.map(function(i){return i.theme||'';}).filter(Boolean))].sort();
+  var fStore = G.compFilters.store, fFlag = G.compFilters.flag, fCat = G.compFilters.cat||'', fColour = G.compFilters.colour||'', fType = G.compFilters.type||'', fTheme = G.compFilters.theme||'';
   var filtersBar = document.createElement('div');
   filtersBar.className = 'cs-filters-bar';
   filtersBar.innerHTML = '<span style="font-size:0.75rem;font-weight:700;color:var(--ink3);">Filter:</span>'
     +'<select class="cs-filter-sel" onchange="G.compFilters.store=this.value;renderMainContent()"><option value="">All Stores</option>'+stores.map(function(s){return '<option value="'+s+'"'+(fStore===s?' selected':'')+'>'+s+'</option>';}).join('')+'</select>'
     +(cats.length?'<select class="cs-filter-sel" onchange="G.compFilters.cat=this.value;renderMainContent()"><option value="">All Categories</option>'+cats.map(function(c){return '<option value="'+c+'"'+(fCat===c?' selected':'')+'>'+c+'</option>';}).join('')+'</select>':'')
     +(colours.length?'<select class="cs-filter-sel" onchange="G.compFilters.colour=this.value;renderMainContent()"><option value="">All Colours</option>'+colours.map(function(c){return '<option value="'+c+'"'+(fColour===c?' selected':'')+'>'+c+'</option>';}).join('')+'</select>':'')
+    +(types.length?'<select class="cs-filter-sel" onchange="G.compFilters.type=this.value;renderMainContent()"><option value="">All Types</option>'+types.map(function(t){return '<option value="'+t+'"'+(fType===t?' selected':'')+'>'+t+'</option>';}).join('')+'</select>':'')
+    +(themes.length?'<select class="cs-filter-sel" onchange="G.compFilters.theme=this.value;renderMainContent()"><option value="">All Themes</option>'+themes.map(function(t){return '<option value="'+t+'"'+(fTheme===t?' selected':'')+'>'+t+'</option>';}).join('')+'</select>':'')
     +'<select class="cs-filter-sel" onchange="G.compFilters.flag=this.value;renderMainContent()"><option value="">All Actions</option><option value="reference"'+(fFlag==='reference'?' selected':'')+'>Keep for Reference</option><option value="supplier"'+(fFlag==='supplier'?' selected':'')+'>Send to Supplier</option><option value="designer"'+(fFlag==='designer'?' selected':'')+'>Brief Designer</option><option value="inrange"'+(fFlag==='inrange'?' selected':'')+'>In Range</option><option value="noaction"'+(fFlag==='noaction'?' selected':'')+'>No Further Action</option></select>'
-    +((fStore||fFlag||fCat||fColour)?'<button class="btn btn-ghost btn-sm" onclick="G.compFilters={store:\'\',flag:\'\',cat:\'\',colour:\'\'};renderMainContent()">&#10005; Clear</button>':'');
+    +((fStore||fFlag||fCat||fColour||fType||fTheme)?'<button class="btn btn-ghost btn-sm" onclick="G.compFilters={store:\'\',flag:\'\',cat:\'\',colour:\'\',type:\'\',theme:\'\'};renderMainContent()">&#10005; Clear</button>':'');
   mc.appendChild(filtersBar);
 
   // Selection bar
@@ -3927,6 +3933,8 @@ function renderCompShopDetail(mc){
     if(fFlag && img.action_flag !== fFlag) return false;
     if(fCat && img.category !== fCat) return false;
     if(fColour && img.colour !== fColour) return false;
+    if(fType && img.type !== fType) return false;
+    if(fTheme && img.theme !== fTheme) return false;
     return true;
   });
 
@@ -3951,6 +3959,8 @@ function buildCompImageCard(img){
   if(img.colour) metaBadges += '<span class="cs-flag" style="background:#f3f4f6;color:#374151;">'+img.colour+'</span> ';
   if(img.price) metaBadges += '<span class="cs-flag" style="background:#d1fae5;color:#065f46;">'+img.price+'</span> ';
   if(img.fabric) metaBadges += '<span class="cs-flag" style="background:#fef3c7;color:#b45309;">'+img.fabric+'</span> ';
+  if(img.type) metaBadges += '<span class="cs-flag" style="background:#f0fdf4;color:#166534;">'+img.type+'</span> ';
+  if(img.theme) metaBadges += '<span class="cs-flag" style="background:#fdf4ff;color:#7e22ce;">'+img.theme+'</span> ';
   var isSelected = (G._csSelected||[]).indexOf(img.id) >= 0;
   if(isSelected) card.classList.add('selected');
   card.innerHTML = '<div class="cs-tick-wrap"><div class="cs-tick" data-imgid="'+img.id+'" onclick="toggleCsSelect(event,this.dataset.imgid)"><span class="cs-tick-check">&#10003;</span></div></div>'
@@ -4018,6 +4028,8 @@ function csEditOpen(imgId){
   document.getElementById('cse-colour').value = img.colour || '';
   document.getElementById('cse-price').value = img.price || '';
   document.getElementById('cse-fabric').value = img.fabric || '';
+  document.getElementById('cse-type').value = img.type || '';
+  document.getElementById('cse-theme').value = img.theme || '';
   document.getElementById('cse-notes').value = img.notes || '';
   document.getElementById('cse-flag').value = img.action_flag || 'reference';
   document.getElementById('cs-edit-overlay').classList.add('open');
@@ -4033,12 +4045,14 @@ async function csEditSave(){
   var colour = document.getElementById('cse-colour').value.trim();
   var price = document.getElementById('cse-price').value.trim();
   var fabric = document.getElementById('cse-fabric').value.trim();
+  var type = document.getElementById('cse-type').value.trim();
+  var theme = document.getElementById('cse-theme').value.trim();
   var notes = document.getElementById('cse-notes').value.trim();
   var flag = document.getElementById('cse-flag').value;
-  var r = await api('PUT', '/comp-shop-images/'+_csEditId, {store:store,category:category,colour:colour,price:price,fabric:fabric,notes:notes,actionFlag:flag});
+  var r = await api('PUT', '/comp-shop-images/'+_csEditId, {store:store,category:category,colour:colour,price:price,fabric:fabric,type:type,theme:theme,notes:notes,actionFlag:flag});
   if(r){
     var img = G.compImages.find(function(i){return i.id===_csEditId;});
-    if(img){ img.store=store; img.category=category; img.colour=colour; img.price=price; img.fabric=fabric; img.notes=notes; img.action_flag=flag; }
+    if(img){ img.store=store; img.category=category; img.colour=colour; img.price=price; img.fabric=fabric; img.type=type; img.theme=theme; img.notes=notes; img.action_flag=flag; }
     csEditClose();
     toast('Saved','success');
     renderMainContent();
