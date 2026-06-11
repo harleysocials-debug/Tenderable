@@ -842,6 +842,8 @@ input, select, textarea { font-family: inherit; }
     <div id="filter-theme" style="display:contents;"></div>
     <div class="filter-sep"></div>
     <div id="filter-supplier" style="display:contents;"></div>
+    <div class="filter-sep"></div>
+    <div id="filter-licensor" style="display:contents;"></div>
     <button class="filter-clear" onclick="clearFilters()" id="filter-clear-btn" style="display:none;">&#10005; Clear</button>
     <div class="view-toggle">
       <button class="view-btn active" id="view-board" onclick="setView('board')">&#9641; Board</button>
@@ -1090,7 +1092,7 @@ const GRADES = ['A','B','C','D','E','F','Web Only'];
 var G = {
   user: null, devs: [], tenders: [], bids: [], messages: [],
   devComments: {}, allSuppliers: [],
-  filters: { season:[], stage:[], cat:[], dept:[], colour:[], intake:[], retail:[], stylegrade:[], theme:[], supplier:[] },
+  filters: { season:[], stage:[], cat:[], dept:[], colour:[], intake:[], retail:[], stylegrade:[], theme:[], supplier:[], licensor:[] },
   view: 'board', editId: null, editType: null,
   uploadedFiles: [], editUploadedFiles: [],
   invitedSuppliers: [], formProducts: [],
@@ -1323,6 +1325,16 @@ function buildFilters(){
   // Supplier - from devs
   var sups=['All']; G.devs.forEach(function(d){ if(d.supplierAllocation&&!sups.includes(d.supplierAllocation)) sups.push(d.supplierAllocation); });
   buildChips('filter-supplier', sups, 'supplier', 'Supplier');
+
+  // Licensor status — only show if any license theme devs exist
+  var hasLicense=G.devs.some(function(d){ return (d.theme||'').toLowerCase()==='license'||(d.theme||'').toLowerCase()==='licence'; });
+  if(hasLicense){
+    buildChips('filter-licensor',
+      ['All',{val:'awaiting',label:'Awaiting Licensor Approval'},{val:'approved',label:'Licensor Approved'}],
+      'licensor','Licensor');
+  } else {
+    $('filter-licensor').innerHTML='';
+  }
 }
 function buildChips(containerId, items, filterKey, label){
   var el=$(containerId); el.innerHTML='<span style="background:#0c0f14;color:white;font-size:0.68rem;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;padding:0.25rem 0.6rem;border-radius:20px;white-space:nowrap;">'+label+'</span>';
@@ -1356,7 +1368,7 @@ function updateClearBtn(){
   var any=Object.values(G.filters).some(function(v){return Array.isArray(v)?v.length>0:v!==''&&v!==null;});
   $('filter-clear-btn').style.display=any?'':'none';
 }
-function clearFilters(){ G.filters={season:[],stage:[],cat:[],dept:[],colour:[],intake:[],retail:[],stylegrade:[],theme:[],supplier:[]}; buildFilters(); renderMainContent(); $('filter-clear-btn').style.display='none'; }
+function clearFilters(){ G.filters={season:[],stage:[],cat:[],dept:[],colour:[],intake:[],retail:[],stylegrade:[],theme:[],supplier:[],licensor:[]}; buildFilters(); renderMainContent(); $('filter-clear-btn').style.display='none'; }
 
 function filteredDevs(){
   var f=G.filters;
@@ -1416,7 +1428,20 @@ function renderBoard(mc){
     if(G.filters.retail&&G.filters.retail.length){
       prods=prods.filter(function(p){return G.filters.retail.some(function(band){var b=band.split('-');var lo=parseFloat(b[0]),hi=parseFloat(b[1]);var r=parseFloat(p.retailPrice||0);return r>=lo&&r<hi;});});
     }
-    if(prods.length===0 && dev.description && dev.description!=='null' && !G.filters.colour.length && !G.filters.intake.length && !G.filters.stylegrade.length && !G.filters.retail.length && !G.filters.cat.length && !G.filters.dept.length){
+    if(G.filters.licensor&&G.filters.licensor.length){
+      var isLicDev=(dev.theme||'').toLowerCase()==='license'||(dev.theme||'').toLowerCase()==='licence';
+      if(!isLicDev){ prods=[]; }
+      else {
+        prods=prods.filter(function(p){
+          return G.filters.licensor.every(function(f){
+            if(f==='awaiting') return !p.licensorApproved;
+            if(f==='approved') return p.licensorApproved===true;
+            return true;
+          });
+        });
+      }
+    }
+    if(prods.length===0 && dev.description && dev.description!=='null' && !G.filters.colour.length && !G.filters.intake.length && !G.filters.stylegrade.length && !G.filters.retail.length && !G.filters.cat.length && !G.filters.dept.length && !G.filters.licensor.length){
       allStyles.push({_dev:dev,_isPlaceholder:true,category:dev.category||'Other'}); // placeholder uses dev-level
     } else {
       prods.forEach(function(p){ allStyles.push(Object.assign({},p,{_dev:dev,category:p.category||dev.category||'Other'})); });
