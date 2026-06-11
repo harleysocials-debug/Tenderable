@@ -4831,6 +4831,12 @@ function openEcomDetail(devId, pidx){
     +'<button onclick="addEcomProp()">+ Add</button>'
     +'</div>';
 
+  // Auto-save on field changes
+  setTimeout(function(){
+    var m=document.getElementById('ecom-model'); if(m) m.addEventListener('change',saveEcomStyle);
+    var st=document.getElementById('ecom-shot-type'); if(st) st.addEventListener('change',saveEcomStyle);
+    var n=document.getElementById('ecom-notes'); if(n) n.addEventListener('blur',saveEcomStyle);
+  },100);
   document.getElementById('ecom-detail-body').innerHTML=
     stageBar+
     '<div class="ecom-product-hero">'+
@@ -4866,6 +4872,10 @@ function openEcomDetail(devId, pidx){
 }
 
 function closeEcomDetail(){
+  // Auto-save before closing
+  if(G.activeEcomStyle){
+    saveEcomStyle();
+  }
   document.getElementById('ecom-detail').classList.remove('open');
   document.getElementById('ecom-overlay-bg').classList.remove('open');
   G.activeEcomStyle=null;
