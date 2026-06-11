@@ -1326,15 +1326,10 @@ function buildFilters(){
   var sups=['All']; G.devs.forEach(function(d){ if(d.supplierAllocation&&!sups.includes(d.supplierAllocation)) sups.push(d.supplierAllocation); });
   buildChips('filter-supplier', sups, 'supplier', 'Supplier');
 
-  // Licensor status — only show if any license theme devs exist
-  var hasLicense=G.devs.some(function(d){ return (d.theme||'').toLowerCase()==='license'||(d.theme||'').toLowerCase()==='licence'; });
-  if(hasLicense){
-    buildChips('filter-licensor',
-      ['All',{val:'awaiting',label:'Awaiting Licensor Approval'},{val:'approved',label:'Licensor Approved'}],
-      'licensor','Licensor');
-  } else {
-    $('filter-licensor').innerHTML='';
-  }
+  // Licensor status filter — always visible
+  buildChips('filter-licensor',
+    ['All',{val:'awaiting',label:'Awaiting Licensor Approval'},{val:'approved',label:'Licensor Approved'}],
+    'licensor','Licensor');
 }
 function buildChips(containerId, items, filterKey, label){
   var el=$(containerId); el.innerHTML='<span style="background:#0c0f14;color:white;font-size:0.68rem;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;padding:0.25rem 0.6rem;border-radius:20px;white-space:nowrap;">'+label+'</span>';
