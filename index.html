@@ -4113,10 +4113,10 @@ function renderCompShopDetail(mc){
     +(types.length?'<select class="cs-filter-sel" onchange="G.compFilters.type=this.value;renderMainContent()"><option value="">All Types</option>'+types.map(function(t){return '<option value="'+t+'"'+(fType===t?' selected':'')+'>'+t+'</option>';}).join('')+'</select>':'')
     +(themes.length?'<select class="cs-filter-sel" onchange="G.compFilters.theme=this.value;renderMainContent()"><option value="">All Themes</option>'+themes.map(function(t){return '<option value="'+t+'"'+(fTheme===t?' selected':'')+'>'+t+'</option>';}).join('')+'</select>':'')
     +'<select class="cs-filter-sel" onchange="G.compFilters.flag=this.value;renderMainContent()"><option value="">All Actions</option><option value="reference"'+(fFlag==='reference'?' selected':'')+'>Keep for Reference</option><option value="supplier"'+(fFlag==='supplier'?' selected':'')+'>Send to Supplier</option><option value="designer"'+(fFlag==='designer'?' selected':'')+'>Brief Designer</option><option value="inrange"'+(fFlag==='inrange'?' selected':'')+'>In Range</option><option value="noaction"'+(fFlag==='noaction'?' selected':'')+'>No Further Action</option></select>'
-    +'<select class="cs-filter-sel" onchange="G.compFilters.flag=this.value;renderMainContent()"><option value="">All Actions</option><option value="reference"'+(fFlag==='reference'?' selected':'')+'>Keep for Reference</option><option value="supplier"'+(fFlag==='supplier'?' selected':'')+'>Send to Supplier</option><option value="designer"'+(fFlag==='designer'?' selected':'')+'>Brief Designer</option><option value="inrange"'+(fFlag==='inrange'?' selected':'')+'>In Range</option><option value="noaction"'+(fFlag==='noaction'?' selected':'')+'>No Further Action</option></select>'
     +(imgMonths.length?'<select class="cs-filter-sel" onchange="G.compFilters.imgMonth=this.value;renderMainContent()"><option value="">All Months</option>'+imgMonths.map(function(m){return '<option value="'+m.key+'"'+(fImgMonth===m.key?' selected':'')+'>'+m.label+'</option>';}).join('')+'</select>':'')
     +((fStore||fFlag||fCat||fColour||fType||fTheme||fImgMonth)?'<button class="btn btn-ghost btn-sm" onclick="csDetailClearFilters()">&#10005; Clear</button>':'');
 
+  mc.appendChild(filtersBar);
   // Selection bar
   var selectBar = document.createElement('div');
   selectBar.className = 'cs-select-bar';
