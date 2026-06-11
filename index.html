@@ -2125,7 +2125,8 @@ async function submitDev(){
     var pc=row.querySelector('.product-cat');
     var pd=row.querySelector('.product-dept');
     var ps=row.querySelector('.product-season');
-    products.push({description:name,colour:co?co.value:'',qty:parseInt(q?q.value:0)||0,targetCost:parseFloat(tc?tc.value:0)||0,retailPrice:parseFloat(rp?rp.value:0)||0,storeGrade:gr?gr.value:'',intakeMonth:im?im.value:'',category:pc?pc.value:'',department:pd?pd.value:'',seasonCode:ps?ps.value:'',image:imgWrap?imgWrap.getAttribute('data-imgurl')||null:null});
+    var pant=row.querySelector('.product-pantone');
+    products.push({description:name,colour:co?co.value:'',pantone:pant?pant.value.trim():'',qty:parseInt(q?q.value:0)||0,targetCost:parseFloat(tc?tc.value:0)||0,retailPrice:parseFloat(rp?rp.value:0)||0,storeGrade:gr?gr.value:'',intakeMonth:im?im.value:'',category:pc?pc.value:'',department:pd?pd.value:'',seasonCode:ps?ps.value:'',image:imgWrap?imgWrap.getAttribute('data-imgurl')||null:null});
   });
   var body={
     description:desc,brand:$('f-brand').value,seasonCode:null,theme:$('f-theme')?$('f-theme').value.trim():'',
