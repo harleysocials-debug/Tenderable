@@ -4706,14 +4706,22 @@ function renderEcomPage(mc){
 
   var all=allEcomStyles();
 
-  // Progress bar
-  var fSeason=G.ecomFilters.season;
-  var filtered=fSeason?all.filter(function(x){
-    return (x.product.seasonCode||x.dev.seasonCode||'')=== fSeason;
-  }):all;
-  var approved=filtered.filter(function(x){return x.styling.status==='approved';}).length;
-  var pct=filtered.length>0?Math.round(approved/filtered.length*100):0;
+  // Read all filter values
+  var fSeason=G.ecomFilters.season||'';
+  var fCat=G.ecomFilters.cat||'';
+  var fDept=G.ecomFilters.dept||'';
+  var fIntake=G.ecomFilters.intake||'';
+  var fColour=G.ecomFilters.colour||'';
+  var fGrade=G.ecomFilters.grade||'';
+  var fTheme=G.ecomFilters.theme||'';
+  var fSupplier=G.ecomFilters.supplier||'';
+  var fStatus=G.ecomFilters.status||'';
+  var fLicensor=G.ecomFilters.licensor||'';
 
+  // Progress bar (filtered by season only)
+  var progFiltered=fSeason?all.filter(function(x){return (x.product.seasonCode||x.dev.seasonCode||'')===fSeason;}):all;
+  var approved=progFiltered.filter(function(x){return x.styling.status==='approved';}).length;
+  var pct=progFiltered.length>0?Math.round(approved/progFiltered.length*100):0;
   var seasons=[...new Set(all.map(function(x){return x.product.seasonCode||x.dev.seasonCode||'';}))].filter(Boolean).sort();
 
   var progressHtml='<div class="ecom-progress-bar">'
@@ -4722,28 +4730,61 @@ function renderEcomPage(mc){
     +seasons.map(function(s){return '<option value="'+s+'"'+(fSeason===s?' selected':'')+'>'+s+'</option>';}).join('')
     +'</select>'
     +'<div class="ecom-progress-track"><div class="ecom-progress-fill" style="width:'+pct+'%"></div></div>'
-    +'<div class="ecom-progress-label">'+approved+' / '+filtered.length+' approved ('+pct+'%)</div>'
+    +'<div class="ecom-progress-label">'+approved+' / '+progFiltered.length+' approved ('+pct+'%)</div>'
     +'</div>';
   wrap.innerHTML+=progressHtml;
 
-  // Filters
+  // Build filter option lists
   var cats=[...new Set(all.map(function(x){return x.product.category||x.dev.category||'';}))].filter(Boolean).sort();
+  var depts=[...new Set(all.map(function(x){return x.product.department||x.dev.department||'';}))].filter(Boolean).sort();
   var intakes=[...new Set(all.map(function(x){return x.product.intakeMonth||'';}))].filter(Boolean).sort();
-  var fCat=G.ecomFilters.cat, fIntake=G.ecomFilters.intake, fStatus=G.ecomFilters.status;
+  var colours=[...new Set(all.map(function(x){return x.product.colour||'';}))].filter(Boolean).sort();
+  var grades=[...new Set(all.map(function(x){return x.product.storeGrade||'';}))].filter(Boolean).sort();
+  var themes=[...new Set(all.map(function(x){return x.dev.theme||'';}))].filter(Boolean).sort();
+  var suppliers=[...new Set(all.map(function(x){return x.dev.supplierAllocation||'';}))].filter(Boolean).sort();
+
+  function ecoSel(key,cur,label,opts){
+    return '<select class="ecom-filter-select" onchange="G.ecomFilters.'+key+'=this.value;renderMainContent()">'
+      +'<option value="">'+label+'</option>'
+      +opts.map(function(o){return '<option value="'+o+'"'+(cur===o?' selected':'')+'>'+o+'</option>';}).join('')
+      +'</select>';
+  }
+
+  var anyFilter=fSeason||fCat||fDept||fIntake||fColour||fGrade||fTheme||fSupplier||fStatus||fLicensor;
 
   var filterHtml='<div class="ecom-filters">'
-    +'<select class="ecom-filter-select" onchange="G.ecomFilters.cat=this.value;renderMainContent()"><option value="">All Categories</option>'
-    +cats.map(function(c){return '<option value="'+c+'"'+(fCat===c?' selected':'')+'>'+c+'</option>';}).join('')+'</select>'
-    +'<select class="ecom-filter-select" onchange="G.ecomFilters.intake=this.value;renderMainContent()"><option value="">All Intake Months</option>'
-    +intakes.map(function(i){return '<option value="'+i+'"'+(fIntake===i?' selected':'')+'>'+i+'</option>';}).join('')+'</select>'
-    +'<select class="ecom-filter-select" onchange="G.ecomFilters.status=this.value;renderMainContent()"><option value="">All Statuses</option>'
+    +(seasons.length?ecoSel('season',fSeason,'All Seasons',seasons):'')
+    +(cats.length?ecoSel('cat',fCat,'All Categories',cats):'')
+    +(depts.length?ecoSel('dept',fDept,'All Departments',depts):'')
+    +(intakes.length?ecoSel('intake',fIntake,'All Intake Months',intakes):'')
+    +(colours.length?ecoSel('colour',fColour,'All Colours',colours):'')
+    +(grades.length?ecoSel('grade',fGrade,'All Grades',grades):'')
+    +(themes.length?ecoSel('theme',fTheme,'All Themes',themes):'')
+    +(suppliers.length?ecoSel('supplier',fSupplier,'All Suppliers',suppliers):'')
+    +'<select class="ecom-filter-select" onchange="G.ecomFilters.status=this.value;renderMainContent()">'
+    +'<option value="">All Statuses</option>'
     +'<option value="unstyled"'+(fStatus==='unstyled'?' selected':'')+'>Unstyled</option>'
-    +'<option value="inprogress"'+(fStatus==='inprogress'?' selected':'')+'>In Progress</option>'
+    +'<option value="styled"'+(fStatus==='styled'?' selected':'')+'>Styled</option>'
     +'<option value="approved"'+(fStatus==='approved'?' selected':'')+'>Approved</option>'
     +'</select>'
-    +(fSeason||fCat||fIntake||fStatus?'<button class="btn btn-ghost btn-sm" onclick="G.ecomFilters={season:\'\',cat:\'\',intake:\'\',status:\'\'};renderMainContent()">Clear</button>':'')
+    +'<select class="ecom-filter-select" onchange="G.ecomFilters.licensor=this.value;renderMainContent()">'
+    +'<option value="">All Licensor</option>'
+    +'<option value="awaiting"'+(fLicensor==='awaiting'?' selected':'')+'>Awaiting Approval</option>'
+    +'<option value="approved_lic"'+(fLicensor==='approved_lic'?' selected':'')+'>Licensor Approved</option>'
+    +'</select>'
+    +(anyFilter?'<button class="btn btn-ghost btn-sm" onclick="G.ecomFilters={season:\'\',cat:\'\',dept:\'\',intake:\'\',colour:\'\',grade:\'\',theme:\'\',supplier:\'\',status:\'\',licensor:\'\'};renderMainContent()">Clear</button>':'')
     +'</div>';
   wrap.innerHTML+=filterHtml;
+
+  // Selection bar
+  var ecomSelBar=document.createElement('div');
+  ecomSelBar.className='ecom-sel-bar'+(G._ecomSelected&&G._ecomSelected.length?' visible':'');
+  ecomSelBar.id='ecom-sel-bar';
+  ecomSelBar.innerHTML='<span class="ecom-sel-count" id="ecom-sel-count">'+(G._ecomSelected?G._ecomSelected.length:0)+' selected</span>'
+    +'<button class="btn btn-primary btn-sm" onclick="exportEcomPDF()">&#128196; Export PDF</button>'
+    +'<button class="btn btn-ghost btn-sm" onclick="ecomSelectAll()">Select All</button>'
+    +'<button class="btn btn-ghost btn-sm" onclick="ecomClearSel()">Clear</button>';
+  wrap.appendChild(ecomSelBar);
 
   // Filter styles
   var show=all.filter(function(x){
@@ -4764,17 +4805,6 @@ function renderEcomPage(mc){
     }
     return true;
   });
-
-  // Selection bar
-  var ecomSelBar=document.createElement('div');
-  ecomSelBar.className='ecom-sel-bar'+(G._ecomSelected&&G._ecomSelected.length?' visible':'');
-  ecomSelBar.id='ecom-sel-bar';
-  ecomSelBar.innerHTML='<span class="ecom-sel-count" id="ecom-sel-count">'+(G._ecomSelected?G._ecomSelected.length:0)+' selected</span>'
-    +'<button class="btn btn-primary btn-sm" onclick="exportEcomPDF()">&#128196; Export PDF</button>'
-    +'<button class="btn btn-ghost btn-sm" onclick="ecomSelectAll()">Select All</button>'
-    +'<button class="btn btn-ghost btn-sm" onclick="ecomClearSel()">Clear</button>';
-  wrap.innerHTML='';
-  wrap.appendChild(ecomSelBar);
 
   if(!show.length){
     wrap.innerHTML+='<div class="empty-state"><div class="empty-state-icon">&#128247;</div><h3>No styles found</h3><p>Try adjusting your filters.</p></div>';
@@ -4798,12 +4828,11 @@ function renderEcomPage(mc){
         '<div class="ecom-card-meta">'+
           (p.retailPrice?'<span class="ecom-badge" style="background:#dbeafe;color:#1e40af;">&pound;'+parseFloat((p.retailPrice+'').replace(/[^0-9.]/g,'')).toFixed(2)+'</span>':'')+
           (p.storeGrade?'<span class="ecom-badge" style="background:#f3f4f6;color:#374151;">Grade '+p.storeGrade+'</span>':'')+
-          '<span class="ecom-badge '+es.status+'">'+( statusLabel[es.status]||'Unstyled')+'</span>'+
+          '<span class="ecom-badge '+es.status+'">'+(statusLabel[es.status]||'Unstyled')+'</span>'+
         '</div>'+
       '</div>';
     var isEcomSel=(G._ecomSelected||[]).indexOf(ecomStyleId(dev.id,pidx))>=0;
     if(isEcomSel) card.classList.add('ecom-selected');
-    // Tick in corner
     var tickWrap=document.createElement('div');
     tickWrap.className='ecom-card-tick-wrap';
     tickWrap.innerHTML='<div class="ecom-card-tick" data-eid="'+ecomStyleId(dev.id,pidx)+'" onclick="toggleEcomSel(event,this.dataset.eid)"><span class="ecom-card-tick-check">&#10003;</span></div>';
