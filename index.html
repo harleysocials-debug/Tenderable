@@ -1099,7 +1099,7 @@ var G = {
   _modalImgs: [], _modalIdx: 0,
   _pollTimer: null,
   packs: [], activePack: null, activePackView: 'list',
-  ecomStyles: {}, ecomFilters: {season:'',cat:'',intake:'',status:''}, activeEcomStyle: null,
+  ecomStyles: {}, ecomFilters: {season:'',cat:'',intake:'',status:'',dept:'',colour:'',grade:'',theme:'',supplier:'',licensor:''}, activeEcomStyle: null,
   compShops: [], activeCompShop: null, compImages: [], compFilters: {store:'',flag:''}
 };
 
@@ -4749,8 +4749,19 @@ function renderEcomPage(mc){
   var show=all.filter(function(x){
     if(fSeason&&(x.product.seasonCode||x.dev.seasonCode||'')!==fSeason) return false;
     if(fCat&&(x.product.category||x.dev.category||'')!==fCat) return false;
+    if(fDept&&(x.product.department||x.dev.department||'')!==fDept) return false;
     if(fIntake&&(x.product.intakeMonth||'')!==fIntake) return false;
+    if(fColour&&(x.product.colour||'')!==fColour) return false;
+    if(fGrade&&(x.product.storeGrade||'')!==fGrade) return false;
+    if(fTheme&&(x.dev.theme||'')!==fTheme) return false;
+    if(fSupplier&&(x.dev.supplierAllocation||'')!==fSupplier) return false;
     if(fStatus&&x.styling.status!==fStatus) return false;
+    if(fLicensor){
+      var isLic=(x.dev.theme||'').toLowerCase()==='license'||(x.dev.theme||'').toLowerCase()==='licence';
+      if(!isLic) return false;
+      if(fLicensor==='awaiting'&&x.product.licensorApproved===true) return false;
+      if(fLicensor==='approved_lic'&&!x.product.licensorApproved) return false;
+    }
     return true;
   });
 
