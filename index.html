@@ -3385,6 +3385,11 @@ function openNewPackForm(packId){
 }
 function closePackForm(){ document.getElementById('pack-form-overlay').classList.remove('open'); }
 function closePackFormIfBg(e){ if(e.target===document.getElementById('pack-form-overlay')) closePackForm(); }
+window.submitPackForm=submitPackForm;
+window.closePackForm=closePackForm;
+window.closePackFormIfBg=closePackFormIfBg;
+window.createPack=createPack;
+window.openPackForm=openPackForm;
 async function submitPackForm(){
   var name=document.getElementById('pf-name').value.trim();
   if(!name){document.getElementById('pf-name').focus();return;}
