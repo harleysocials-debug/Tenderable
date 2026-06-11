@@ -1633,7 +1633,7 @@ function openDetail(devId){
     // Name + sub
     prodHtml+='<div style="flex:1;">';
     prodHtml+='<div class="detail-product-name">'+(p.description||'')+'</div>';
-    prodHtml+='<div class="detail-product-sub">'+(p.colour||'')+( p.qty?' &bull; '+parseInt(p.qty).toLocaleString()+' units':'')+( p.storeGrade?' &bull; Grade '+p.storeGrade:'')+( p.intakeMonth?' &bull; '+p.intakeMonth:'')+'</div>';
+    prodHtml+='<div class="detail-product-sub">'+(p.colour||'')+(p.pantone?' <span style="font-size:0.65rem;background:#fdf4ff;color:#7e22ce;padding:0.1rem 0.35rem;border-radius:5px;font-weight:600;">'+p.pantone+'</span>':'')+(p.qty?' &bull; '+parseInt(p.qty).toLocaleString()+' units':'')+(p.storeGrade?' &bull; Grade '+p.storeGrade:'')+(p.intakeMonth?' &bull; '+p.intakeMonth:'')+'</div>';
     prodHtml+='</div>';
     // Cost confirm
     if(isBuyer){
@@ -1969,6 +1969,19 @@ function addProductRow(data){
   fields.appendChild(row1b);
   // Set select values after appending
   setTimeout(function(){ colourSel.value=d.colour||''; seasonProd.value=d.seasonCode||''; gradeInp.value=d.storeGrade||''; },0);
+
+  // Pantone field (optional)
+  var rowPantone=document.createElement('div');
+  rowPantone.style.cssText='display:grid;grid-template-columns:1fr;gap:0.4rem;';
+  var pantoneInp=document.createElement('input');
+  pantoneInp.className='form-input product-pantone';
+  pantoneInp.placeholder='Pantone (optional, e.g. 19-3911 TCX Quiet Shade)';
+  pantoneInp.value=d.pantone||'';
+  pantoneInp.style.cssText='padding:0.5rem 0.65rem;font-size:0.82rem;';
+  pantoneInp.addEventListener('input',function(){G.formProducts[pidx].pantone=this.value;});
+  rowPantone.appendChild(pantoneInp);
+  fields.appendChild(rowPantone);
+
   // Category + Dept row
   var rowCatDept=document.createElement('div');
   rowCatDept.style.cssText='display:grid;grid-template-columns:1fr 1fr;gap:0.4rem;';
@@ -2275,7 +2288,7 @@ function exportRangePDF(){
       cards+='<div class="style-name">'+s.description+'</div>';
       cards+='<div class="style-sub">'+dev.description+'</div>';
       cards+='<div class="style-meta">';
-      if(s.colour) cards+='<span class="meta-tag">'+s.colour+'</span>';
+      if(s.colour) cards+='<span class="meta-tag">'+s.colour+'</span>'+(s.pantone?'<span class="meta-tag" style="background:#fdf4ff;color:#7e22ce;font-weight:600;">'+s.pantone+'</span>':'');
       if(s.intakeMonth) cards+='<span class="meta-tag">'+s.intakeMonth+'</span>';
       if(s.qty) cards+='<span class="meta-tag">Qty: '+parseInt(s.qty).toLocaleString()+'</span>';
       cards+='</div>';
@@ -2450,7 +2463,7 @@ function _supplierBriefGenerate(devId, includeCost, includeQty, emailMode){
     styleCards+='<div class="style-info">';
     styleCards+='<div class="style-name">'+p.description+'</div>';
     var meta=[];
-    if(p.colour) meta.push(p.colour);
+    if(p.colour) meta.push(p.colour+(p.pantone?' • '+p.pantone:''));
     if(p.category) meta.push(p.category);
     if(p.department) meta.push(p.department);
     if(p.seasonCode) meta.push(p.seasonCode);
@@ -3465,7 +3478,7 @@ function exportPackPDF(packId){
         ?'<img src="'+item.image+'" style="width:70px;height:70px;border-radius:8px;object-fit:cover;flex-shrink:0;">'
         :'<div style="width:70px;height:70px;border-radius:8px;background:#f3f4f6;display:flex;align-items:center;justify-content:center;font-size:1.5rem;flex-shrink:0;">&#127912;</div>';
       var badges='';
-      if(item.colour) badges+='<span style="background:#f3f4f6;padding:1px 6px;border-radius:10px;font-size:8px;margin-right:3px;">'+item.colour+'</span>';
+      if(item.colour) badges+='<span style="background:#f3f4f6;padding:1px 6px;border-radius:10px;font-size:8px;margin-right:3px;">'+item.colour+'</span>'+(item.pantone?'<span style="background:#fdf4ff;color:#7e22ce;padding:1px 6px;border-radius:10px;font-size:8px;margin-right:3px;font-weight:600;">'+item.pantone+'</span>':'');
       if(item.storeGrade) badges+='<span style="background:#f3f4f6;padding:1px 6px;border-radius:10px;font-size:8px;margin-right:3px;">Grade '+item.storeGrade+'</span>';
       if(item.seasonCode) badges+='<span style="background:#f3f4f6;padding:1px 6px;border-radius:10px;font-size:8px;margin-right:3px;">'+item.seasonCode+'</span>';
       if(item.intakeMonth) badges+='<span style="background:#f3f4f6;padding:1px 6px;border-radius:10px;font-size:8px;margin-right:3px;">'+item.intakeMonth+'</span>';
@@ -4588,7 +4601,7 @@ function exportEcomPDF(){
       +'<div style="flex:1;">'
       +'<div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:6px;">'
       +'<div><div style="font-size:12px;font-weight:800;">'+product.description+'</div>'
-      +'<div style="font-size:10px;color:#6b7280;">'+(product.colour||'')+' &bull; '+(product.seasonCode||dev.seasonCode||'')+'</div></div>'
+      +'<div style="font-size:10px;color:#6b7280;">'+(product.colour||'')+(product.pantone?' <span style="font-size:8px;background:#fdf4ff;color:#7e22ce;padding:1px 4px;border-radius:3px;font-weight:600;">'+product.pantone+'</span>':'')+' &bull; '+(product.seasonCode||dev.seasonCode||'')+'</div></div>'+
       +'<span style="font-size:8px;font-weight:700;padding:2px 8px;border-radius:10px;background:'+(statusColors[status]||'#f3f4f6')+';color:'+(statusTxt[status]||'#374151')+';">'+(statusLabels[status]||status)+'</span>'
       +'</div>'
       +(es.model?'<div style="font-size:9px;color:#6b7280;margin-bottom:3px;"><strong>Model:</strong> '+es.model+'</div>':'')
