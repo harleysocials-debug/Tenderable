@@ -1893,6 +1893,27 @@ function removeUpload(i){ G.uploadedFiles.splice(i,1); renderFormPreviews(); }
 
 // Paste handler
 document.addEventListener('paste',function(e){
+  // ── Comp shop paste handler ──────────────────────────────
+  if(G.view==='compshop'&&G.activeCompShop){
+    var items=e.clipboardData&&e.clipboardData.items;
+    if(items){
+      var imgFiles=[];
+      for(var ci=0;ci<items.length;ci++){
+        if(items[ci].kind==='file'&&items[ci].type.startsWith('image/')){
+          imgFiles.push(items[ci].getAsFile());
+        }
+      }
+      if(imgFiles.length>0){
+        e.preventDefault();
+        // Show paste indicator on drop zone if visible
+        var dz=document.getElementById('cs-drop-zone');
+        if(dz){ dz.innerHTML='<div class="cs-uploading"><span>&#8987;</span> Processing pasted image...</div>'; }
+        csProcessFiles(imgFiles);
+        return;
+      }
+    }
+  }
+  // ── Dev form paste handler ───────────────────────────────
   var overlay=$('form-overlay');
   if(!overlay||!overlay.classList.contains('open')) return;
   var items=e.clipboardData&&e.clipboardData.items;
@@ -4200,7 +4221,7 @@ function renderCompShopDetail(mc){
     +' ondrop="csDropFiles(event)"'
     +' onclick="document.getElementById(\'cs-file-inp\').click()">'
     +'<div style="font-size:2rem;">&#128247;</div>'
-    +'<p><strong>Drop images here</strong> or click to browse &bull; Add multiple at once</p>'
+    +'<p><strong>Drop images here</strong> or click to browse &bull; Add multiple at once &bull; Ctrl+V to paste</p>'
     +'</div>'
     +'<input type="file" id="cs-file-inp" multiple accept="image/*" style="display:none" onchange="csHandleFiles(event)">';
 
